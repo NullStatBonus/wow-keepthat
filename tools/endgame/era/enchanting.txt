@@ -1,0 +1,14 @@
+# Classic Era enchanting endgame materials: <itemID> | <reason> | <source>
+# Curated for KeepThat; reviewed by the maintainer 2026-11-15.
+14344 | Endgame weapon and armor enchants | https://www.wowhead.com/classic/item=14344 (reviewed 2026-11-15)  # Large Brilliant Shard
+14343 | Essential endgame crafting material | https://www.wowhead.com/classic/item=14343 (reviewed 2026-11-15)  # Small Brilliant Shard
+16203 | Endgame weapon and armor enchants | https://www.wowhead.com/classic/item=16203 (reviewed 2026-11-15)  # Greater Eternal Essence
+16204 | Endgame weapon and armor enchants | https://www.wowhead.com/classic/item=16204 (reviewed 2026-11-15)  # Illusion Dust
+20725 | Essential endgame crafting material | https://www.wowhead.com/classic/item=20725 (reviewed 2026-11-15)  # Nexus Crystal
+12811 | Enchant Weapon - Crusader | https://www.wowhead.com/classic/item=12811 (reviewed 2026-11-15)  # Righteous Orb
+7078 | Essential endgame crafting material | https://www.wowhead.com/classic/item=7078 (reviewed 2026-11-15)  # Essence of Fire
+7076 | Essential endgame crafting material | https://www.wowhead.com/classic/item=7076 (reviewed 2026-11-15)  # Essence of Earth
+7080 | Essential endgame crafting material | https://www.wowhead.com/classic/item=7080 (reviewed 2026-11-15)  # Essence of Water
+7082 | Essential endgame crafting material | https://www.wowhead.com/classic/item=7082 (reviewed 2026-11-15)  # Essence of Air
+13926 | Essential endgame crafting material | https://www.wowhead.com/classic/item=13926 (reviewed 2026-11-15)  # Golden Pearl
+7971 | Essential endgame crafting material | https://www.wowhead.com/classic/item=7971 (reviewed 2026-11-15)  # Black Pearl

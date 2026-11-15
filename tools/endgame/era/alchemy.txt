@@ -1,0 +1,19 @@
+# Classic Era alchemy endgame materials: <itemID> | <reason> | <source>
+# Curated for KeepThat; reviewed by the maintainer 2026-11-15.
+13468 | Flasks for raids | https://www.wowhead.com/classic/item=13468 (reviewed 2026-11-15)  # Black Lotus
+13463 | Raid and dungeon consumables | https://www.wowhead.com/classic/item=13463 (reviewed 2026-11-15)  # Dreamfoil
+13465 | Raid and dungeon consumables | https://www.wowhead.com/classic/item=13465 (reviewed 2026-11-15)  # Mountain Silversage
+13466 | Raid and dungeon consumables | https://www.wowhead.com/classic/item=13466 (reviewed 2026-11-15)  # Plaguebloom
+13467 | Raid and dungeon consumables | https://www.wowhead.com/classic/item=13467 (reviewed 2026-11-15)  # Icecap
+13464 | Raid and dungeon consumables | https://www.wowhead.com/classic/item=13464 (reviewed 2026-11-15)  # Golden Sansam
+8846 | Raid and dungeon consumables | https://www.wowhead.com/classic/item=8846 (reviewed 2026-11-15)  # Gromsblood
+8838 | Raid and dungeon consumables | https://www.wowhead.com/classic/item=8838 (reviewed 2026-11-15)  # Sungrass
+8845 | Greater Shadow Protection Potion | https://www.wowhead.com/classic/item=8845 (reviewed 2026-11-15)  # Ghost Mushroom
+13423 | Flask of the Titans | https://www.wowhead.com/classic/item=13423 (reviewed 2026-11-15)  # Stonescale Oil
+8925 | Raid and dungeon consumables | https://www.wowhead.com/classic/item=8925 (reviewed 2026-11-15)  # Crystal Vial
+7068 | Greater Fire Protection Potion | https://www.wowhead.com/classic/item=7068 (reviewed 2026-11-15)  # Elemental Fire
+7070 | Greater Frost Protection Potion | https://www.wowhead.com/classic/item=7070 (reviewed 2026-11-15)  # Elemental Water
+7067 | Greater Nature Protection Potion | https://www.wowhead.com/classic/item=7067 (reviewed 2026-11-15)  # Elemental Earth
+7069 | Raid and dungeon consumables | https://www.wowhead.com/classic/item=7069 (reviewed 2026-11-15)  # Elemental Air
+12363 | Transmute: Arcanite | https://www.wowhead.com/classic/item=12363 (reviewed 2026-11-15)  # Arcane Crystal
+12359 | Transmute: Arcanite | https://www.wowhead.com/classic/item=12359 (reviewed 2026-11-15)  # Thorium Bar

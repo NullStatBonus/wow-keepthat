@@ -1,0 +1,19 @@
+# guide: RankedBoost
+# url: https://rankedboost.com/world-of-warcraft/forever/professions/alchemy-leveling/
+# checked: 2026-11-15
+# Facts only (skill range, recipe, crafts) from the guide's route steps; no text copied.
+1-65 | Elixir of Minor Defense | 66
+65-75 | Minor Mana Potion | 12
+75-86 | Minor Mana Potion | 18
+86-100 | Swiftness Potion | 16
+100-145 | Holy Protection Potion | 49
+145-150 | Lesser Mana Potion | 6
+150-155 | Lesser Mana Potion | 7
+155-180 | Elixir of Lesser Defense | 39
+180-205 | Mana Potion | 39
+205-220 | Elixir of Agility | 19
+220-225 | Catseye Draught | 6
+225-245 | Catseye Draught | 34
+245-265 | Draught of Detect Undead | 28
+265-290 | Draught of Detect Demon | 39
+290-300 | Greater Arcane Protection Potion | 10

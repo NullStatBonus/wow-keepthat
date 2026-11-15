@@ -1,0 +1,16 @@
+# guide: wow-professions.com
+# url: https://wow-professions.com/classic/first-aid-leveling-guide-classic-wow
+# checked: 2026-11-15
+# Facts only (skill range, recipe, crafts); the guide's text is not copied.
+1-40 | Linen Bandage | 50
+40-75 | Heavy Linen Bandage | 45
+75-80 | Heavy Linen Bandage | 15
+80-115 | Wool Bandage | 60
+115-150 | Heavy Wool Bandage | 60
+150-180 | Silk Bandage | 50
+180-210 | Heavy Silk Bandage | 50
+210-225 | Mageweave Bandage | 30
+225-240 | Mageweave Bandage | 30
+240-260 | Heavy Mageweave Bandage | 30
+260-290 | Runecloth Bandage | 50
+290-300 | Heavy Runecloth Bandage | 15

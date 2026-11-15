@@ -1,0 +1,16 @@
+# WoW Forever tailoring endgame materials: <itemID> | <reason> | <source>
+# Copied from the Classic Era list for now; revisit once Forever's new content and guides exist.
+14047 | Essential endgame crafting material | https://www.wowhead.com/classic/item=14047 (Era draft, unverified on Forever)  # Runecloth
+14048 | Essential endgame crafting material | https://www.wowhead.com/classic/item=14048 (Era draft, unverified on Forever)  # Bolt of Runecloth
+14342 | Best-in-slot crafted gear | https://www.wowhead.com/classic/item=14342 (Era draft, unverified on Forever)  # Mooncloth
+14256 | Best-in-slot crafted gear | https://www.wowhead.com/classic/item=14256 (Era draft, unverified on Forever)  # Felcloth
+14227 | Best-in-slot crafted gear | https://www.wowhead.com/classic/item=14227 (Era draft, unverified on Forever)  # Ironweb Spider Silk
+8170 | Essential endgame crafting material | https://www.wowhead.com/classic/item=8170 (Era draft, unverified on Forever)  # Rugged Leather
+9210 | Best-in-slot crafted gear | https://www.wowhead.com/classic/item=9210 (Era draft, unverified on Forever)  # Ghost Dye
+12808 | Best-in-slot crafted gear | https://www.wowhead.com/classic/item=12808 (Era draft, unverified on Forever)  # Essence of Undeath
+12803 | Best-in-slot crafted gear | https://www.wowhead.com/classic/item=12803 (Era draft, unverified on Forever)  # Living Essence
+12811 | Best-in-slot crafted gear | https://www.wowhead.com/classic/item=12811 (Era draft, unverified on Forever)  # Righteous Orb
+7080 | Best-in-slot crafted gear | https://www.wowhead.com/classic/item=7080 (Era draft, unverified on Forever)  # Essence of Water
+7078 | Best-in-slot crafted gear | https://www.wowhead.com/classic/item=7078 (Era draft, unverified on Forever)  # Essence of Fire
+17010 | Best-in-slot crafted gear | https://www.wowhead.com/classic/item=17010 (Era draft, unverified on Forever)  # Fiery Core
+17011 | Best-in-slot crafted gear | https://www.wowhead.com/classic/item=17011 (Era draft, unverified on Forever)  # Lava Core

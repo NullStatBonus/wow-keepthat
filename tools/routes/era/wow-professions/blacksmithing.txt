@@ -1,0 +1,26 @@
+# guide: wow-professions.com
+# url: https://wow-professions.com/classic/blacksmithing-leveling-guide-classic-wow
+# checked: 2026-11-15
+# Facts only (skill range, recipe, crafts); the guide's text is not copied. Main path only.
+1-30 | Rough Sharpening Stone | 40
+30-65 | Rough Grinding Stone | 55
+65-75 | Coarse Sharpening Stone | 25
+75-90 | Coarse Grinding Stone | 35
+90-100 | Runed Copper Belt | 10
+100-105 | Silver Rod | 5
+105-110 | Runed Copper Belt | 5
+110-125 | Rough Bronze Leggings | 15
+125-140 | Heavy Grinding Stone | 35
+140-150 | Patterned Bronze Bracers | 10
+150-155 | Golden Rod | 5
+155-165 | Green Iron Leggings | 10
+165-190 | Green Iron Bracers | 25
+190-200 | Golden Scale Bracers | 10
+200-210 | Solid Grinding Stone | 30
+210-225 | Heavy Mithril Gauntlet | 15
+225-235 | Steel Plate Helm | 10
+235-250 | Mithril Spurs | 15
+250-260 | Dense Sharpening Stone | 20
+260-270 | Mithril Spurs | 20
+270-295 | Imperial Plate Bracers | 25
+295-300 | Imperial Plate Boots | 5

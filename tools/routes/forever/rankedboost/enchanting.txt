@@ -1,0 +1,21 @@
+# guide: RankedBoost
+# url: https://rankedboost.com/world-of-warcraft/forever/professions/enchanting-leveling/
+# checked: 2026-11-15
+# Facts only (skill range, recipe, crafts) from the guide's route steps; no text copied.
+1-25 | Enchant Bracer - Inferior Stamina | 31
+25-70 | Enchant Bracer - Minor Deflect | 45
+70-75 | Enchant Chest - Inferior Stamina | 6
+75-99 | Enchant Chest - Inferior Stamina | 46
+99-100 | Enchant Chest - Minor Absorption | 2
+100-129 | Enchant Bracer - Minor Stamina | 51
+129-130 | Enchant Cloak - Minor Protection | 2
+130-140 | Enchant Shield - Minor Stamina | 12
+140-150 | Enchant Bracer - Lesser Strength | 10
+150-155 | Enchant Bracer - Lesser Strength | 5
+155-180 | Enchant Bracer - Lesser Stamina | 39
+180-200 | Enchant Boots - Lesser Agility | 28
+200-225 | Enchant Bracer - Strength | 39
+225-230 | Enchant Cloak - Greater Defense | 6
+230-258 | Enchant Gloves - Agility | 48
+258-284 | Enchant Boots - Agility | 48
+284-300 | Enchant Shield - Greater Stamina | 20

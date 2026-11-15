@@ -1,0 +1,15 @@
+# guide: wow-professions.com
+# url: https://wow-professions.com/classic/alchemy-leveling-guide-classic-wow
+# checked: 2026-11-15
+# Facts only (skill range, recipe, crafts); the guide's text is not copied. Main path only.
+1-60 | Minor Healing Potion | 65
+60-110 | Lesser Healing Potion | 65
+110-140 | Healing Potion | 35
+140-155 | Lesser Mana Potion | 20
+155-185 | Greater Healing Potion | 35
+185-210 | Elixir of Agility | 30
+210-215 | Elixir of Greater Defense | 5
+215-230 | Superior Healing Potion | 15
+230-265 | Elixir of Detect Undead | 45
+265-285 | Superior Mana Potion | 30
+285-300 | Major Healing Potion | 20

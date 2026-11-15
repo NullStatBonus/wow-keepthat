@@ -1,0 +1,4 @@
+# WoW Forever mining endgame materials: <itemID> | <reason> | <source>
+# Copied from the Classic Era list for now; revisit once Forever's new content and guides exist.
+10620 | Thorium Bar | https://www.wowhead.com/classic/item=10620 (Era draft, unverified on Forever)  # Thorium Ore
+11370 | Dark Iron Bar | https://www.wowhead.com/classic/item=11370 (Era draft, unverified on Forever)  # Dark Iron Ore

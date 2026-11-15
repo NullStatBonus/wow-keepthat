@@ -1,0 +1,22 @@
+# guide: Wowhead
+# url: https://www.wowhead.com/classic/guide/first-aid-leveling-1-300-wow-classic
+# checked: 2026-11-15
+# Facts only (skill range, recipe); the guide gives material totals per skill block, not craft counts
+# per step, so steps carry no count and the '=' lines carry the guide's block totals.
+1-40 | Linen Bandage |
+41-80 | Heavy Linen Bandage |
+81-115 | Wool Bandage |
+116-150 | Heavy Wool Bandage |
+151-180 | Silk Bandage |
+181-210 | Heavy Silk Bandage |
+211-240 | Mageweave Bandage |
+241-260 | Heavy Mageweave Bandage |
+261-290 | Runecloth Bandage |
+290-300 | Heavy Runecloth Bandage |
+= 1-125 | Linen Cloth | 160-180
+= 1-125 | Wool Cloth | 100-120
+= 125-225 | Wool Cloth | 100-120
+= 125-225 | Silk Cloth | 140-160
+= 125-225 | Mageweave Cloth | 20
+= 225-300 | Mageweave Cloth | 80-100
+= 225-300 | Runecloth | 80-100

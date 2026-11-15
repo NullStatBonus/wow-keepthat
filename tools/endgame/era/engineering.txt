@@ -1,0 +1,13 @@
+# Classic Era engineering endgame materials: <itemID> | <reason> | <source>
+# Curated for KeepThat; reviewed by the maintainer 2026-11-15.
+12359 | Essential endgame crafting material | https://www.wowhead.com/classic/item=12359 (reviewed 2026-11-15)  # Thorium Bar
+3860 | Essential endgame crafting material | https://www.wowhead.com/classic/item=3860 (reviewed 2026-11-15)  # Mithril Bar
+12360 | Best-in-slot crafted gear | https://www.wowhead.com/classic/item=12360 (reviewed 2026-11-15)  # Arcanite Bar
+15992 | Dense Dynamite and raid explosives | https://www.wowhead.com/classic/item=15992 (reviewed 2026-11-15)  # Dense Blasting Powder
+10505 | Goblin Sapper Charge | https://www.wowhead.com/classic/item=10505 (reviewed 2026-11-15)  # Solid Blasting Powder
+14047 | Raid and dungeon consumables | https://www.wowhead.com/classic/item=14047 (reviewed 2026-11-15)  # Runecloth
+15994 | Essential endgame crafting material | https://www.wowhead.com/classic/item=15994 (reviewed 2026-11-15)  # Thorium Widget
+10560 | Essential endgame crafting material | https://www.wowhead.com/classic/item=10560 (reviewed 2026-11-15)  # Unstable Trigger
+10561 | Essential endgame crafting material | https://www.wowhead.com/classic/item=10561 (reviewed 2026-11-15)  # Mithril Casing
+17010 | Best-in-slot crafted gear | https://www.wowhead.com/classic/item=17010 (reviewed 2026-11-15)  # Fiery Core
+7068 | Raid and dungeon consumables | https://www.wowhead.com/classic/item=7068 (reviewed 2026-11-15)  # Elemental Fire

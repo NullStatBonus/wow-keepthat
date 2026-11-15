@@ -1,0 +1,15 @@
+# WoW Forever leatherworking endgame materials: <itemID> | <reason> | <source>
+# Copied from the Classic Era list for now; revisit once Forever's new content and guides exist.
+8170 | Essential endgame crafting material | https://www.wowhead.com/classic/item=8170 (Era draft, unverified on Forever)  # Rugged Leather
+12810 | Best-in-slot crafted gear | https://www.wowhead.com/classic/item=12810 (Era draft, unverified on Forever)  # Enchanted Leather
+15407 | Best-in-slot crafted gear | https://www.wowhead.com/classic/item=15407 (Era draft, unverified on Forever)  # Cured Rugged Hide
+15417 | Best-in-slot crafted gear | https://www.wowhead.com/classic/item=15417 (Era draft, unverified on Forever)  # Devilsaur Leather
+15416 | Best-in-slot crafted gear | https://www.wowhead.com/classic/item=15416 (Era draft, unverified on Forever)  # Black Dragonscale
+17012 | Best-in-slot crafted gear | https://www.wowhead.com/classic/item=17012 (Era draft, unverified on Forever)  # Core Leather
+12803 | Best-in-slot crafted gear | https://www.wowhead.com/classic/item=12803 (Era draft, unverified on Forever)  # Living Essence
+12607 | Best-in-slot crafted gear | https://www.wowhead.com/classic/item=12607 (Era draft, unverified on Forever)  # Brilliant Chromatic Scale
+17010 | Best-in-slot crafted gear | https://www.wowhead.com/classic/item=17010 (Era draft, unverified on Forever)  # Fiery Core
+17011 | Best-in-slot crafted gear | https://www.wowhead.com/classic/item=17011 (Era draft, unverified on Forever)  # Lava Core
+19767 | Best-in-slot crafted gear | https://www.wowhead.com/classic/item=19767 (Era draft, unverified on Forever)  # Primal Bat Leather
+7078 | Best-in-slot crafted gear | https://www.wowhead.com/classic/item=7078 (Era draft, unverified on Forever)  # Essence of Fire
+7076 | Best-in-slot crafted gear | https://www.wowhead.com/classic/item=7076 (Era draft, unverified on Forever)  # Essence of Earth

@@ -1,0 +1,2 @@
+# Items never expanded into their inputs (design D2b): mostly gathered or dropped, though a recipe can
+# make them. One item ID per line, then a comment with its name.

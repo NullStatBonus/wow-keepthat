@@ -1,0 +1,3 @@
+# WoW Forever firstaid endgame materials: <itemID> | <reason> | <source>
+# Copied from the Classic Era list for now; revisit once Forever's new content and guides exist.
+14047 | Heavy Runecloth Bandage | https://www.wowhead.com/classic/item=14047 (Era draft, unverified on Forever)  # Runecloth

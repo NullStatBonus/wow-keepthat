@@ -1,0 +1,4 @@
+# Classic Era mining endgame materials: <itemID> | <reason> | <source>
+# Curated for KeepThat; reviewed by the maintainer 2026-11-15.
+10620 | Thorium Bar | https://www.wowhead.com/classic/item=10620 (reviewed 2026-11-15)  # Thorium Ore
+11370 | Dark Iron Bar | https://www.wowhead.com/classic/item=11370 (reviewed 2026-11-15)  # Dark Iron Ore

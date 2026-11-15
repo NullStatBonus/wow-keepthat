@@ -1,0 +1,16 @@
+# guide: RankedBoost
+# url: https://rankedboost.com/world-of-warcraft/forever/professions/cooking-leveling/
+# checked: 2026-11-15
+# Facts only (skill range, recipe, crafts) from the guide's route steps; no text copied.
+1-66 | Roasted Boar Meat | 74
+66-75 | Longjaw Mud Snapper | 9
+75-90 | Longjaw Mud Snapper | 15
+90-115 | Coyote Steak | 39
+115-136 | Crab Cake | 30
+136-150 | Lean Wolf Steak | 14
+150-175 | Lean Wolf Steak | 27
+175-215 | Mithril Headed Trout | 40
+215-225 | Goldthorn Tea | 12
+225-231 | Goldthorn Tea | 9
+231-269 | Spotted Yellowtail | 39
+269-300 | Nightfin Soup | 33

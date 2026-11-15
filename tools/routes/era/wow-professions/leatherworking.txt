@@ -1,0 +1,22 @@
+# guide: wow-professions.com
+# url: https://wow-professions.com/classic/leatherworking-leveling-guide-classic-wow
+# checked: 2026-11-15
+# Facts only (skill range, recipe, crafts); the guide's text is not copied. Main path only.
+1-20 | Light Leather | 19
+20-45 | Light Armor Kit | 40
+45-55 | Handstitched Leather Cloak | 20
+55-100 | Embossed Leather Gloves | 50
+100-125 | Fine Leather Belt | 40
+125-137 | Dark Leather Boots | 15
+137-150 | Dark Leather Pants | 20
+150-155 | Heavy Leather | 7
+155-165 | Cured Heavy Hide | 20
+165-180 | Heavy Armor Kit | 15
+180-190 | Barbaric Shoulders | 10
+190-200 | Guardian Gloves | 10
+200-205 | Thick Armor Kit | 5
+205-235 | Nightscape Headband | 40
+235-250 | Nightscape Pants | 15
+250-260 | Nightscape Boots | 13
+260-290 | Wicked Leather Gauntlets | 33
+290-300 | Runic Leather Headband | 10

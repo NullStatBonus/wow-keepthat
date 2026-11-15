@@ -1,0 +1,23 @@
+# guide: RankedBoost
+# url: https://rankedboost.com/world-of-warcraft/forever/professions/tailoring-leveling/
+# checked: 2026-11-15
+# Facts only (skill range, recipe, crafts) from the guide's route steps; no text copied.
+1-50 | Simple Linen Pants | 32
+50-75 | Linen Belt | 43
+75-80 | Woolen Bag | 2
+80-105 | Woolen Cape | 42
+105-110 | Green Woolen Vest | 14
+110-135 | Double-stitched Woolen Shoulders | 43
+135-145 | Azure Silk Pants | 12
+145-150 | Small Silk Pack | 6
+150-160 | Small Silk Pack | 15
+160-170 | Crimson Silk Belt | 12
+170-180 | Crimson Silk Vest | 14
+180-185 | White Bandit Mask | 5
+185-195 | Black Mageweave Vest | 12
+195-205 | Black Mageweave Gloves | 12
+205-225 | Black Mageweave Headband | 32
+225-245 | Runecloth Belt | 32
+245-258 | Runecloth Gloves | 17
+258-287 | Wizardweave Robe | 37
+287-300 | Wizardweave Turban | 37

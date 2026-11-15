@@ -1,0 +1,15 @@
+# Classic Era leatherworking endgame materials: <itemID> | <reason> | <source>
+# Curated for KeepThat; reviewed by the maintainer 2026-11-15.
+8170 | Essential endgame crafting material | https://www.wowhead.com/classic/item=8170 (reviewed 2026-11-15)  # Rugged Leather
+12810 | Best-in-slot crafted gear | https://www.wowhead.com/classic/item=12810 (reviewed 2026-11-15)  # Enchanted Leather
+15407 | Best-in-slot crafted gear | https://www.wowhead.com/classic/item=15407 (reviewed 2026-11-15)  # Cured Rugged Hide
+15417 | Best-in-slot crafted gear | https://www.wowhead.com/classic/item=15417 (reviewed 2026-11-15)  # Devilsaur Leather
+15416 | Best-in-slot crafted gear | https://www.wowhead.com/classic/item=15416 (reviewed 2026-11-15)  # Black Dragonscale
+17012 | Best-in-slot crafted gear | https://www.wowhead.com/classic/item=17012 (reviewed 2026-11-15)  # Core Leather
+12803 | Best-in-slot crafted gear | https://www.wowhead.com/classic/item=12803 (reviewed 2026-11-15)  # Living Essence
+12607 | Best-in-slot crafted gear | https://www.wowhead.com/classic/item=12607 (reviewed 2026-11-15)  # Brilliant Chromatic Scale
+17010 | Best-in-slot crafted gear | https://www.wowhead.com/classic/item=17010 (reviewed 2026-11-15)  # Fiery Core
+17011 | Best-in-slot crafted gear | https://www.wowhead.com/classic/item=17011 (reviewed 2026-11-15)  # Lava Core
+19767 | Best-in-slot crafted gear | https://www.wowhead.com/classic/item=19767 (reviewed 2026-11-15)  # Primal Bat Leather
+7078 | Best-in-slot crafted gear | https://www.wowhead.com/classic/item=7078 (reviewed 2026-11-15)  # Essence of Fire
+7076 | Best-in-slot crafted gear | https://www.wowhead.com/classic/item=7076 (reviewed 2026-11-15)  # Essence of Earth

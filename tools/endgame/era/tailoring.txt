@@ -1,0 +1,16 @@
+# Classic Era tailoring endgame materials: <itemID> | <reason> | <source>
+# Curated for KeepThat; reviewed by the maintainer 2026-11-15.
+14047 | Essential endgame crafting material | https://www.wowhead.com/classic/item=14047 (reviewed 2026-11-15)  # Runecloth
+14048 | Essential endgame crafting material | https://www.wowhead.com/classic/item=14048 (reviewed 2026-11-15)  # Bolt of Runecloth
+14342 | Best-in-slot crafted gear | https://www.wowhead.com/classic/item=14342 (reviewed 2026-11-15)  # Mooncloth
+14256 | Best-in-slot crafted gear | https://www.wowhead.com/classic/item=14256 (reviewed 2026-11-15)  # Felcloth
+14227 | Best-in-slot crafted gear | https://www.wowhead.com/classic/item=14227 (reviewed 2026-11-15)  # Ironweb Spider Silk
+8170 | Essential endgame crafting material | https://www.wowhead.com/classic/item=8170 (reviewed 2026-11-15)  # Rugged Leather
+9210 | Best-in-slot crafted gear | https://www.wowhead.com/classic/item=9210 (reviewed 2026-11-15)  # Ghost Dye
+12808 | Best-in-slot crafted gear | https://www.wowhead.com/classic/item=12808 (reviewed 2026-11-15)  # Essence of Undeath
+12803 | Best-in-slot crafted gear | https://www.wowhead.com/classic/item=12803 (reviewed 2026-11-15)  # Living Essence
+12811 | Best-in-slot crafted gear | https://www.wowhead.com/classic/item=12811 (reviewed 2026-11-15)  # Righteous Orb
+7080 | Best-in-slot crafted gear | https://www.wowhead.com/classic/item=7080 (reviewed 2026-11-15)  # Essence of Water
+7078 | Best-in-slot crafted gear | https://www.wowhead.com/classic/item=7078 (reviewed 2026-11-15)  # Essence of Fire
+17010 | Best-in-slot crafted gear | https://www.wowhead.com/classic/item=17010 (reviewed 2026-11-15)  # Fiery Core
+17011 | Best-in-slot crafted gear | https://www.wowhead.com/classic/item=17011 (reviewed 2026-11-15)  # Lava Core

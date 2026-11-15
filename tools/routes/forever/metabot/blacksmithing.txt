@@ -1,0 +1,20 @@
+# guide: Metabot
+# url: https://metabot.gg/en/wow-forever/professions/blacksmithing
+# checked: 2026-11-15
+# Facts only (skill range, recipe, crafts) from the guide's route steps; no text copied.
+1-36 | Rough Sharpening Stone | 44
+36-83 | Rough Grinding Stone | 121
+83-111 | Heavy Weightstone | 36
+111-127 | Iron Buckle | 17
+127-137 | Patterned Bronze Bracers | 13
+137-145 | Silvered Bronze Boots | 10
+145-154 | Silvered Bronze Gauntlets | 14
+154-155 | Bronze Warhammer | 1
+155-183 | Solid Sharpening Stone | 35
+183-198 | Golden Scale Bracers | 20
+198-210 | Steel Plate Helm | 12
+210-235 | Dense Weightstone | 32
+235-256 | Arcanite Skeleton Key | 24
+256-288 | Dark Iron Shoulders | 40
+288-295 | Dark Iron Bracers | 8
+295-300 | Obsidian Grinding Stone | 5

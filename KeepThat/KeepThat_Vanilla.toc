@@ -1,0 +1,55 @@
+## Interface: 11509
+## Title: KeepThat
+## Notes: Adds a short tooltip line to the materials worth keeping for endgame crafting or profession leveling, so you never sell what you'll need later.
+## Version: 0.0.0
+## Author: NullStatBonus
+## SavedVariables: KeepThatDB
+## OptionalDeps: Baganator, Bagnon, EllesmereUI, EllesmereUIBags, Auctionator, DFLProfessionJournal
+## Category: Professions
+
+# Load order: libraries, Locales, Core, Data, Model, UI, Integrations, Options, Debug.
+# Both TOC files list the same files in the same order (make check); only Data\*_Era.lua and
+# Data\*_Forever.lua differ, so each client loads only its own data.
+
+embeds.xml
+
+Locales\enUS.lua
+
+Core\Init.lua
+
+Data\Catalog_Era.lua
+Data\Routes_Era.lua
+Core\Client.lua
+
+Core\Adapter.lua
+Core\Adapter_Tooltip.lua
+Core\Adapter_Loot.lua
+Core\Adapter_Bags.lua
+Core\Adapter_Merchant.lua
+Core\Defaults.lua
+Core\Addon.lua
+Core\Slash.lua
+
+Model\Leveling.lua
+Model\Classify.lua
+Model\Wording.lua
+Core\Context.lua
+
+UI\Tooltip.lua
+UI\Toast.lua
+UI\Overlay.lua
+
+Integrations\Gate.lua
+Integrations\Blizzard.lua
+Integrations\Merchant.lua
+Integrations\Baganator.lua
+Integrations\Bagnon.lua
+Integrations\EllesmereUI.lua
+Integrations\ProfessionJournal.lua
+Integrations\Auctionator.lua
+
+Options\Options.lua
+
+Debug\Log.lua
+Debug\Probe.lua
+Debug\Export.lua
