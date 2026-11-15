@@ -7,6 +7,7 @@
 ## OptionalDeps: Baganator, Bagnon, EllesmereUI, EllesmereUIBags, Auctionator, DFLProfessionJournal
 ## Category: Professions
 ## X-Curse-Project-ID: 1807741
+## X-Wago-ID: Q6aqVg6W
 
 # Load order: libraries, Locales, Core, Data, Model, UI, Integrations, Options, Debug.
 # Both TOC files list the same files in the same order (make check); only Data\*_Era.lua and
