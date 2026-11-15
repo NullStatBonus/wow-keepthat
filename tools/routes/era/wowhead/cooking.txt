@@ -1,0 +1,11 @@
+# guide: Wowhead
+# url: https://www.wowhead.com/classic/guide/cooking-leveling-1-300-wow-classic
+# checked: 2026-11-15
+# Facts only (skill range, recipe spell ID, crafts) from the guide's main step tables; no text copied.
+1-50 | 7751 | 50
+50-100 | 7753 | 50
+100-150 | 7755 | 50
+150-175 | 7755 | 70
+175-225 | 20916 | 60
+225-275 | 18238 | 70
+275-300 | 18246 | 25

@@ -1,0 +1,23 @@
+# guide: Metabot
+# url: https://metabot.gg/en/wow-forever/professions/enchanting
+# checked: 2026-11-15
+# Facts only (skill range, recipe, crafts) from the guide's route steps; no text copied.
+1-25 | Enchant Bracer - Inferior Stamina | 31
+25-50 | Enchant Bracer - Minor Deflect | 25
+50-71 | Enchant Chest - Inferior Stamina | 21
+71-110 | Enchant Chest - Minor Absorption | 47
+110-120 | Enchant Cloak - Minor Agility | 10
+120-135 | Enchant Bracer - Lesser Spirit | 15
+135-156 | Enchant Bracer - Lesser Stamina | 21
+156-171 | Enchant Chest - Intellect | 15
+171-176 | Enchant Bracer - Lesser Intellect | 5
+176-181 | Enchant Boots - Lesser Agility | 5
+181-186 | Enchant Bracer - Spirit | 5
+186-201 | Enchant Bracer - Strength | 15
+201-206 | Enchant Chest - Greater Intellect | 5
+206-226 | Enchant Cloak - Greater Defense | 20
+226-231 | Enchant Gloves - Agility | 5
+231-251 | Enchant Chest - Superior Intellect | 20
+251-286 | Enchant Boots - Agility | 62
+286-290 | Enchant Weapon - Greater Striking | 10
+290-300 | Enchanted Sigil: Flowing Waters | 10

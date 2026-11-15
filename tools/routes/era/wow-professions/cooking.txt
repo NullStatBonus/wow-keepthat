@@ -1,0 +1,12 @@
+# guide: wow-professions.com
+# url: https://wow-professions.com/classic/cooking-leveling-guide-classic-wow
+# checked: 2026-11-15
+# Facts only (skill range, recipe, crafts); the guide's text is not copied. The guide offers a choice of
+# recipes in each range; the first-listed recipe is recorded. 50-100 says 65-75 crafts; 75 is recorded.
+1-50 | Charred Wolf Meat | 55
+50-100 | Smoked Bear Meat | 75
+100-130 | Crab Cake | 40
+130-175 | Curiously Tasty Omelet | 50
+175-225 | Roast Raptor | 50
+225-275 | Undermine Clam Chowder | 65
+275-300 | Poached Sunscale Salmon | 35

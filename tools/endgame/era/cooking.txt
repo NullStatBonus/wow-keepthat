@@ -1,0 +1,9 @@
+# Classic Era cooking endgame materials: <itemID> | <reason> | <source>
+# Curated for KeepThat; reviewed by the maintainer 2026-11-15.
+13755 | Grilled Squid (raid food) | https://www.wowhead.com/classic/item=13755 (reviewed 2026-11-15)  # Winter Squid
+13759 | Nightfin Soup (raid food) | https://www.wowhead.com/classic/item=13759 (reviewed 2026-11-15)  # Raw Nightfin Snapper
+18255 | Runn Tum Tuber Surprise (raid food) | https://www.wowhead.com/classic/item=18255 (reviewed 2026-11-15)  # Runn Tum Tuber
+20424 | Smoked Desert Dumplings (raid food) | https://www.wowhead.com/classic/item=20424 (reviewed 2026-11-15)  # Sandworm Meat
+21024 | Dirge's Kickin' Chimaerok Chops (raid food) | https://www.wowhead.com/classic/item=21024 (reviewed 2026-11-15)  # Chimaerok Tenderloin
+12207 | Monster Omelet (raid food) | https://www.wowhead.com/classic/item=12207 (reviewed 2026-11-15)  # Giant Egg
+12208 | Tender Wolf Steak (raid food) | https://www.wowhead.com/classic/item=12208 (reviewed 2026-11-15)  # Tender Wolf Meat

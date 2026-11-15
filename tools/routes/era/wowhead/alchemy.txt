@@ -1,0 +1,17 @@
+# guide: Wowhead
+# url: https://www.wowhead.com/classic/guide/alchemy-leveling-1-300-wow-classic
+# checked: 2026-11-15
+# Facts only (skill range, recipe spell ID, crafts) from the guide's main step tables; no text copied.
+1-60 | 2330 | 59
+60-110 | 2337 | 59
+110-140 | 3447 | 30
+140-155 | 3173 | 15
+155-185 | 7181 | 30
+185-210 | 11449 | 25
+210-215 | 11450 | 10
+215-230 | 11457 | 15
+230-231 | 11459 | 1
+231-250 | 11460 | 19
+250-265 | 11467 | 15
+265-285 | 17553 | 20
+285-300 | 17556 | 18

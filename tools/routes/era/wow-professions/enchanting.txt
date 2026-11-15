@@ -1,0 +1,25 @@
+# guide: wow-professions.com
+# url: https://wow-professions.com/classic/enchanting-leveling-guide-classic-wow
+# checked: 2026-11-15
+# Facts only (skill range, recipe, crafts); the guide's text is not copied. Main path only.
+1-2 | Runed Copper Rod | 1
+2-50 | Enchant Bracer - Minor Health | 48
+50-90 | Enchant Bracer - Minor Health | 40
+90-100 | Enchant Bracer - Minor Stamina | 10
+100-101 | Runed Silver Rod | 1
+101-110 | Greater Magic Wand | 9
+110-135 | Enchant Cloak - Minor Agility | 25
+135-155 | Enchant Bracer - Lesser Stamina | 20
+155-156 | Runed Golden Rod | 1
+156-185 | Enchant Bracer - Lesser Strength | 40
+185-200 | Enchant Bracer - Strength | 15
+200-201 | Runed Truesilver Rod | 1
+201-220 | Enchant Bracer - Strength | 35
+220-225 | Enchant Cloak - Greater Defense | 5
+225-230 | Enchant Gloves - Agility | 5
+230-235 | Enchant Boots - Stamina | 5
+235-250 | Enchant Chest - Superior Health | 25
+250-265 | Lesser Mana Oil | 20
+265-294 | Enchant Shield - Greater Stamina | 30
+294-295 | Runed Arcanite Rod | 1
+295-300 | Enchant Cloak - Superior Defense | 5

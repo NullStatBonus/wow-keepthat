@@ -1,0 +1,24 @@
+# guide: RankedBoost
+# url: https://rankedboost.com/world-of-warcraft/forever/professions/engineering-leveling/
+# checked: 2026-11-15
+# Facts only (skill range, recipe, crafts) from the guide's route steps; no text copied.
+1-45 | Crafted Light Shot | 33
+45-60 | Handful of Copper Bolts | 50
+60-75 | Rough Copper Bomb | 21
+75-80 | Rough Copper Bomb | 12
+80-105 | Rough Boomstick | 26
+105-125 | Bronze Tube | 26
+125-141 | Crafted Solid Shot | 16
+141-145 | Whirring Bronze Gizmo | 7
+145-150 | Bronze Framework | 6
+150-160 | Bronze Framework | 13
+160-170 | Iron Strut | 14
+170-195 | Gyrochronatom | 37
+195-210 | Mithril Tube | 19
+210-225 | Hi-Impact Mithril Slugs | 19
+225-235 | Hi-Impact Mithril Slugs | 20
+235-245 | Hi-Explosive Bomb | 7
+245-250 | Mithril Gyro-Shot | 6
+250-260 | Dense Dynamite | 7
+260-285 | Thorium Widget | 26
+285-300 | Thorium Shells | 15

@@ -1,0 +1,14 @@
+# WoW Forever enchanting endgame materials: <itemID> | <reason> | <source>
+# Copied from the Classic Era list for now; revisit once Forever's new content and guides exist.
+14344 | Endgame weapon and armor enchants | https://www.wowhead.com/classic/item=14344 (Era draft, unverified on Forever)  # Large Brilliant Shard
+14343 | Essential endgame crafting material | https://www.wowhead.com/classic/item=14343 (Era draft, unverified on Forever)  # Small Brilliant Shard
+16203 | Endgame weapon and armor enchants | https://www.wowhead.com/classic/item=16203 (Era draft, unverified on Forever)  # Greater Eternal Essence
+16204 | Endgame weapon and armor enchants | https://www.wowhead.com/classic/item=16204 (Era draft, unverified on Forever)  # Illusion Dust
+20725 | Essential endgame crafting material | https://www.wowhead.com/classic/item=20725 (Era draft, unverified on Forever)  # Nexus Crystal
+12811 | Enchant Weapon - Crusader | https://www.wowhead.com/classic/item=12811 (Era draft, unverified on Forever)  # Righteous Orb
+7078 | Essential endgame crafting material | https://www.wowhead.com/classic/item=7078 (Era draft, unverified on Forever)  # Essence of Fire
+7076 | Essential endgame crafting material | https://www.wowhead.com/classic/item=7076 (Era draft, unverified on Forever)  # Essence of Earth
+7080 | Essential endgame crafting material | https://www.wowhead.com/classic/item=7080 (Era draft, unverified on Forever)  # Essence of Water
+7082 | Essential endgame crafting material | https://www.wowhead.com/classic/item=7082 (Era draft, unverified on Forever)  # Essence of Air
+13926 | Essential endgame crafting material | https://www.wowhead.com/classic/item=13926 (Era draft, unverified on Forever)  # Golden Pearl
+7971 | Essential endgame crafting material | https://www.wowhead.com/classic/item=7971 (Era draft, unverified on Forever)  # Black Pearl

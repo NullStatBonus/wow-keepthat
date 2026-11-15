@@ -1,0 +1,23 @@
+# guide: Metabot
+# url: https://metabot.gg/en/wow-forever/professions/alchemy
+# checked: 2026-11-15
+# Facts only (skill range, recipe, crafts) from the guide's route steps; no text copied.
+1-5 | Minor Arcane Elixir | 4
+5-22 | Mana Well | 18
+22-65 | Elixir of Minor Defense | 45
+65-96 | Blackmouth Oil | 46
+96-104 | Lesser Discolored Healing Potion | 13
+104-105 | Elixir of Giant Growth | 1
+105-115 | Elixir of Wisdom | 10
+115-135 | Swim Speed Potion | 21
+135-167 | Fire Oil | 51
+167-200 | Greater Discolored Healing Potion | 47
+200-208 | Insulating Gniodine | 10
+208-235 | Elixir of Defense | 35
+235-260 | Stonescale Oil | 45
+260-267 | Elixir of Greater Agility | 9
+267-275 | Draught of Detect Demon | 10
+275-280 | Essence of Fire | 6
+280-289 | Draught of Detect Demon | 18
+289-290 | Major Discolored Healing Potion | 1
+290-300 | Greater Arcane Protection Potion | 10

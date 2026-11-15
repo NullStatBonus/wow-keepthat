@@ -1,0 +1,19 @@
+# WoW Forever blacksmithing endgame materials: <itemID> | <reason> | <source>
+# Copied from the Classic Era list for now; revisit once Forever's new content and guides exist.
+12360 | Best-in-slot crafted gear | https://www.wowhead.com/classic/item=12360 (Era draft, unverified on Forever)  # Arcanite Bar
+12359 | Best-in-slot crafted gear | https://www.wowhead.com/classic/item=12359 (Era draft, unverified on Forever)  # Thorium Bar
+12655 | Best-in-slot crafted gear | https://www.wowhead.com/classic/item=12655 (Era draft, unverified on Forever)  # Enchanted Thorium Bar
+11371 | Best-in-slot crafted gear | https://www.wowhead.com/classic/item=11371 (Era draft, unverified on Forever)  # Dark Iron Bar
+17011 | Best-in-slot crafted gear | https://www.wowhead.com/classic/item=17011 (Era draft, unverified on Forever)  # Lava Core
+17010 | Best-in-slot crafted gear | https://www.wowhead.com/classic/item=17010 (Era draft, unverified on Forever)  # Fiery Core
+7078 | Best-in-slot crafted gear | https://www.wowhead.com/classic/item=7078 (Era draft, unverified on Forever)  # Essence of Fire
+7076 | Best-in-slot crafted gear | https://www.wowhead.com/classic/item=7076 (Era draft, unverified on Forever)  # Essence of Earth
+7080 | Best-in-slot crafted gear | https://www.wowhead.com/classic/item=7080 (Era draft, unverified on Forever)  # Essence of Water
+11382 | Best-in-slot crafted gear | https://www.wowhead.com/classic/item=11382 (Era draft, unverified on Forever)  # Blood of the Mountain
+7910 | Best-in-slot crafted gear | https://www.wowhead.com/classic/item=7910 (Era draft, unverified on Forever)  # Star Ruby
+12361 | Best-in-slot crafted gear | https://www.wowhead.com/classic/item=12361 (Era draft, unverified on Forever)  # Blue Sapphire
+12364 | Best-in-slot crafted gear | https://www.wowhead.com/classic/item=12364 (Era draft, unverified on Forever)  # Huge Emerald
+12800 | Best-in-slot crafted gear | https://www.wowhead.com/classic/item=12800 (Era draft, unverified on Forever)  # Azerothian Diamond
+7067 | Elemental Sharpening Stone | https://www.wowhead.com/classic/item=7067 (Era draft, unverified on Forever)  # Elemental Earth
+12365 | Dense Sharpening and Weightstones | https://www.wowhead.com/classic/item=12365 (Era draft, unverified on Forever)  # Dense Stone
+12811 | Best-in-slot crafted gear | https://www.wowhead.com/classic/item=12811 (Era draft, unverified on Forever)  # Righteous Orb

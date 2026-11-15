@@ -1,0 +1,18 @@
+# guide: RankedBoost
+# url: https://rankedboost.com/world-of-warcraft/forever/professions/first-aid-leveling/
+# checked: 2026-11-15
+# Facts only (skill range, recipe, crafts) from the guide's route steps; no text copied.
+1-50 | Linen Bandage | 61
+50-55 | Heavy Linen Bandage | 6
+55-75 | Minor Healing Potion | 28
+75-80 | Minor Healing Potion | 12
+80-115 | Wool Bandage | 49
+115-135 | Heavy Wool Bandage | 24
+135-150 | Healing Potion | 19
+150-193 | Silk Bandage | 75
+193-200 | Greater Healing Potion | 15
+200-210 | Leather Tourniquet | 10
+210-225 | Mageweave Bandage | 18
+225-240 | Mageweave Bandage | 24
+240-260 | Heavy Mageweave Bandage | 25
+260-300 | Runecloth Bandage | 65

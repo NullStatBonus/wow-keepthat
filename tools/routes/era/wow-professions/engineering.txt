@@ -1,0 +1,26 @@
+# guide: wow-professions.com
+# url: https://wow-professions.com/classic/engineering-leveling-guide-classic-wow
+# checked: 2026-11-15
+# Facts only (skill range, recipe, crafts); the guide's text is not copied. Main path only.
+1-30 | Rough Blasting Powder | 60
+30-50 | Handful of Copper Bolts | 30
+50-51 | Arclight Spanner | 1
+51-75 | Rough Copper Bomb | 30
+75-90 | Coarse Blasting Powder | 60
+90-100 | Coarse Dynamite | 20
+100-105 | Silver Contact | 5
+105-125 | Bronze Tube | 25
+125-135 | Standard Scope | 10
+135-150 | Heavy Blasting Powder | 30
+135-150 | Whirring Bronze Gizmo | 15
+150-160 | Bronze Framework | 15
+160-175 | Explosive Sheep | 15
+175-194 | Solid Blasting Powder | 60
+194-195 | Gyromatic Micro-Adjustor | 1
+195-200 | Mithril Tube | 7
+200-215 | Unstable Trigger | 20
+215-238 | Mithril Casing | 40
+238-250 | Hi-Explosive Bomb | 20
+250-260 | Dense Blasting Powder | 30
+260-285 | Thorium Widget | 35
+285-300 | Thorium Tube | 20

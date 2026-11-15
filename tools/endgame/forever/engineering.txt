@@ -1,0 +1,13 @@
+# WoW Forever engineering endgame materials: <itemID> | <reason> | <source>
+# Copied from the Classic Era list for now; revisit once Forever's new content and guides exist.
+12359 | Essential endgame crafting material | https://www.wowhead.com/classic/item=12359 (Era draft, unverified on Forever)  # Thorium Bar
+3860 | Essential endgame crafting material | https://www.wowhead.com/classic/item=3860 (Era draft, unverified on Forever)  # Mithril Bar
+12360 | Best-in-slot crafted gear | https://www.wowhead.com/classic/item=12360 (Era draft, unverified on Forever)  # Arcanite Bar
+15992 | Dense Dynamite and raid explosives | https://www.wowhead.com/classic/item=15992 (Era draft, unverified on Forever)  # Dense Blasting Powder
+10505 | Goblin Sapper Charge | https://www.wowhead.com/classic/item=10505 (Era draft, unverified on Forever)  # Solid Blasting Powder
+14047 | Raid and dungeon consumables | https://www.wowhead.com/classic/item=14047 (Era draft, unverified on Forever)  # Runecloth
+15994 | Essential endgame crafting material | https://www.wowhead.com/classic/item=15994 (Era draft, unverified on Forever)  # Thorium Widget
+10560 | Essential endgame crafting material | https://www.wowhead.com/classic/item=10560 (Era draft, unverified on Forever)  # Unstable Trigger
+10561 | Essential endgame crafting material | https://www.wowhead.com/classic/item=10561 (Era draft, unverified on Forever)  # Mithril Casing
+17010 | Best-in-slot crafted gear | https://www.wowhead.com/classic/item=17010 (Era draft, unverified on Forever)  # Fiery Core
+7068 | Raid and dungeon consumables | https://www.wowhead.com/classic/item=7068 (Era draft, unverified on Forever)  # Elemental Fire

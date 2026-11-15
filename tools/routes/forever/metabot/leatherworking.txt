@@ -1,0 +1,26 @@
+# guide: Metabot
+# url: https://metabot.gg/en/wow-forever/professions/leatherworking
+# checked: 2026-11-15
+# Facts only (skill range, recipe, crafts) from the guide's route steps; no text copied.
+1-52 | Light Armor Kit | 68
+52-85 | Embossed Leather Gloves | 39
+85-105 | Fine Leather Belt | 32
+105-115 | Heavy Leather | 10
+115-142 | Cured Heavy Hide | 31
+142-148 | Heavy Armor Kit | 7
+148-153 | Hillman's Leather Gloves | 7
+153-155 | Green Leather Belt | 2
+155-175 | Cured Thick Hide | 20
+175-176 | Thick Leather | 1
+176-194 | Guardian Gloves | 21
+194-197 | Thick Armor Kit | 4
+197-200 | Nightscape Headband | 3
+200-205 | Faintly Glowing Leather | 6
+205-231 | Cured Rugged Hide | 29
+231-233 | Rugged Armor Kit | 3
+233-246 | Turtle Scale Breastplate | 28
+246-250 | Volcanic Leggings | 4
+250-265 | Scarlet Infiltrator's Bracers | 16
+265-291 | Gordok Ogre Suit | 29
+291-294 | Masterwork Volcanic Leggings | 4
+294-300 | Masterwork Volcanic Breastplate | 6

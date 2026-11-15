@@ -1,0 +1,24 @@
+# guide: wow-professions.com
+# url: https://wow-professions.com/classic/tailoring-leveling-guide-classic-wow
+# checked: 2026-11-15
+# Facts only (skill range, recipe, crafts); the guide's text is not copied. Main path only.
+1-45 | Bolt of Linen Cloth | 102
+40-70 | Linen Belt | 40
+70-75 | Reinforced Linen Cape | 5
+75-100 | Bolt of Woolen Cloth | 45
+100-110 | Simple Kilt | 13
+110-125 | Double-stitched Woolen Shoulders | 15
+125-145 | Bolt of Silk Cloth | 201
+145-160 | Azure Silk Hood | 18
+160-170 | Silk Headband | 10
+170-175 | Formal White Shirt | 5
+175-185 | Bolt of Mageweave | 94
+185-205 | Crimson Silk Vest | 20
+205-215 | Crimson Silk Pantaloons | 10
+215-220 | Orange Mageweave Shirt | 5
+220-230 | Black Mageweave Gloves | 10
+230-250 | Black Mageweave Headband | 23
+250-260 | Bolt of Runecloth | 239
+260-280 | Runecloth Belt | 25
+280-290 | Runecloth Bag | 18
+290-300 | Runecloth Gloves | 18

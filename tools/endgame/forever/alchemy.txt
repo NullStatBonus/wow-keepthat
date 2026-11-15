@@ -1,0 +1,19 @@
+# WoW Forever alchemy endgame materials: <itemID> | <reason> | <source>
+# Copied from the Classic Era list for now; revisit once Forever's new content and guides exist.
+13468 | Flasks for raids | https://www.wowhead.com/classic/item=13468 (Era draft, unverified on Forever)  # Black Lotus
+13463 | Raid and dungeon consumables | https://www.wowhead.com/classic/item=13463 (Era draft, unverified on Forever)  # Dreamfoil
+13465 | Raid and dungeon consumables | https://www.wowhead.com/classic/item=13465 (Era draft, unverified on Forever)  # Mountain Silversage
+13466 | Raid and dungeon consumables | https://www.wowhead.com/classic/item=13466 (Era draft, unverified on Forever)  # Plaguebloom
+13467 | Raid and dungeon consumables | https://www.wowhead.com/classic/item=13467 (Era draft, unverified on Forever)  # Icecap
+13464 | Raid and dungeon consumables | https://www.wowhead.com/classic/item=13464 (Era draft, unverified on Forever)  # Golden Sansam
+8846 | Raid and dungeon consumables | https://www.wowhead.com/classic/item=8846 (Era draft, unverified on Forever)  # Gromsblood
+8838 | Raid and dungeon consumables | https://www.wowhead.com/classic/item=8838 (Era draft, unverified on Forever)  # Sungrass
+8845 | Greater Shadow Protection Potion | https://www.wowhead.com/classic/item=8845 (Era draft, unverified on Forever)  # Ghost Mushroom
+13423 | Flask of the Titans | https://www.wowhead.com/classic/item=13423 (Era draft, unverified on Forever)  # Stonescale Oil
+8925 | Raid and dungeon consumables | https://www.wowhead.com/classic/item=8925 (Era draft, unverified on Forever)  # Crystal Vial
+7068 | Greater Fire Protection Potion | https://www.wowhead.com/classic/item=7068 (Era draft, unverified on Forever)  # Elemental Fire
+7070 | Greater Frost Protection Potion | https://www.wowhead.com/classic/item=7070 (Era draft, unverified on Forever)  # Elemental Water
+7067 | Greater Nature Protection Potion | https://www.wowhead.com/classic/item=7067 (Era draft, unverified on Forever)  # Elemental Earth
+7069 | Raid and dungeon consumables | https://www.wowhead.com/classic/item=7069 (Era draft, unverified on Forever)  # Elemental Air
+12363 | Transmute: Arcanite | https://www.wowhead.com/classic/item=12363 (Era draft, unverified on Forever)  # Arcane Crystal
+12359 | Transmute: Arcanite | https://www.wowhead.com/classic/item=12359 (Era draft, unverified on Forever)  # Thorium Bar

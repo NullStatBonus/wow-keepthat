@@ -1,0 +1,24 @@
+# guide: Wowhead
+# url: https://www.wowhead.com/classic/guide/leatherworking-leveling-1-300-wow-classic
+# checked: 2026-11-15
+# Facts only (skill range, recipe spell ID, crafts) from the guide's main step tables; no text copied.
+1-30 | 2881 | 30
+30-45 | 2152 | 18
+45-55 | 3816 | 10
+55-85 | 3756 | 30
+85-100 | 3763 | 15
+100-115 | 3817 | 15
+115-125 | 2167 | 10
+125-135 | 2167 | 12
+135-150 | 3766 | 15
+150-155 | 20649 | 5
+155-160 | 3818 | 5
+160-180 | 3780 | 22
+180-190 | 7151 | 10
+190-200 | 7156 | 10
+200-220 | 10487 | 20
+220-230 | 10507 | 11
+230-250 | 10548 | 20
+250-260 | 19058 | 12
+260-290 | 19049 | 32
+290-300 | 19071 | 10

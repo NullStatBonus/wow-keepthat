@@ -1,0 +1,23 @@
+# guide: Wowhead
+# url: https://www.wowhead.com/classic/guide/tailoring-leveling-1-300-wow-classic
+# checked: 2026-11-15
+# Facts only (skill range, recipe spell ID, crafts) from the guide's main step tables; no text copied.
+1-45 | 2963 | 95
+45-70 | 8776 | 25
+70-75 | 2397 | 5
+75-100 | 2964 | 45
+100-110 | 12046 | 15
+110-125 | 3848 | 15
+125-145 | 3839 | 205
+145-160 | 8760 | 20
+160-170 | 8762 | 10
+170-175 | 3871 | 5
+175-185 | 3865 | 100
+185-205 | 8791 | 20
+205-215 | 8799 | 10
+215-220 | 12061 | 5
+220-230 | 12053 | 10
+230-250 | 12072 | 25
+250-260 | 18401 | 155
+260-280 | 18402 | 25
+280-300 | 18417 | 20

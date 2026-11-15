@@ -1,0 +1,19 @@
+# Classic Era blacksmithing endgame materials: <itemID> | <reason> | <source>
+# Curated for KeepThat; reviewed by the maintainer 2026-11-15.
+12360 | Best-in-slot crafted gear | https://www.wowhead.com/classic/item=12360 (reviewed 2026-11-15)  # Arcanite Bar
+12359 | Best-in-slot crafted gear | https://www.wowhead.com/classic/item=12359 (reviewed 2026-11-15)  # Thorium Bar
+12655 | Best-in-slot crafted gear | https://www.wowhead.com/classic/item=12655 (reviewed 2026-11-15)  # Enchanted Thorium Bar
+11371 | Best-in-slot crafted gear | https://www.wowhead.com/classic/item=11371 (reviewed 2026-11-15)  # Dark Iron Bar
+17011 | Best-in-slot crafted gear | https://www.wowhead.com/classic/item=17011 (reviewed 2026-11-15)  # Lava Core
+17010 | Best-in-slot crafted gear | https://www.wowhead.com/classic/item=17010 (reviewed 2026-11-15)  # Fiery Core
+7078 | Best-in-slot crafted gear | https://www.wowhead.com/classic/item=7078 (reviewed 2026-11-15)  # Essence of Fire
+7076 | Best-in-slot crafted gear | https://www.wowhead.com/classic/item=7076 (reviewed 2026-11-15)  # Essence of Earth
+7080 | Best-in-slot crafted gear | https://www.wowhead.com/classic/item=7080 (reviewed 2026-11-15)  # Essence of Water
+11382 | Best-in-slot crafted gear | https://www.wowhead.com/classic/item=11382 (reviewed 2026-11-15)  # Blood of the Mountain
+7910 | Best-in-slot crafted gear | https://www.wowhead.com/classic/item=7910 (reviewed 2026-11-15)  # Star Ruby
+12361 | Best-in-slot crafted gear | https://www.wowhead.com/classic/item=12361 (reviewed 2026-11-15)  # Blue Sapphire
+12364 | Best-in-slot crafted gear | https://www.wowhead.com/classic/item=12364 (reviewed 2026-11-15)  # Huge Emerald
+12800 | Best-in-slot crafted gear | https://www.wowhead.com/classic/item=12800 (reviewed 2026-11-15)  # Azerothian Diamond
+7067 | Elemental Sharpening Stone | https://www.wowhead.com/classic/item=7067 (reviewed 2026-11-15)  # Elemental Earth
+12365 | Dense Sharpening and Weightstones | https://www.wowhead.com/classic/item=12365 (reviewed 2026-11-15)  # Dense Stone
+12811 | Best-in-slot crafted gear | https://www.wowhead.com/classic/item=12811 (reviewed 2026-11-15)  # Righteous Orb

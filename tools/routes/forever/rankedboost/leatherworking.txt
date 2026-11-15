@@ -1,0 +1,26 @@
+# guide: RankedBoost
+# url: https://rankedboost.com/world-of-warcraft/forever/professions/leatherworking-leveling/
+# checked: 2026-11-15
+# Facts only (skill range, recipe, crafts) from the guide's route steps; no text copied.
+1-50 | Light Armor Kit | 61
+50-65 | Cured Light Hide | 27
+65-70 | Small Leather Ammo Pouch | 9
+70-75 | Embossed Leather Gloves | 6
+75-90 | Embossed Leather Gloves | 27
+90-101 | Cured Medium Hide | 19
+101-117 | Gray Leather Boots | 27
+117-130 | Dark Leather Gloves | 13
+130-145 | Hillman's Shoulders | 23
+145-150 | Heavy Armor Kit | 6
+150-155 | Heavy Armor Kit | 8
+155-170 | Green Leather Belt | 27
+170-175 | Barbaric Shoulders | 6
+175-185 | Green Leather Bracers | 14
+185-195 | Guardian Gloves | 14
+195-200 | Thick Armor Kit | 6
+200-215 | Nightscape Headband | 27
+215-225 | Nightscape Cloak | 10
+225-240 | Rugged Armor Kit | 27
+240-262 | Blue Suede Gloves | 23
+262-275 | Supple Scorpid Bracers | 14
+275-300 | Blue Suede Bracers | 26

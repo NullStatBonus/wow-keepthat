@@ -1,0 +1,9 @@
+# WoW Forever cooking endgame materials: <itemID> | <reason> | <source>
+# Copied from the Classic Era list for now; revisit once Forever's new content and guides exist.
+13755 | Grilled Squid (raid food) | https://www.wowhead.com/classic/item=13755 (Era draft, unverified on Forever)  # Winter Squid
+13759 | Nightfin Soup (raid food) | https://www.wowhead.com/classic/item=13759 (Era draft, unverified on Forever)  # Raw Nightfin Snapper
+18255 | Runn Tum Tuber Surprise (raid food) | https://www.wowhead.com/classic/item=18255 (Era draft, unverified on Forever)  # Runn Tum Tuber
+20424 | Smoked Desert Dumplings (raid food) | https://www.wowhead.com/classic/item=20424 (Era draft, unverified on Forever)  # Sandworm Meat
+21024 | Dirge's Kickin' Chimaerok Chops (raid food) | https://www.wowhead.com/classic/item=21024 (Era draft, unverified on Forever)  # Chimaerok Tenderloin
+12207 | Monster Omelet (raid food) | https://www.wowhead.com/classic/item=12207 (Era draft, unverified on Forever)  # Giant Egg
+12208 | Tender Wolf Steak (raid food) | https://www.wowhead.com/classic/item=12208 (Era draft, unverified on Forever)  # Tender Wolf Meat

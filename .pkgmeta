@@ -1,0 +1,26 @@
+package-as: KeepThat
+
+# The addon lives in KeepThat/ inside the repository; move it to the top of the package.
+move-folders:
+  KeepThat/KeepThat: KeepThat
+
+# The Ace3 libraries are committed under KeepThat/Libs, so nothing is fetched at package time.
+manual-changelog:
+  filename: CHANGELOG.md
+  markup-type: markdown
+
+ignore:
+  - .claude
+  - .github
+  - CLAUDE.md
+  - CONTRIBUTING.md
+  - README.md
+  - docs
+  - openspec
+  - tests
+  - test-commands.txt
+  - tools
+  - debug.txt
+  - Screenshot*.png
+  - screenshots
+  - vendor-src
