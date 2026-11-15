@@ -11,6 +11,8 @@ local Toast = {
     seen = {},        -- itemID -> true, one toast per item per session
     active = {},      -- visible entries { itemID, count, age, frame }
     queue = {},       -- waiting entries { itemID, count }
+    samples = {},
+    sampleFree = {},
     free = {},        -- idle frames
 }
 ns.Toast = Toast
@@ -37,25 +39,33 @@ end
 Toast.SPACING = 46
 Toast.DEFAULT_POSITION = { point = "TOP", x = 0, y = -140 }
 
-function Toast.Position(index)
+function Toast.Position(index, entries)
     local pos = profile().toastPosition or Toast.DEFAULT_POSITION
-    return pos.point or "TOP", pos.x or 0, (pos.y or 0) - ((index or 1) - 1) * Toast.SPACING
+    local offset = 0
+    for i = 1, (index or 1) - 1 do
+        local e = (entries or Toast.active)[i]
+        offset = offset + (e and e.frame.Height and e.frame:Height() + 8 or Toast.SPACING)
+    end
+    return pos.point or "TOP", pos.x or 0, (pos.y or 0) - offset
 end
 
 function Toast.SavePosition(point, x, y)
+    if profile().toastLocked then return false end
     profile().toastPosition = { point = point or "TOP", x = math.floor((x or 0) + 0.5), y = math.floor((y or 0) + 0.5) }
     for i, e in ipairs(Toast.active) do e.frame:Place(i) end
 end
 
 function Toast.ResetPosition()
+    if profile().toastLocked then return false end
+    Toast.CancelMove()
     local d = Toast.DEFAULT_POSITION
     Toast.SavePosition(d.point, d.x, d.y)
 end
 
 -- Toast look (Codex style review): 280x40, pure black (OLED-safe), 28px icon, neutral title, grey
 -- subtitle with only the category word colored, and a thin accent bar in the category color. The whole
--- frame fades with the "Toast opacity" setting.
-Toast.WIDTH, Toast.HEIGHT = 280, 40
+-- lifetime fade multiplies independent background and ink layers.
+Toast.WIDTH, Toast.HEIGHT = (ns.Presentation or {}).width or 280, (ns.Presentation or {}).height or 40
 Toast.FADE_IN = 0.15
 
 local function buildFrame(create, parent, strata)
@@ -70,74 +80,137 @@ local function buildFrame(create, parent, strata)
     accent:SetPoint("LEFT", 1, 0)
     local icon = f:CreateTexture(nil, "ARTWORK")
     icon:SetSize(28, 28)
-    icon:SetPoint("LEFT", 6, 0)
+    icon:SetPoint("LEFT", 8, 0)
     icon:SetTexCoord(0.08, 0.92, 0.08, 0.92)    -- trim the default icon border
-    local title = f:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
-    title:SetPoint("TOPLEFT", 42, -7)
-    title:SetPoint("RIGHT", -8, 0)
+    local title = f:CreateFontString(nil, "OVERLAY", ns.Adapter.FontName and ns.Adapter.FontName("GameFontHighlightSmall") or "GameFontHighlightSmall")
+    title:SetPoint("TOPLEFT", 44, -8)
+    title:SetWidth(Toast.WIDTH - 52)
     title:SetJustifyH("LEFT")
-    title:SetWordWrap(false)
+    title:SetWordWrap(true)
     title:SetTextColor(0.867, 0.867, 0.867)
-    local sub = f:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
-    sub:SetPoint("BOTTOMLEFT", 42, 7)
-    sub:SetPoint("RIGHT", -8, 0)
+    local sub = f:CreateFontString(nil, "OVERLAY", ns.Adapter.FontName and ns.Adapter.FontName("GameFontHighlightSmall") or "GameFontHighlightSmall")
+    sub:SetPoint("TOPLEFT", title, "BOTTOMLEFT", 0, -4)
+    sub:SetWidth(Toast.WIDTH - 52)
     sub:SetJustifyH("LEFT")
-    sub:SetWordWrap(false)
+    sub:SetWordWrap(true)
     sub:SetTextColor(0.667, 0.667, 0.667)
+    local function style()
+        local p = profile()
+        local bgAlpha = p.toastBackgroundOpacity
+        if bgAlpha == nil then bgAlpha = p.toastOpacity or 1 end
+        local ink = p.toastTextOpacity
+        if ink == nil then ink = p.toastOpacity or 1 end
+        bg:SetAlpha(bgAlpha); accent:SetAlpha(bgAlpha)
+        icon:SetAlpha(ink); title:SetAlpha(ink); sub:SetAlpha(ink)
+        f:SetScale(p.toastScale or 1)
+    end
     local function set(ic, titleText, subText, c)
-        icon:SetTexture(ic)
+        style()
+        icon:SetTexture(ic or 134400)
         title:SetText(titleText)
         sub:SetText(subText)
         accent:SetColorTexture(c.r, c.g, c.b, 0.45)
+        local th = title.GetStringHeight and title:GetStringHeight() or 12
+        local sh = sub.GetStringHeight and sub:GetStringHeight() or 12
+        f:SetHeight(math.max(Toast.HEIGHT, th + sh + 20))
     end
-    return f, set
+    return f, set, style
 end
 
 -- The toast's alpha at a given age: a short fade in, hold, then fade out over the last FADE seconds,
--- all scaled by the player's toast opacity.
+-- independent of background and text/icon opacity.
 function Toast.Alpha(age)
     local a = 1
     if age < Toast.FADE_IN then a = age / Toast.FADE_IN
     elseif age > Toast.SHOW - Toast.FADE then a = (Toast.SHOW - age) / Toast.FADE end
     a = math.max(0, math.min(1, a))
-    local opacity = profile().toastOpacity
-    if type(opacity) ~= "number" then opacity = 1 end
-    return a * math.max(0, math.min(1, opacity))
+    return a
 end
 
--- A preview toast to drag into place (Home page, "Move loot toasts"), with the instruction under it.
--- Right-click to finish.
-local mover
-function Toast.ShowMover()
+-- Move is a transaction; dragging never writes SavedVariables.
+local mover, moverStyle
+local function notifyMove()
+    if ns.Options and ns.Options.NotifyChange then pcall(ns.Options.NotifyChange) end
+end
+function Toast.BeginMove()
+    if profile().toastLocked then return false end
+    if Toast.move then return true end
+    local point, x, y = Toast.Position(1)
+    Toast.move = { profile = profile(), point = point, x = x, y = y }
+    notifyMove()
+    return true
+end
+function Toast.TentativePosition(point, x, y)
+    if not Toast.move or profile().toastLocked then return false end
+    Toast.move.point, Toast.move.x, Toast.move.y = point, x, y
+    return true
+end
+function Toast.CancelMove()
+    local wasMoving = Toast.move ~= nil
+    Toast.move = nil
+    if mover then mover:StopMovingOrSizing(); mover:Hide() end
+    if wasMoving then notifyMove() end
+end
+function Toast.DoneMove()
+    local m = Toast.move
+    if not m then return false end
+    if m.profile ~= profile() or profile().toastLocked then Toast.CancelMove(); return false end
+    if mover and mover:IsShown() then
+        mover:StopMovingOrSizing()
+        local point, _, _, x, y = mover:GetPoint(1)
+        m.point, m.x, m.y = point, x, y
+    end
+    Toast.SavePosition(m.point, m.x, m.y)
+    Toast.CancelMove()
+    return true
+end
+local function showMover()
+    if not Toast.BeginMove() then return false end
     local create = ns.Adapter.Resolve("CreateFrame")
     local parent = ns.Adapter.Resolve("UIParent")
-    if type(create) ~= "function" then return false end
+    if type(create) ~= "function" then Toast.CancelMove(); return false end
     if not mover then
         local set
-        mover, set = buildFrame(create, parent, "DIALOG")
-        local c = (profile().colors or {}).endgame or { r = 0.64, g = 0.21, b = 0.93 }
-        set(134400, L["Arcanite Bar x1"], ns.Wording.ColoredLine({ endgame = { { profession = "blacksmithing" } } },
-            profile().colors, { prefix = false }) or "", c)
-        mover:SetMovable(true)
-        mover:SetClampedToScreen(true)
-        mover:EnableMouse(true)
+        mover, set, moverStyle = buildFrame(create, parent, "DIALOG")
+        set(134400, L["Sample — Arcanite Bar x1"], L["Drag to move. Done saves; Cancel or Escape restores."],
+            (profile().colors or {}).endgame or { r = 0.64, g = 0.21, b = 0.93 })
+        mover:SetMovable(true); mover:SetClampedToScreen(true); mover:EnableMouse(true)
         mover:RegisterForDrag("LeftButton")
-        local help = mover:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
-        help:SetPoint("TOP", mover, "BOTTOM", 0, -4)
-        help:SetTextColor(0.667, 0.667, 0.667)
-        help:SetText(L["Drag to move. Right-click when done."])
-        mover:SetScript("OnDragStart", function(self) self:StartMoving() end)
+        mover:SetScript("OnDragStart", function(self) if Toast.move and not profile().toastLocked then self:StartMoving() end end)
         mover:SetScript("OnDragStop", function(self)
             self:StopMovingOrSizing()
             local point, _, _, x, y = self:GetPoint(1)
-            Toast.SavePosition(point, x, y)
+            Toast.TentativePosition(point, x, y)
         end)
-        mover:SetScript("OnMouseUp", function(self, button) if button == "RightButton" then self:Hide() end end)
+        mover:SetScript("OnMouseUp", function(_, button) if button == "RightButton" then Toast.DoneMove() end end)
+        -- Escape is guarded for clients without keyboard support.
+        if not (mover.EnableKeyboard and mover.SetPropagateKeyboardInput) then error("keyboard controls unavailable") end
+        if mover.EnableKeyboard then
+            mover:EnableKeyboard(true)
+            mover:SetScript("OnKeyDown", function(self, key)
+                if self.SetPropagateKeyboardInput then self:SetPropagateKeyboardInput(key ~= "ESCAPE") end
+                if key == "ESCAPE" then Toast.CancelMove() end
+            end)
+        end
+        for i, label in ipairs({ L["Done"], L["Cancel"] }) do
+            local b = create("Button", nil, mover, "UIPanelButtonTemplate")
+            b:SetSize(100, 24); b:SetPoint("TOPLEFT", mover, "BOTTOMLEFT", (i - 1) * 108, -8)
+            b:SetText(label); b:SetScript("OnClick", i == 1 and Toast.DoneMove or Toast.CancelMove)
+        end
     end
+    if moverStyle then moverStyle() end
     local point, x, y = Toast.Position(1)
-    mover:ClearAllPoints()
-    mover:SetPoint(point, parent, point, x, y)
-    mover:Show()
+    mover:ClearAllPoints(); mover:SetPoint(point, parent, point, x, y); mover:Show()
+    return true
+end
+
+function Toast.ShowMover()
+    local ok, result = pcall(showMover)
+    if not ok or not result then
+        Toast.CancelMove()
+        if ns.addon and ns.addon.Print then ns.addon:Print(L["Move is unavailable. Unlock the position and check that frame controls are available."]) end
+        return false
+    end
     return true
 end
 
@@ -147,17 +220,21 @@ function Toast.factory()
     local create = ns.Adapter.Resolve("CreateFrame")
     local parent = ns.Adapter.Resolve("UIParent")
     if type(create) ~= "function" then return nil end
-    local f, set = buildFrame(create, parent, "HIGH")
+    local f, set, style = buildFrame(create, parent, "HIGH")
     f:EnableMouse(false)
     f:Hide()
     return {
         Set = function(_, ic, title, lineText, c) set(ic, title, lineText, c) end,
-        Place = function(_, index)
-            local point, x, y = Toast.Position(index)
+        Place = function(_, index, entries)
+            local point, x, y = Toast.Position(index, entries)
             f:ClearAllPoints()
             f:SetPoint(point, parent, point, x, y)
         end,
-        SetAlpha = function(_, a) f:SetAlpha(a) end,
+        SetAlpha = function(_, a)
+            style()
+            f:SetAlpha(a)
+        end,
+        Height = function() return f:GetHeight() end,
         Show = function() f:Show() end,
         Hide = function() f:Hide() end,
     }
@@ -187,23 +264,24 @@ function Toast.Demo(only)
     local colors = profile().colors or {}
     local A = ns.Adapter
     -- Start from a clean stack: exactly three samples, never more than the usual maximum.
-    for _, e in ipairs(Toast.active) do e.frame:Hide(); Toast.free[#Toast.free + 1] = e.frame end
-    Toast.active = {}
+    for _, e in ipairs(Toast.samples) do e.frame:Hide(); Toast.sampleFree[#Toast.sampleFree + 1] = e.frame end
+    Toast.samples = {}
     for i, d in ipairs(Toast.DEMO) do
         if only and i > only then break end
-        local frame = table.remove(Toast.free) or Toast.factory()
+        local frame = table.remove(Toast.sampleFree) or Toast.factory()
         if not frame then return false end
         local catalog = ns.Data and ns.Data.Catalog or {}
         local name = (A.ItemName and A.ItemName(d.itemID)) or (catalog.itemNames or {})[d.itemID] or ("#" .. d.itemID)
         local kind = d.result.endgame and "endgame" or "leveling"
-        frame:Set(A.ItemIcon and A.ItemIcon(d.itemID), L["%s x%d"]:format(name, d.count),
+        frame:Set(A.ItemIcon and A.ItemIcon(d.itemID), L["Sample — %s x%d"]:format(name, d.count),
             ns.Wording.ColoredLine(d.result, colors, { prefix = false }) or "", colors[kind] or { r = 1, g = 1, b = 1 })
         local entry = { itemID = d.itemID, count = d.count, frame = frame, age = 0, demo = true }
-        Toast.active[#Toast.active + 1] = entry
+        Toast.samples[#Toast.samples + 1] = entry
         frame:SetAlpha(Toast.Alpha(0))
         frame:Show()
     end
-    for i, e in ipairs(Toast.active) do e.frame:Place(i) end
+    for _, e in ipairs(Toast.active) do e.frame:Hide() end
+    for i, e in ipairs(Toast.samples) do e.frame:Place(i, Toast.samples) end
     return true
 end
 
@@ -226,7 +304,7 @@ local function startNext()
             frame:Set(content(entry))
             frame:SetAlpha(Toast.Alpha(0))
             Toast.active[#Toast.active + 1] = entry
-            frame:Show()
+            if #Toast.samples == 0 then frame:Show() else frame:Hide() end
         end
     end
     for i, e in ipairs(Toast.active) do e.frame:Place(i) end
@@ -258,6 +336,11 @@ end
 
 -- Advance time by dt seconds: fade and retire toasts, then show queued ones.
 function Toast.Tick(dt)
+    for i = #Toast.samples, 1, -1 do
+        local e = Toast.samples[i]; e.age = e.age + dt
+        if e.age >= Toast.SHOW then e.frame:Hide(); Toast.sampleFree[#Toast.sampleFree + 1] = e.frame; table.remove(Toast.samples, i)
+        else e.frame:SetAlpha(Toast.Alpha(e.age)) end
+    end
     for i = #Toast.active, 1, -1 do
         local e = Toast.active[i]
         e.age = e.age + dt
@@ -270,6 +353,28 @@ function Toast.Tick(dt)
         end
     end
     startNext()
+    for _, e in ipairs(Toast.active) do
+        if #Toast.samples > 0 then e.frame:Hide() else e.frame:Show() end
+    end
+end
+
+function Toast.Refresh()
+    if moverStyle then moverStyle() end
+    for _, list in ipairs({ Toast.active, Toast.samples }) do
+        for i, e in ipairs(list) do
+            if not e.demo then e.frame:Set(content(e))
+            else
+                local d = Toast.DEMO[i]
+                local name = (ns.Adapter.ItemName and ns.Adapter.ItemName(d.itemID)) or
+                    (ns.Data and ns.Data.Catalog and ns.Data.Catalog.itemNames or {})[d.itemID] or ("#" .. d.itemID)
+                local colors = profile().colors or {}
+                e.frame:Set(ns.Adapter.ItemIcon and ns.Adapter.ItemIcon(d.itemID), L["Sample — %s x%d"]:format(name, d.count),
+                    ns.Wording.ColoredLine(d.result, colors, { prefix = false }) or "",
+                    colors[d.result.endgame and "endgame" or "leveling"] or { r = 1, g = 1, b = 1 })
+            end
+            e.frame:SetAlpha(Toast.Alpha(e.age)); e.frame:Place(i, list)
+        end
+    end
 end
 
 -- New session: toasts may show again.
@@ -291,7 +396,7 @@ local function startDriver()
     if type(create) ~= "function" then return end
     local f = create("Frame")
     f:SetScript("OnUpdate", function(_, dt)
-        if #Toast.active > 0 then
+        if #Toast.active > 0 or #Toast.samples > 0 then
             local ok, err = pcall(Toast.Tick, dt)
             if not ok and ns.Log then ns.Log.Failure("toast", err) end
         end

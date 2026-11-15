@@ -38,7 +38,7 @@ Run every check on **both clients**: Classic Era (TOC 11509, the `OnTooltipSetIt
 ## 3. Loot toast
 
 1. Default off: on a fresh profile ("Loot toast" unchecked), loot a marked material such as Arcanite Bar or Thorium Ore. No toast appears.
-2. Turn on "Loot toast", loot a marked material. A toast appears with the item icon, "<name> x<count>", and the tooltip's colored line (same text and color as the tooltip), and fades after about 4 seconds without any click.
+2. Turn on "Loot toast", loot a marked material. A toast appears with the item icon, "<name> x<count>", and the same recommendation as the tooltip, with neutral title and only category words colored, and fades after about 4 seconds without any click.
 3. Loot an unmarked item (for example Linen Cloth with leveling marks off). No toast appears.
 4. Craft an item, or receive a quest reward that is a marked material ("You receive item:" message). No toast appears.
 5. Loot 3 of a marked item, then within a few seconds loot 2 more. The same toast changes from x3 to x5 and no second toast appears.
@@ -46,7 +46,7 @@ Run every check on **both clients**: Classic Era (TOC 11509, the `OnTooltipSetIt
 7. /reload, then loot the same item. A toast appears again.
 8. Click through a toast onto the game world (or target something behind it). The toast does not take the click.
 9. Loot five different marked items at once (for example from several corpses or a mining run). At most three toasts show, stacked; the others show as earlier ones fade.
-10. Set the leveling and endgame colors to different values and loot one of each. Each toast's line uses its category color; an item that is both uses the endgame color.
+10. Set the leveling and endgame colors to different values and loot one of each. Each toast names its category in that category color; both category names appear when applicable.
 
 ## 4. Icon mask
 
@@ -128,19 +128,40 @@ All on WoW Forever with debugging on (`/kt debug`) unless a check says otherwise
 
 ## 6. Settings and commands
 
-1. Type `/kt`. The KeepThat settings open on the Home page. Options > AddOns lists KeepThat with Materials, Integrations, Advanced and About beneath it.
-2. On a fresh profile (`/run KeepThatDB=nil` then `/reload`), Home shows: endgame on, leveling off, tooltip on, toast off, mask off, endgame purple, leveling green, "Show marks in" with Bags, Bank and Merchant checked, and no other locations listed.
+1. Type `/kt`. The KeepThat settings open on the Home page. Options > AddOns lists KeepThat with Materials, Integrations, Appearance, Advanced and About beneath it.
+2. On a fresh profile (`/run KeepThatDB=nil` then `/reload`), Home shows: endgame on, leveling off, tooltip on, toast off, mask off, "Show the tint in" with Bags, Bank and Merchant checked, and no other locations listed.
 3. Turn leveling materials on and hover a leveling material (for example Linen Cloth). The tooltip shows the `Leveling:` line without a reload. Turn it off; the line goes away.
-4. Change the endgame color; the mask or toast color changes on the next refresh. Check each "Show marks in" box once.
-5. Open Materials > Blacksmithing > Arcanite Bar (the tree entry has a purple square). The page starts with its icon and name, shows a toggle that is on and the recipes with quantities, and no source line. Click "Wowhead: item": a box opens with the link selected; Ctrl+C copies it.
+4. On Appearance change the endgame color; the mask or toast color changes on the next refresh. Check each "Show marks in" box once.
+5. Open Materials > Blacksmithing > Arcanite Bar (the tree entry has a purple square). The page starts with its icon and name, shows a toggle that is on and the recipes with quantities, and no source line. Click "Copy Wowhead link": a box opens with the link selected; Ctrl+C copies it.
 6. Turn the Arcanite Bar toggle off; hover one: no endgame line. `/reload`: still off. Turn it on again.
 7. Turn leveling materials off on Home: leveling-only materials (green square only) leave the Materials list. Turn both off: everything is listed with a note that nothing is marked. Search "rune", open Tailoring: "Showing materials matching" and Clear search appear; Clear search shows everything again.
-8b. Turn Loot toast on, click Move loot toasts, drag the placeholder, right-click it. Loot a marked item: the toast appears there. Click Reset toast position: it goes back to the top of the screen.
-8. On Classic Era open Integrations: it says integrations are not yet available on Classic Era, and Baganator or Bagnon (if installed) show no overlay. On WoW Forever each row shows Not detected, Detected and working, or Detected but turned off with a reason; turning a toggle off stops that integration on the next refresh.
-9. On Advanced, turn on "Use separate settings for this character", change a Home setting, log into another character: it keeps the shared settings. Turn the option off: this character returns to the shared settings.
-10. `/kt debug on`, hover a few items, `/kt log`: a window opens with the settings, integration states, failures and recorded lines, and Ctrl+A, Ctrl+C copies it. `/kt debug off` stops recording.
-11. Type `/kt nonsense`: the command list prints in chat.
+8. Turn Loot toast on; on Appearance choose Move, drag the placeholder and choose Done. Loot a marked item: the toast appears there. Reset position restores the default anchor.
+9. On Classic Era open Integrations: it says integrations are not yet available on Classic Era, and Baganator or Bagnon (if installed) show no overlay. On WoW Forever each row shows Not detected, Detected and working, or Detected but turned off with a reason; turning a toggle off stops that integration on the next refresh.
+10. On Advanced, turn on "Use separate settings for this character", change a Home setting, log into another character: it keeps the shared settings. Turn the option off: this character returns to the shared settings.
+11. `/kt debug on`, hover a few items, `/kt log`: a window opens with the settings, integration states, failures and recorded lines, and Ctrl+A, Ctrl+C copies it. `/kt debug off` stops recording.
+12. Type `/kt nonsense`: the command list prints in chat.
 
-12. On each materials page, search part of a name in mixed case and press Enter: only matching materials and professions remain. Check a cached client name and its English name, and literal `%` and `.` searches. The other category retains its own search. Clear the box: all return.
-13. Search for `nonexistentmaterial`: one neutral no-match sentence appears. Reload: the search is empty.
-14. `/kt find Arcanite Bar` opens its material page when it has one path. `/kt find bar` lists matching paths sorted by name, at most ten plus a remaining count, and opens nothing. Check both category labels. A nonexistent name prints the no-match sentence; `/kt find` prints usage.
+13. On Materials, search part of a name in mixed case and press Enter: only matching materials and professions remain. Check a cached client name and its English name, and literal `%` and `.` searches. Search applies across professions. Clear the box: all return.
+14. Search for `nonexistentmaterial`: one neutral no-match sentence appears. Reload: the search is empty.
+15. `/kt find Arcanite Bar` opens its material page when it has one path. `/kt find bar` lists matching paths sorted by name, at most ten plus a remaining count, and opens nothing. Check both category labels. A nonexistent name prints the no-match sentence; `/kt find` prints usage.
+
+## 7. Cohesive presentation acceptance (pending in game)
+
+Run on Classic Era and Forever at the same UI scale with only KeepThat first, then supported optional addons. Enable script errors. Capture Home, Appearance, a real item tooltip, three demo toasts, the tint sample, Move controls and the log-clear confirmation. Record client/build, UI scale, addon scale and installed integrations with captures.
+
+1. Open `/kt` and `/kt settings`; Home opens. Visit Home, Materials, Integrations, Appearance, Advanced and About in order. Verify the window title is KeepThat and scope is explained in the page content. Material search, long item names, quality-colored detail titles, category toggles, stock, recipes, Wowhead copy and shopping exports remain reachable. Check third-party tooltip rows before/after KeepThat and while Shift is held.
+2. Set each public key through `/kt set`, check `/kt get` and the already-open UI, then change it in the UI and check get. Try missing values, trailing words, unknown keys/pages/topics/kinds, fractional integers and out-of-range numbers; nothing should change. `/kt help appearance` lists exact bounds and examples. Mixed-case `/kt find ArcANite` retains normal matching.
+3. On an upgraded profile with old toastOpacity 0, 0.37 and 0.8, confirm both new alphas preserve effective brightness, colors, enabled flags and anchor. Test a new profile too. With loot toast enabled, test Background opacity and Text and icon opacity separately at 0/80/100. Background 0 must hide black fill AND accent, while text follows its own value. Test already-visible and newly created toasts. Test Scale 100/150 (and supported bounds 50/200).
+4. Test very long localized item names and multi-line recommendations. Every title/category/recommendation must remain readable, grow and stack without overlap; missing cached item icon uses a fallback. Native tooltip chrome remains native. Test missing preferred font/control APIs with a test environment or probe; unavailable controls must fail safely and explain the action. Do not remove live game globals in a normal play session.
+5. Turn real toasts, tooltip and tint off. Run `/kt demo` twice before expiry: exactly three labeled sample toasts, a private native tooltip for a random real material (Shift expands details using sample skills and bag counts), and isolated tint appear. Toast/tint expire after four seconds, tooltip after fifteen. Use `/kt preview` and each kind; only that surface appears. Verify `/kt test toast`, tooltip and copy still work. While demo runs, loot a real marked item with real toasts enabled: samples must not change counts, classification or deduplication; normal live state resumes after samples. Bag tints and external integrations remain real.
+6. Move from Appearance while unlocked: drag to screen edges (clamped), Done saves; repeat and Cancel/Escape restore. Right-click commits. Lock prevents Move and dragging; toggling lock during Move cancels. Reset position retains colors, opacity, scale, lock and material toggles. Switch scope during a drag; neither profile receives the tentative anchor. Verify normal toasts remain mouse-transparent. Repeat in combat and after leaving combat; no protected-action or keyboard errors. Confirm non-Escape keys continue to reach the game while moving.
+7. Change shared settings on one character and relog on another. Switch to character scope after reading confirmation; cancel leaves scope unchanged. Switch back and verify both profiles retain independent values. While a preview is open, change appearance/scope and verify it uses current values.
+8. Record diagnostics, run `/kt log clear`, cancel/Escape and verify the log remains. Accept and verify only diagnostics/failure history clears: settings, material toggles, saved anchor, loot deduplication and integration session state remain. `/kt log` stays copyable and lists all new settings, contract version, scope, sample count and Move state.
+
+No CV warning/prompt, DDT, sibling-addon ordering or shared library checks apply to KeepThat. Store comparable screenshots as local review artifacts; do not commit them. In-game checks and captures cannot be certified by the plain-Lua harness.
+
+Tooltip preview parity: repeat `/kt preview tooltip` several times. Items must come from the Materials list, with their native quality-colored name and item description when cached. KeepThat’s collapsed hint, Shift details, category colors and gray recipe/guide rows must match a real hover. The footer identifies sample skills/counts. Test an uncached item: the catalog name appears first, then native item content when data arrives. Turning real tooltips or material toggles off must not prevent preview or modify those settings.
+
+Settings context review: open all six top-level pages plus one profession and one item page directly. Each must explain its purpose and next action. Scope guidance appears on Advanced and where it changes a choice; it should not repeat on every page. In Appearance, check section grouping and the separate toast/tooltip/tint preview buttons. Turn features on/off and lock/unlock position: enabling instructions must appear only when relevant. Begin Move and verify the guidance and Done/Cancel states update immediately. Check integration descriptions distinguish permission from actual detection/working status, and that Advanced explains profile switching and the complete record/reproduce/copy workflow. At smaller window sizes and with long translations, text must wrap without obscuring controls.
+
+Compact settings: after reload, `/kt` starts at 600×460. Check that appearance sliders and action buttons do not span the content panel, and Bags/Bank/Merchant fit in a compact row. Resize narrower/wider and verify prose wraps, labels remain complete, all controls remain reachable by scrolling, and material-tree navigation still works. Compare beside CVN at the same UI scale; CVN’s exact dimensions have not been measured here.

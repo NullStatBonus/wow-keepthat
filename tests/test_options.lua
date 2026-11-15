@@ -22,6 +22,7 @@ local function fresh(opts)
     ns.started = started
     ns.Adapter = { ProfessionSkills = function() return opts.skills or { tailoring = 1 } end }
     H.load("Core/Defaults.lua", ns)
+    H.load("Core/Presentation.lua", ns)
     H.load("Model/Leveling.lua", ns)
     H.load("Model/Classify.lua", ns)
     H.load("Model/Wording.lua", ns)
@@ -43,6 +44,8 @@ local function fresh(opts)
     local realInvalidate = ns.Context.Invalidate
     ns.Context.Invalidate = function() ns.invalidated = ns.invalidated + 1; realInvalidate() end
     H.load("Options/Options.lua", ns)
+    ns.realNotify = ns.Options.NotifyChange
+    ns.Options.NotifyChange = function() end
     return ns
 end
 
@@ -77,7 +80,7 @@ for _, key in ipairs({ "endgame", "leveling", "tooltip", "toast", "mask" }) do
 end
 eq(ns.invalidated, before + 5, "each Home toggle invalidates the context")
 eq(ns.Context.Get().settings.leveling, true, "the context sees the new setting without a reload")
-local c = home.args.color_endgame
+local c = ns.Options.Appearance(4).args.color_endgame
 c.set(nil, 0.1, 0.2, 0.3)
 local r, g, b = c.get()
 eq(r + g + b, 0.1 + 0.2 + 0.3, "color picker round trip")
@@ -291,6 +294,7 @@ _G.LibStub = function(lib)
             NotifyChange = function(_, app) notified = app end }
     end
     return {
+        SetDefaultSize = function() end,
         AddToBlizOptions = function(_, app, title, parent, path) bliz[#bliz + 1] = title .. ">" .. tostring(parent) .. ">" .. path end,
         Open = function() opened = opened + 1 end,
         SelectGroup = function(_, app, ...) selected[#selected + 1] = table.concat({...}, "/") end,
@@ -303,16 +307,38 @@ eq(type(registered.KeepThat), "function", "options table registered")
 eq(registered.KeepThat().args.home ~= nil, true, "registered table has the pages")
 eq(bliz[1], "KeepThat>nil>home", "Home is the AddOns entry")
 eq(bliz[2], "Materials>KeepThat>materials", "sub pages are listed under it")
-eq(#bliz, 5, "five pages")
+eq(#bliz, 6, "six pages")
 eq(#callbacks, 3, "profile callbacks registered")
 ns.Options.Open()
 eq(opened, 1, "Open opens the dialog")
 eq(selected[1], "home", "on the Home page")
-ns.Options.NotifyChange()
+ns.realNotify()
 eq(notified, "KeepThat", "search refresh notifies the KeepThat registry")
 ns.Options.OpenMaterial({ category = "endgame", profession = "blacksmithing", itemID = ARC })
 eq(opened, 2, "material opens dialog")
 eq(selected[2], "materials/blacksmithing/i12360", "material selects complete path")
+-- Page context follows current scope and feature state, including nested pages.
+local contextual = ns.Options.Build()
+for _, key in ipairs({ "home", "materials", "integrations", "appearance", "about" }) do
+    eq(contextual.args[key].args.scope, nil, key .. " does not repeat scope notice")
+end
+eq(contextual.args.advanced.args.scope, nil, "scope appears in Advanced context, not a repeated notice")
+eq(contextual.args.advanced.args.profileContext ~= nil, true, "Advanced explains profile scope and effect")
+local appearance = contextual.args.appearance.args
+ns.addon.db.profile.toast = false
+eq(appearance.toastHelp.hidden(), false, "disabled toast has visible next step")
+ns.addon.db.profile.toast = true
+eq(appearance.toastHelp.hidden(), true, "enabled toast hides obsolete enabling instruction")
+ns.addon.db.profile.toastLocked = true
+eq(plainName(appearance.positionHelp):find("Position is locked", 1, true) ~= nil, true, "locked context explains prerequisite")
+ns.addon.db.profile.toastLocked = false
+ns.Toast = { move = {} }
+eq(plainName(appearance.positionHelp):find("Move is active", 1, true) ~= nil, true, "active Move context explains save and rollback")
+ns.Toast.move = nil
+eq(plainName(appearance.positionHelp):find("Reset position", 1, true) ~= nil, true, "idle context explains reset scope")
+eq(appearance.previewTooltip.name, "Preview item tooltip", "preview identifies its surface")
+eq(contextual.args.materials.args.blacksmithing.args.scope, nil, "profession page does not repeat scope")
+eq(contextual.args.materials.args.blacksmithing.args.i12360.args.scope, nil, "material page does not repeat scope")
 _G.LibStub = nil
 
 H.done()

@@ -13,6 +13,43 @@ function Slash.Run(args, deps)
     if cmd == "" then
         deps.open()
         return {}
+    elseif cmd == "settings" then
+        local page = rest:lower(); if page == "" then page = "home" end
+        local pages = ns.Presentation and ns.Presentation.pages or { home = true, materials = true, integrations = true, appearance = true, advanced = true, about = true }
+        if not pages[page] then return { L["Pages: home, materials, integrations, appearance, advanced, about."] } end
+        deps.open(page); return {}
+    elseif cmd == "get" or cmd == "set" then
+        local key, value = rest:match("^(%S+)%s*(.-)$")
+        key = key and key:lower()
+        if not key or (cmd == "get" and value ~= "") or (cmd == "set" and (value == "" or value:find("%s"))) then
+            return { L["Usage: /kt get <key> or /kt set <key> <value>. Use /kt help appearance for keys."] }
+        end
+        local P = ns.Presentation
+        if not P then return { L["Settings are unavailable."] } end
+        if cmd == "get" then
+            if not P.keys[key] then return { P.Syntax(key) } end
+            return { L["%s = %s"]:format(key, P.Value(key)) }
+        end
+        local _, reply = P.Set(key, value); return { reply }
+    elseif cmd == "help" or cmd == "status" then
+        local topic = rest:lower()
+        if topic ~= "" and topic ~= "appearance" and topic ~= "diagnostics" and topic ~= "domain" then
+            return { L["Topics: appearance, diagnostics, domain."] }
+        end
+        if cmd == "status" then return ns.Presentation and ns.Presentation.Status() or { L["Settings are unavailable."] } end
+        if topic == "appearance" then return {
+            L["Keys: toast, tooltip, appearance.toast.background-opacity (0-100), appearance.toast.text-opacity (0-100), appearance.toast.scale (50-200), appearance.toast.locked (on|off)."],
+            L["Example: /kt set appearance.toast.text-opacity 80. Use /kt preview toast, tooltip, tint or copy; /kt demo shows all samples."] }
+        elseif topic == "diagnostics" then return { L["Diagnostics: /kt debug on|off, /kt log, /kt log clear (confirmation required), /kt probe [hover|path <name>]."] }
+        elseif topic == "domain" then return { L["Materials: /kt find <name>; /kt settings materials; /kt settings integrations."] } end
+        return { L["Help: /kt help appearance, /kt help diagnostics, /kt help domain. Open /kt settings [page], read /kt status [topic], or try /kt demo."] }
+    elseif cmd == "preview" then
+        local kind = rest:lower()
+        if kind ~= "toast" and kind ~= "tooltip" and kind ~= "tint" and kind ~= "copy" then
+            return { L["Previews: /kt preview toast, /kt preview tooltip, /kt preview tint, /kt preview copy."] }
+        end
+        if deps.preview then deps.preview(kind) end
+        return {}
     elseif cmd == "find" then
         if rest == "" then return { L["Usage: /kt find <name>"] } end
         local found = deps.find(rest)
@@ -45,10 +82,10 @@ function Slash.Run(args, deps)
             deps.setDebug(false)
             return { L["Debug recording is off."] }
         end
-    elseif cmd == "demo" then
+    elseif cmd == "demo" and rest == "" then
         -- Always shows the visuals, whatever the settings: sample toasts and a sample tooltip.
         deps.demo()
-        return { L["Showing sample toasts and a sample tooltip (Arcanite Bar). Hold Shift over it for the details."] }
+        return { L["Showing sample toasts, a tooltip and an isolated tint. Hold Shift over the tooltip for details."] }
     elseif cmd == "test" then
         -- One explicit in-game test at a time, like /cvn test <kind> in Closest Vendor.
         local kind = rest:lower()
@@ -57,13 +94,17 @@ function Slash.Run(args, deps)
             return { L["Showing one sample loot toast."] }
         elseif kind == "tooltip" then
             deps.testTooltip()
-            return { L["Showing a sample tooltip (Arcanite Bar). Hold Shift over it for the details."] }
+            return { L["Showing a random material tooltip with sample data. Hold Shift over it for the details."] }
         elseif kind == "copy" then
             deps.testCopy()
             return { L["Showing the copy-link box."] }
         end
         return { L["Tests: /kt test toast, /kt test tooltip, /kt test copy. /kt demo shows them all."] }
     elseif cmd == "log" then
+        if rest:lower() == "clear" then
+            if deps.clearLog then deps.clearLog() end
+            return {}
+        elseif rest ~= "" then return { L["Usage: /kt log or /kt log clear."] } end
         deps.show(L["KeepThat debug report"], deps.report())
         return {}
     elseif cmd == "probe" then
@@ -87,22 +128,25 @@ function Slash.Register(addon)
         openMaterial = function(result) return ns.Options.OpenMaterial(result) end,
         probe = ns.Probe,
         show = function(...) return ns.Export.Show(...) end,
-        open = function() return ns.Options.Open() end,
+        open = function(page) return ns.Options.Open(page) end,
         testToast = function() if ns.Toast and ns.Toast.Demo then pcall(ns.Toast.Demo, 1) end end,
         testToastAll = function() if ns.Toast and ns.Toast.Demo then pcall(ns.Toast.Demo) end end,
-        -- A sample classification (both categories) so the tooltip shows KeepThat's lines whatever the
-        -- settings and the player's skills are, for 15 seconds.
-        testTooltip = function()
-            local A = ns.Adapter
-            ns.Context.SetDemo(12360, { endgame = { { profession = "blacksmithing", reason = "Best-in-slot crafted gear" } },
-                leveling = { { profession = "engineering", need = { low = 20, high = 25, from = 260, to = 300, via = {}, sources = { "Sample guide" } } } } },
-                A.Now and A.Now() or 0, 15)
-            if A.ShowItemTooltip then A.ShowItemTooltip(12360) end
+        testTooltip = function() if ns.Tooltip.Preview then ns.Tooltip.Preview() end end,
+        preview = function(kind)
+            if kind == "toast" then deps.testToast()
+            elseif kind == "tooltip" then deps.testTooltip()
+            elseif kind == "copy" then deps.testCopy()
+            elseif kind == "tint" then ns.Adapter.ShowTintSample(addon.db.profile) end
+        end,
+        clearLog = function()
+            if not ns.Adapter.ConfirmClearLog(function() ns.Log.Clear() end) then
+                addon:Print(L["Confirmation is unavailable. Diagnostics were retained."])
+            end
         end,
         testCopy = function()
             ns.Adapter.ShowCopyBox(L["KeepThat - Wowhead link"], "https://www.wowhead.com/classic/item=12360")
         end,
-        demo = function() deps.testToastAll(); deps.testTooltip() end,
+        demo = function() deps.testToastAll(); deps.testTooltip(); deps.preview("tint") end,
         report = function() return ns.Log.Report() end,
         setDebug = function(on) addon.db.profile.debug = on end,
     }

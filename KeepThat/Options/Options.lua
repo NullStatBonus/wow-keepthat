@@ -14,7 +14,8 @@ local function profile()
 end
 
 local function changed()
-    if ns.Context then ns.Context.Invalidate() end
+    if ns.Presentation then ns.Presentation.Refresh()
+    elseif ns.Context then ns.Context.Invalidate() end
 end
 
 -- Shared page shape: a group with items ordered as added.
@@ -56,12 +57,19 @@ local function gap(group, key)
     return add(group, key, { type = "description", fontSize = "small", width = "full", name = " " })
 end
 
+local function introduction(group, heading, purpose)
+    add(group, "pageTitle", { type = "header", name = heading })
+    text(group, "intro", purpose)
+    gap(group, "introGap")
+end
+
 -- Toggles keep their help on hover; visible help is only for consequences that matter.
 local function profileToggle(group, key, name, desc)
     return add(group, key, {
         type = "toggle", width = "full", name = name, desc = desc,
         get = function() return profile()[key] end,
-        set = function(_, value) profile()[key] = value and true or false; changed() end,
+        set = function(_, value) if ns.Presentation and ns.Presentation.keys[key] then ns.Presentation.Set(key, value and "on" or "off")
+            else profile()[key] = value and true or false; changed() end end,
     })
 end
 
@@ -85,44 +93,91 @@ local LOCATION_NAMES = { bags = L["Bags"], bank = L["Bank"], merchant = L["Merch
 
 function Options.Home(order)
     local g = page(L["Home"], order)
-    text(g, "intro", L["KeepThat marks the materials worth keeping so you do not sell what you will need later."])
-    gap(g, "g0")
+    introduction(g, L["Choose what to keep"], L["Choose materials to keep and where to show marks. KeepThat does not sell or move items."])
+    note(g, "noCategories", grey(L["No materials are marked. Turn on a category below."]),
+        function() return profile().endgame or profile().leveling end)
+    note(g, "noSurfaces", grey(L["All displays are off. Select a display below or review items in Materials."]),
+        function() return profile().tooltip or profile().toast or profile().mask end)
 
     add(g, "h_cat", { type = "header", name = L["What to mark"] })
+    note(g, "categoryHelp", grey(L["Endgame marks high-level crafting materials. Leveling counts use your profession skill. Count ranges show differences between guides."]))
     profileToggle(g, "endgame", L["Endgame materials"], L["Mark materials used for endgame crafting."])
     profileToggle(g, "leveling", L["Leveling materials"], L["Mark materials you need to level your professions."])
-    note(g, "levelingHelp", grey(L["Leveling counts follow your current skill in each profession."]))
     gap(g, "g1")
 
     add(g, "h_show", { type = "header", name = L["Where to show it"] })
+    note(g, "displayHelp", grey(L["Hold Shift on a tooltip for details. Toasts show looted materials. Icon tint marks items in the selected locations."]))
     profileToggle(g, "tooltip", L["Tooltip line"], L["Add a short line to the tooltip of a material worth keeping."])
     profileToggle(g, "toast", L["Loot toast"], L["Show a small message when you loot a material worth keeping."])
-    add(g, "toastMove", { type = "execute", width = "full", name = L["Move loot toasts"],
-        desc = L["Shows where loot toasts appear. Drag it, then right-click when done."],
-        func = function() if ns.Toast and ns.Toast.ShowMover then ns.Toast.ShowMover() end end })
-    add(g, "toastReset", { type = "execute", width = "full", name = L["Reset toast position"],
-        func = function() if ns.Toast and ns.Toast.ResetPosition then ns.Toast.ResetPosition() end end })
     profileToggle(g, "mask", L["Icon tint"], L["Tint the icon of a material worth keeping."])
     add(g, "locations", {
-        type = "multiselect", name = L["Show the tint in"], desc = L["Where the icon tint is shown."],
+        type = "multiselect", width = "half", name = L["Show the tint in"], desc = L["Where the icon tint is shown."],
         values = LOCATION_NAMES,
         disabled = function() return not profile().mask end,
         get = function(_, key) return profile().locations[key] and true or false end,
         set = function(_, key, value) profile().locations[key] = value and true or false; changed() end,
     })
-    gap(g, "g2")
+    note(g, "locationHelp", grey(L["Turn on Icon tint to change locations. Saved choices stay the same."]), function() return profile().mask end)
+    gap(g, "nextGap")
+    text(g, "next", L["Review items in Materials. Set colors, size and position in Appearance."])
+    return g
+end
 
-    add(g, "h_look", { type = "header", name = L["Appearance"] })
+function Options.Appearance(order)
+    local g = page(L["Appearance"], order)
+    introduction(g, L["Make recommendations easy to read"], L["Set colors, size and position here. Turn features on or off in Home."])
+    add(g, "h_colors", { type = "header", name = L["Category colors"] })
+    note(g, "colorHelp", grey(L["Category colors apply to tooltips, toasts and icon tints. Tooltips and toasts also show category names."]))
     colorPicker(g, "endgame", L["Endgame color"], L["The color used for endgame materials."])
     colorPicker(g, "leveling", L["Leveling color"], L["The color used for leveling materials."])
-    add(g, "maskOpacity", { type = "range", width = "full", name = L["Icon tint strength"],
-        desc = L["Lower it to dim the tint; 0 hides it."], min = 0, max = 1, step = 0.05, isPercent = true,
+    gap(g, "tintGap")
+    add(g, "h_tint", { type = "header", name = L["Icon tint"] })
+    note(g, "tintContext", grey(L["Lower values show more of the item icon. Set 0 to hide the tint."]))
+    add(g, "maskOpacity", { type = "range", width = 1.5, name = L["Icon tint strength"],
+        min = 0, max = 1, step = 0.05, isPercent = true,
+        disabled = function() return not profile().mask end,
         get = function() return profile().maskOpacity or 0.4 end,
         set = function(_, v) profile().maskOpacity = v; changed() end })
-    add(g, "toastOpacity", { type = "range", width = "full", name = L["Toast opacity"],
-        desc = L["Lower it to dim the loot toasts; 0 hides them."], min = 0, max = 1, step = 0.05, isPercent = true,
-        get = function() return profile().toastOpacity or 1 end,
-        set = function(_, v) profile().toastOpacity = v; changed() end })
+    note(g, "maskHelp", grey(L["Icon tint is off. Turn it on in Home to change strength."]), function() return profile().mask end)
+    gap(g, "toastGap")
+    add(g, "h_toast", { type = "header", name = L["Loot toast"] })
+    note(g, "toastContext", grey(L["Background opacity controls the panel and accent. Text and icon opacity controls the content. Set Scale to 100 for normal size."]))
+    note(g, "toastHelp", grey(L["Loot toast is off. Turn it on in Home to change opacity and scale. Preview and Move remain available."]), function() return profile().toast end)
+    local function control(id, key, label)
+        local e = ns.Presentation.keys[key]
+        add(g, id, { type = e.type == "boolean" and "toggle" or "range", width = e.type == "boolean" and "full" or 1.5, name = label,
+            min = e.min, max = e.max, step = e.type == "integer" and 1 or nil,
+            disabled = function() return e.type ~= "boolean" and not profile().toast end,
+            get = e.get, set = function(_, v) ns.Presentation.Set(key, e.type == "boolean" and (v and "on" or "off") or v) end })
+    end
+    control("backgroundOpacity", "appearance.toast.background-opacity", L["Background opacity"])
+    control("textOpacity", "appearance.toast.text-opacity", L["Text and icon opacity"])
+    control("scale", "appearance.toast.scale", L["Scale"])
+    gap(g, "positionGap")
+    add(g, "h_position", { type = "header", name = L["Toast position"] })
+    note(g, "positionHelp", function()
+        if profile().toastLocked then return grey(L["Position is locked. Clear Lock position to move or reset it."]) end
+        if ns.Toast and ns.Toast.move then return grey(L["Move is active. Drag the sample. Select Done to save. Select Cancel or press Escape to discard changes."]) end
+        return grey(L["Select Move to place the first toast. Other toasts appear below it. Reset position changes only the position."])
+    end)
+    control("locked", "appearance.toast.locked", L["Lock position"])
+    add(g, "toastMove", { type = "execute", name = L["Move"],
+        desc = L["Unlock Lock position before moving. Drag, then choose Done or Cancel."],
+        disabled = function() return profile().toastLocked end,
+        func = function() ns.Toast.ShowMover() end })
+    add(g, "done", { type = "execute", name = L["Done"], disabled = function() return not ns.Toast.move end,
+        func = function() ns.Toast.DoneMove() end })
+    add(g, "cancel", { type = "execute", name = L["Cancel"], disabled = function() return not ns.Toast.move end,
+        func = function() ns.Toast.CancelMove() end })
+    add(g, "toastReset", { type = "execute", name = L["Reset position"],
+        desc = L["Unlock Lock position before resetting the anchor."],
+        disabled = function() return profile().toastLocked end, func = function() ns.Toast.ResetPosition() end })
+    gap(g, "previewGap")
+    add(g, "h_preview", { type = "header", name = L["Preview without changing your settings"] })
+    note(g, "previewHelp", grey(L["Samples do not change settings. The tooltip uses a random material with sample skills and counts. Hold Shift for details."]))
+    add(g, "preview", { type = "execute", name = L["Preview loot toast"], func = function() ns.Toast.Demo(1) end })
+    add(g, "previewTooltip", { type = "execute", name = L["Preview item tooltip"], func = function() ns.Tooltip.Preview() end })
+    add(g, "previewTint", { type = "execute", name = L["Preview icon tint"], func = function() ns.Adapter.ShowTintSample(profile()) end })
     return g
 end
 
@@ -246,7 +301,7 @@ local function hiddenSpacer(group, key, hidden)
 end
 
 local function copyButton(group, key, name, url)
-    add(group, key, { type = "execute", width = "full", name = name,
+    add(group, key, { type = "execute", width = 1.5, name = name,
         desc = L["Opens a box with the link selected. Press Ctrl+C to copy it."],
         func = function() ns.Adapter.ShowCopyBox(L["KeepThat - Wowhead link"], url) end })
 end
@@ -372,7 +427,9 @@ local function materialNode(profession, id, flags, name, order)
         name = function() return qualityName(id, itemName(catalog, id)) end,
         image = function() return ns.Adapter.ItemIcon and ns.Adapter.ItemIcon(id) or 134400 end,
         imageWidth = 32, imageHeight = 32 })
+    line(g, "context", muted(L["Materials / %s — uses, required amounts and your stock."]:format(ns.Wording.Display(profession))), "small")
     spacer(g, "s1")
+    line(g, "keepHelp", muted(L["These choices apply to every profession. Turn on the category in Home to show marks."]), "small")
     for _, category in ipairs({ "endgame", "leveling" }) do
         if flags[category] then
             add(g, "keep_" .. category, {
@@ -387,7 +444,7 @@ local function materialNode(profession, id, flags, name, order)
                 function() return profile()[category] end)
         end
     end
-    line(g, "keepHelp", muted(L["These choices apply to this material in every profession. Marking also needs the category turned on at Home."]), "small")
+
     spacer(g, "s2")
 
     local recipes, _, qty, learn = Options.RecipesUsing(catalog, profession, id)
@@ -494,6 +551,8 @@ local function professionNode(profession, items, catalog, order)
     end
     g.args.title = { type = "description", fontSize = "large", width = "full", order = 0.1,
         name = neutral(ns.Wording.Display(profession)) }
+    g.args.context = { type = "description", fontSize = "medium", width = "full", order = 0.12,
+        name = neutral(L["Review %s materials. Select an item for uses, counts and stock. Export a shopping list below."]:format(ns.Wording.Display(profession))) }
     g.args.count = { type = "description", fontSize = "small", width = "full", order = 0.2,
         name = function()
             local total, hits = 0, 0
@@ -510,7 +569,7 @@ local function professionNode(profession, items, catalog, order)
     g.args.searchBanner = { type = "description", fontSize = "small", width = "full", order = 0.25,
         name = function() return neutral(L['Showing materials matching "%s".']:format(searches.all or "")) end,
         hidden = function() return not searching() end }
-    g.args.clearSearch = { type = "execute", width = "full", order = 0.26, name = L["Clear search"],
+    g.args.clearSearch = { type = "execute", width = 1.5, order = 0.26, name = L["Clear search"],
         hidden = function() return not searching() end, func = clearSearch }
     g.args.gap = { type = "description", fontSize = "small", width = "full", order = 0.4, name = " " }
     -- Auctionator shopping lists for this profession, one per category (spec auctionator-export).
@@ -521,7 +580,7 @@ local function professionNode(profession, items, catalog, order)
     end
     g.args.h_shop = { type = "header", order = 0.5, name = L["Shopping list"] }
     local function exportButton(category, order2)
-        return { type = "execute", order = order2, width = "full",
+        return { type = "execute", order = order2, width = 1.5,
             name = category == "endgame" and L["Export endgame list"] or L["Export leveling list"],
             hidden = function() return count[category] == 0 end,
             disabled = function() return not (ns.AuctionatorExport and ns.AuctionatorExport.Available()) end,
@@ -637,7 +696,7 @@ function Options.Materials(order)
     local g = page(L["Materials"], order)
     g.childGroups = "tree"
     add(g, "title", { type = "header", name = L["Materials"] })
-    text(g, "about", L["Materials for endgame crafting and profession leveling."])
+    text(g, "about", L["Select a profession, then an item. Review its uses, recipes, required amounts and your stock."])
     note(g, "help", grey(L["Choose a profession, then a material. The list follows your selections on Home."]))
     note(g, "legend", function() return grey(L["%s Endgame   %s Leveling"]:format(swatch("endgame"), swatch("leveling"))) end)
     note(g, "none", grey(L["Both categories are turned off on Home. All materials are shown, but none are marked."]),
@@ -647,7 +706,7 @@ function Options.Materials(order)
         get = function() return searches.all or "" end,
         set = function(_, value) searches.all = value; Options.NotifyChange() end })
     note(g, "searchHelp", grey(L["Enter part of an item name and press Enter."]))
-    add(g, "clearSearch", { type = "execute", width = "full", name = L["Clear search"],
+    add(g, "clearSearch", { type = "execute", width = 1.5, name = L["Clear search"],
         hidden = function() return not searching() end, func = clearSearch })
     text(g, "noMatches", function() return L['No materials match "%s".']:format(searches.all or "") end,
         function()
@@ -714,10 +773,11 @@ end
 
 function Options.Integrations(order)
     local g = page(L["Integrations"], order)
+    introduction(g, L["Connect your other addons"], L["Select optional addon support. Each row shows its function and status."])
     if ns.client == "era" then
         text(g, "era", L["Integrations are not yet available on Classic Era."])
     else
-        note(g, "intro", grey(L["Optional support for your other addons. KeepThat works without any of them."]))
+        note(g, "optionalHelp", grey(L["A selected checkbox permits support. Read the status to see if the addon is available."]))
     end
     gap(g, "g0")
     for i, row in ipairs(Options.INTEGRATIONS) do
@@ -728,6 +788,14 @@ function Options.Integrations(order)
             get = function() return profile().integrations[key] end,
             set = function(_, value) profile().integrations[key] = value and true or false; changed() end,
         })
+        local descriptions = {
+            baganator = L["Tints bag and bank icons. Turn on Icon tint and select locations in Home."],
+            bagnon = L["Tints bag and bank icons. Turn on Icon tint and select locations in Home."],
+            ellesmereui = L["Tints item icons. Turn on Icon tint and select locations in Home."],
+            auctionator = L["Exports shopping lists from Materials. Export replaces the category's KeepThat list."],
+            professionjournal = L["Adds profession routes to leveling counts. Counts use your current skill."],
+        }
+        note(g, "help_" .. key, grey(descriptions[key]))
         if ns.client ~= "era" then
             add(g, "status_" .. key, { type = "description", fontSize = "small", width = "full",
                 name = function() return Options.StatusLine(key) end })
@@ -749,19 +817,22 @@ end
 function Options.SetCharacterProfile(on)
     local d = db()
     if not d then return end
+    if ns.Toast then ns.Toast.CancelMove() end
     d:SetProfile(on and d.keys.char or "Default")
     changed()
 end
 
 function Options.Advanced(order)
     local g = page(L["Advanced"], order)
+    introduction(g, L["Settings scope and troubleshooting"], L["Set the settings scope or collect a problem report. Set features in Home."])
     add(g, "h_profile", { type = "header", name = L["Profile"] })
+    note(g, "profileContext", grey(L["Select separate settings to use this character’s profile. Clear the checkbox to use shared settings. Both profiles keep their saved values."]))
     add(g, "charProfile", {
         type = "toggle", width = "full", name = L["Use separate settings for this character"],
+        confirm = L["Switch settings scope? Existing settings in both scopes are retained; no settings are copied."],
         get = Options.CharacterProfileOn,
         set = function(_, value) Options.SetCharacterProfile(value) end,
     })
-    note(g, "charHelp", grey(L["Settings are shared by your whole account unless you turn this on."]))
     gap(g, "g1")
     add(g, "h_debug", { type = "header", name = L["Debug"] })
     add(g, "debug", {
@@ -769,9 +840,10 @@ function Options.Advanced(order)
         get = function() return profile().debug end,
         set = function(_, value) profile().debug = value and true or false; changed() end,
     })
-    note(g, "debugHelp", grey(L["Keeps diagnostic lines for the debug report."]))
+    note(g, "debugHelp", grey(L["Turn recording on. Repeat the problem. Open the report. Press Ctrl+A, then Ctrl+C to copy it. Turn recording off."]))
+    note(g, "clearHelp", grey(L["Use /kt log clear to clear diagnostics after confirmation. Settings and material choices stay the same."]))
     add(g, "report", {
-        type = "execute", width = "full", name = L["Show debug report"],
+        type = "execute", width = 1.5, name = L["Show debug report"],
         func = function() ns.Export.Show(L["KeepThat debug report"], ns.Log.Report()) end,
     })
     return g
@@ -787,18 +859,25 @@ function Options.About(order)
     note(g, "version", grey(L["Version %s"]:format(tostring(ns.version))))
     gap(g, "g0")
     text(g, "what", L["Marks the materials worth keeping, so you do not sell what you will need later."])
+    text(g, "guide", L["Home: features. Materials: item details. Integrations: addon support. Appearance: visual settings. Advanced: scope and problem reports."])
     gap(g, "g1")
     add(g, "h_cmds", { type = "header", name = L["Commands"] })
     local commands = {
         { "kt", "/kt", L["Open these settings."] },
         { "find", "/kt find <name>", L["Find a material and open its settings when there is one match."] },
-        { "demo", "/kt demo", L["Show sample toasts and a sample tooltip."] },
+        { "demo", "/kt demo", L["Show sample toasts, a random item tooltip and an isolated tint."] },
         { "debug", "/kt debug on", L["Record diagnostics while you repeat a problem."] },
         { "log", "/kt log", L["Copy the debug report to share it."] },
     }
     for _, c in ipairs(commands) do
         text(g, "cmd_" .. c[1], L["|cffdddddd%s|r  %s"]:format(c[2], grey(c[3])))
     end
+    gap(g, "helpGap")
+    add(g, "h_help", { type = "header", name = L["Find the right command"] })
+    text(g, "helpAppearance", L["/kt help appearance — visual settings, valid values and focused previews."])
+    text(g, "helpDomain", L["/kt help domain — finding materials and opening feature pages."])
+    text(g, "helpDiagnostics", L["/kt help diagnostics — recording, copying and clearing diagnostic reports."])
+    note(g, "commandHelp", grey(L["Use /kt status to check settings. Use /kt get <key> to read a value. Use /kt set <key> <value> to change it."]))
     return g
 end
 
@@ -809,15 +888,15 @@ function Options.Build()
         type = "group", name = APP, childGroups = "tree",
         args = {
             home = Options.Home(1), materials = Options.Materials(2),
-            integrations = Options.Integrations(4), advanced = Options.Advanced(5), about = Options.About(6),
+            integrations = Options.Integrations(3), appearance = Options.Appearance(4), advanced = Options.Advanced(5), about = Options.About(6),
         },
     }
 end
 
-function Options.Open()
+function Options.Open(pageName)
     local dialog = LibStub("AceConfigDialog-3.0")
     dialog:Open(APP)
-    dialog:SelectGroup(APP, "home")
+    dialog:SelectGroup(APP, pageName or "home")
     pcall(Options.UpdateFooter)
 end
 
@@ -833,16 +912,21 @@ ns.Start(function(addon)
     end
     LibStub("AceConfigRegistry-3.0"):RegisterOptionsTable(APP, options)
     local dialog = LibStub("AceConfigDialog-3.0")
+    dialog:SetDefaultSize(APP, 600, 460)
     dialog:AddToBlizOptions(APP, APP, nil, "home")
     for _, sub in ipairs({ { "materials", L["Materials"] },
         { "integrations", L["Integrations"] },
-        { "advanced", L["Advanced"] }, { "about", L["About"] } }) do
+        { "appearance", L["Appearance"] }, { "advanced", L["Advanced"] }, { "about", L["About"] } }) do
         dialog:AddToBlizOptions(APP, sub[2], APP, sub[1])
     end
     -- The bank's contents are known once it has been opened this session.
     if addon.RegisterEvent then addon:RegisterEvent("BANKFRAME_OPENED", function() Options.bankSeen = true end) end
     -- A profile switch (or reset) changes every setting at once.
-    local function refresh() ns.Context.Invalidate() end
+    local function refresh()
+        if ns.Toast then ns.Toast.CancelMove() end
+        ns.Presentation.Migrate(addon.db.profile)
+        ns.Presentation.Refresh()
+    end
     for _, event in ipairs({ "OnProfileChanged", "OnProfileCopied", "OnProfileReset" }) do
         addon.db.RegisterCallback(Options, event, refresh)
     end

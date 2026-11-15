@@ -5,6 +5,7 @@ ns.addon = addon
 
 function addon:OnInitialize()
     self.db = LibStub("AceDB-3.0"):New("KeepThatDB", ns.defaults, true)
+    ns.Presentation.Migrate(self.db.profile)
     -- Profession names in KeepThat's own text come from the client, so they match the game's language
     -- with no translation file needed.
     ns.Wording.UseClientNames(ns.Adapter.ProfessionDisplayNames())

@@ -96,15 +96,20 @@ When DFL Profession Journal is installed, its leveling route counts as one more 
 
 ## Settings
 
+For the reusable layout and interaction decisions, see [DESIGN.md](DESIGN.md).
+
 Open the settings with `/kt`, or under Options > AddOns > KeepThat. Changes apply on the next tooltip or bag refresh; no reload needed. Settings are saved for your whole account by default.
 
-- **Home**: turn endgame materials (on by default) and leveling materials (off by default) on or off; turn the tooltip line (on), loot toast (off) and icon mask (off) on or off; move the loot toasts (drag the placeholder, right-click when done) or reset their position; pick the endgame color (purple) and leveling color (green); choose where the mask shows with "Show marks in" (bags, bank and merchant, all on by default).
+- **Home**: choose what to mark and where to show it. Endgame and tooltips start on; leveling, loot toasts and icon tint start off. Choose bags, bank and merchant for icon tint.
 - **Materials**: profession, then material, following what you mark on Home. A small square in each tint color shows whether a material is for endgame, leveling or both. Each material page shows its icon and name (in the item's quality color), "Keep for endgame" / "Keep for leveling", what it is used for, how many you still need, every recipe that uses it, your stock, and a button that copies its Wowhead link. Search by name at the top; Clear search works from any profession page. Each profession page can export its endgame or leveling list to Auctionator. Materials an update adds start on; the ones you turned off stay off.
 - **Integrations**: Baganator, Bagnon, EllesmereUI Bags, Auctionator and DFL Profession Journal, each with whether it is detected and working, and a toggle. Integrations are not yet available on Classic Era.
+- **Appearance**: category colors, icon tint strength, independent Background opacity and Text and icon opacity (0–100), Scale (50–200), Preview, Move, Lock position and Reset position. Move saves only on Done (or right-click); Cancel or Escape restores the start. Reset affects only the anchor. Black surfaces and accents disappear at background opacity 0. Older whole-toast opacity migrates to both layers without changing brightness.
 - **Advanced**: use separate settings for this character (switches to a profile named after the character, and back to the shared Default profile), debug recording, and a button for the debug report.
 - **About**: the version and the commands.
 
-Search either materials page by part of an item name and press Enter. Clear the box to show all materials. Searches are separate for each category and last only for the session.
+The standalone settings window opens at a compact 600×460 and remains resizable. Controls use compact widths while explanations wrap across the page. Each page explains its purpose and whose settings it changes. Appearance groups category colors, icon tint, loot toast dimming, position and separate toast/tooltip/tint previews; disabled controls explain the prerequisite without discarding their values. Integration rows describe what each addon contributes as well as its detected status.
+
+Search Materials by part of an item name and press Enter. Clear search works from profession pages too. Search lasts only for the session. The page content explains whether settings are shared or specific to this character; scope changes retain both profiles without copying them.
 
 ## Commands
 
@@ -112,16 +117,25 @@ Search either materials page by part of an item name and press Enter. Clear the 
 | --- | --- |
 | `/kt find <name>` | Finds materials by client or English name; one match opens its page, several list up to ten paths. |
 | `/kt` | Opens the settings on the Home page. |
+| `/kt settings [page]` | Opens Home, Materials, Integrations, Appearance, Advanced or About; page names are case insensitive. |
+| `/kt help [topic]` | Lists commands or targeted appearance, diagnostics or domain help. |
+| `/kt status [topic]` | Reports scope, effective public values and integration availability; accepts the same topics as help. |
+| `/kt get <key>` | Reads an allowlisted setting without writing. |
+| `/kt set <key> <value>` | Validates and updates one public setting, with one acknowledgement. |
+| `/kt preview [kind]` | Lists kinds, or shows one isolated toast, tooltip, tint or copy sample. |
+| `/kt log clear` | Confirms before clearing recorded diagnostics and failures; retains gameplay data and settings. |
 | `/kt test toast` | Shows one sample loot toast. |
-| `/kt test tooltip` | Shows a sample tooltip (Arcanite Bar); hold Shift for the details. |
+| `/kt test tooltip` | Shows a random real material tooltip with sample profession skills and bag counts; hold Shift for details. |
 | `/kt test copy` | Shows the copy-link box. |
-| `/kt demo` | Shows three sample loot toasts and a sample tooltip (Arcanite Bar), whatever the settings say, to check the look. |
+| `/kt demo` | Shows three synthetic loot toasts, a private mouse tooltip and an isolated tint sample even with features off. Repeating replaces samples; real loot state remains separate. |
 | `/kt debug on` | Starts recording diagnostics. |
 | `/kt debug off` | Stops recording. |
 | `/kt log` | Opens a window with the debug report (every setting, each integration's state, failures and recorded lines) that you can select and copy. |
 | `/kt probe` | Opens a window with a report on the game's API (for bug reports). |
 | `/kt probe hover` | The same for the item under the mouse. |
 | `/kt probe path <name>` | Describes one global table, e.g. `DFLProfessionJournalNS.API`. |
+
+Public keys use the active profile. `toast` (off), `tooltip` (on) and `appearance.toast.locked` (off) accept `on` or `off`. `appearance.toast.background-opacity` and `appearance.toast.text-opacity` accept whole numbers 0–100 (new installs: 100); `appearance.toast.scale` accepts whole numbers 50–200 (default: 100). For example: `/kt set appearance.toast.text-opacity 80`. Existing saved values take precedence. No SavedVariables paths, executable input or trailing arguments are accepted. Existing command names remain; no new aliases are introduced. Toasts fade after four seconds; the tooltip sample expires after fifteen seconds and the tint after four. Samples do not consume real loot deduplication or trigger integrations.
 
 ## Where the data comes from
 

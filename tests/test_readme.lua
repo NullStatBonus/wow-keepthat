@@ -21,7 +21,7 @@ local usage = ns.Slash.Run("nonsense-command-xyz", fakeDeps())[1]
 local listed = 0
 for cmd in section:gmatch("`(/kt[^`]*)`") do
     listed = listed + 1
-    local args = cmd:gsub("^/kt%s*", ""):gsub("<name>", "Foo")
+    local args = cmd:gsub("^/kt%s*", ""):gsub("<name>", "Foo"):gsub("%[page%]", "appearance"):gsub("%[topic%]", "appearance"):gsub("%[kind%]", "toast"):gsub("<key>", "toast"):gsub("<value>", "on")
     local out = ns.Slash.Run(args, fakeDeps())
     eq(args == "" or out[1] ~= usage, true, "README command is handled: " .. cmd)
 end

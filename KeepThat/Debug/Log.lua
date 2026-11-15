@@ -61,6 +61,15 @@ function Log.Report()
     flatten(db and db.profile or ns.defaults.profile, "", out)
 
     out[#out + 1] = ""
+    out[#out + 1] = "Presentation:"
+    if ns.Presentation then
+        out[#out + 1] = "  contract = " .. ns.Presentation.version
+        out[#out + 1] = "  scope = " .. ns.Presentation.Scope()
+    end
+    if ns.Toast then
+        out[#out + 1] = "  moving = " .. tostring(ns.Toast.move ~= nil)
+        out[#out + 1] = "  samples = " .. tostring(#ns.Toast.samples)
+    end
     out[#out + 1] = "Integrations:"
     local status = ns.Integrations and ns.Integrations.Status
     if type(status) ~= "function" then
@@ -90,4 +99,10 @@ function Log.Report()
     for _, line in ipairs(lines) do out[#out + 1] = "  " .. line end
     if #lines == 0 then out[#out + 1] = "  (none)" end
     return table.concat(out, "\n")
+end
+
+function Log.Clear()
+    local lines = store()
+    if lines then for i = #lines, 1, -1 do lines[i] = nil end end
+    Log.failures = {}
 end
