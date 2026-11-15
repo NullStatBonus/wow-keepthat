@@ -1,5 +1,5 @@
 # Changelog
 
-## 0.0.0
+## 0.1.0
 
-- Development build, not released.
+- First release: tooltips mark crafting materials worth keeping for endgame and leveling, with optional loot toasts and bag icon tints.
