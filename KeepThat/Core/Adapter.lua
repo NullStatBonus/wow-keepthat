@@ -224,3 +224,55 @@ function A.FooterButton(widget, text, onClick, show)
     end
     return true
 end
+
+-- Native confirmation, with no write when unavailable or cancelled.
+function A.ConfirmClearLog(accept)
+    local dialogs = A.Resolve("StaticPopupDialogs")
+    if type(dialogs) ~= "table" then return false end
+    dialogs.KEEPTHAT_CLEAR_LOG = {
+        text = ns.L["Clear recorded diagnostics? Gameplay data and settings are retained."],
+        button1 = ns.L["Clear"], button2 = ns.L["Cancel"],
+        OnAccept = function() accept() end, timeout = 0, whileDead = true, hideOnEscape = true,
+        preferredIndex = 3,
+    }
+    return A.Call("StaticPopup_Show", "KEEPTHAT_CLEAR_LOG") ~= nil
+end
+
+-- A private tint sample. Never attaches to an inventory button or changes its classification.
+local tintSample
+function A.ShowTintSample(p)
+    local ok = pcall(function()
+        if not tintSample then
+            tintSample = A.Call("CreateFrame", "Frame", nil, A.Resolve("UIParent"))
+            if not tintSample then return end
+            tintSample:SetSize(180, 64); tintSample:SetPoint("CENTER")
+            local icon = tintSample:CreateTexture(nil, "ARTWORK")
+            icon:SetSize(28, 28); icon:SetPoint("LEFT", 8, 0); icon:SetTexture(134400)
+            tintSample.tint = tintSample:CreateTexture(nil, "OVERLAY")
+            tintSample.tint:SetAllPoints(icon); tintSample.tint:SetBlendMode("ADD")
+            local text = tintSample:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
+            text:SetPoint("LEFT", 44, 0); text:SetWidth(128); text:SetTextColor(0.667, 0.667, 0.667); text:SetText(ns.L["Sample — Endgame tint"])
+            tintSample:SetScript("OnUpdate", function(self, dt)
+                self.age = self.age + dt
+                if self.age >= 4 then self:Hide()
+                else
+                    local current = ns.Presentation and ns.Presentation.Profile() or p
+                    local c = current.colors.endgame
+                    self.tint:SetColorTexture(c.r, c.g, c.b, current.maskOpacity or 0.4)
+                end
+            end)
+        end
+        local c = p.colors.endgame
+        tintSample.tint:SetColorTexture(c.r, c.g, c.b, p.maskOpacity or 0.4)
+        tintSample.age = 0; tintSample:Show()
+    end)
+    return ok and tintSample ~= nil
+end
+
+-- Font objects are client-owned. Prefer the requested role, then the game's normal font.
+function A.FontName(preferred)
+    for _, name in ipairs({ preferred, "GameFontHighlightSmall", "GameFontNormal" }) do
+        if A.Resolve(name) then return name end
+    end
+    return nil
+end

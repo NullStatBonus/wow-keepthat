@@ -7,11 +7,15 @@ Defines KeepThat's settings pages, their defaults, the per-material review, and 
 ## Requirements
 
 ### Requirement: Settings pages
-The addon SHALL register its settings under Options > AddOns as **KeepThat**, with the pages Home, Materials, Integrations, Advanced and About. The slash command `/kt` SHALL open them.
+The addon SHALL register KeepThat under Options > AddOns with Home, Materials, Integrations, Appearance, Advanced and About, in that order, using AceConfig. `/kt` and `/kt settings` SHALL open Home. Appearance SHALL own category colors, icon tint strength, toast opacity/scale and positioning; Home SHALL retain what to mark and where to show it. Existing controls SHALL remain reachable with the same values.
 
 #### Scenario: Open settings
-- **WHEN** the player types `/kt`
-- **THEN** the KeepThat settings open on the Home page
+- **WHEN** the player types `/kt` or `/kt settings`
+- **THEN** KeepThat opens on Home and Appearance is reachable
+
+#### Scenario: Appearance relocation
+- **WHEN** the player opens Appearance after upgrading
+- **THEN** existing configured category colors and opacity remain and are editable
 
 ### Requirement: Defaults
 A new install SHALL default to: endgame materials on, leveling materials off, tooltip line on, loot toast off, icon mask off, endgame color purple, leveling color green, and "Show marks in" with bags, bank and merchant checked.
@@ -21,11 +25,15 @@ A new install SHALL default to: endgame materials on, leveling materials off, to
 - **THEN** every setting has the default listed above
 
 ### Requirement: Settings apply without reload
-Every change on Home and Materials SHALL take effect on the next tooltip, toast or bag refresh, without a UI reload.
+Every change on Home, Materials, Integrations and Appearance, and every corresponding slash setter, SHALL take effect immediately or on the next normal tooltip, toast or bag refresh without reload. Profile changes SHALL refresh all dependent presentation state.
 
 #### Scenario: Turn on leveling materials
-- **WHEN** the player turns on leveling materials and hovers a leveling material
-- **THEN** the tooltip shows the `Leveling:` line without a reload
+- **WHEN** leveling materials are enabled and the player hovers a leveling material
+- **THEN** the tooltip shows its Leveling line without reload
+
+#### Scenario: CLI presentation change
+- **WHEN** a valid appearance setter is used
+- **THEN** the settings page and owned visible samples reflect the same value without reload
 
 ### Requirement: Materials review
 One Materials page SHALL show a tree of profession, then material, each material once per profession. The list SHALL follow the Home checkboxes (only the enabled categories, or all when neither is). Each tree entry SHALL show a small swatch per category in the tint colors before its neutral name. A material page SHALL show the icon and the name in the item's quality color, a keep toggle per category it is in, its uses, counts, recipes, stock and one Wowhead copy button, and no data source.
@@ -51,11 +59,15 @@ One Materials page SHALL show a tree of profession, then material, each material
 - **THEN** it offers "Export endgame list" and "Export leveling list"
 
 ### Requirement: Loot toast position
-The player SHALL be able to move the loot toasts from the Home page: a button shows a placeholder toast to drag, and a second button resets the position. The position SHALL be saved with the other settings, and later toasts SHALL stack below the first.
+The player SHALL move, lock or reset the loot-toast anchor from Appearance using the transactional Move workflow in visual-preview. Done SHALL save the position, Cancel or Escape SHALL restore the starting position, and right-click MAY remain a Done alias. Later toasts SHALL stack below the first. Reset position SHALL affect only the anchor.
 
 #### Scenario: Move the toasts
-- **WHEN** the player clicks Move loot toasts, drags the placeholder and right-clicks it
-- **THEN** the next loot toasts appear at the new place, stacked below it
+- **WHEN** Move is chosen on Appearance, the placeholder is dragged and Done is chosen
+- **THEN** later toasts appear at the saved position, stacked below it
+
+#### Scenario: Cancel move
+- **WHEN** the placeholder is dragged then Escape is pressed
+- **THEN** the original position returns and no tentative position is saved
 
 ### Requirement: Material toggles survive catalog updates
 Toggles the player changed SHALL be kept across addon updates. Materials newly added to the catalog SHALL start on.
@@ -90,15 +102,15 @@ Each material page SHALL show how many the player has in bags and in the bank (a
 - **THEN** the page says "You have enough."
 
 ### Requirement: Sample visuals on demand
-`/kt demo` SHALL show three sample loot toasts (endgame, leveling, both) at the toast position and a sample item tooltip at the mouse, whatever the toast and tooltip settings are, so the look can be checked at any time.
+`/kt demo` SHALL retain three sample loot toasts (endgame, leveling and both) at the toast position and a native tooltip at the mouse for a random real material with realistic sample profession skills and bag counts, whatever the real feature settings are, and SHALL include an isolated tint sample. It SHALL follow visual-preview safety and restoration rules. `/kt preview <kind>` SHALL target one surface; existing `/kt test toast`, `tooltip` and `copy` SHALL remain supported.
 
 #### Scenario: One explicit test
-- **WHEN** the player types `/kt test toast`, `/kt test tooltip` or `/kt test copy`
-- **THEN** only that element is shown; `/kt test` with no type lists the types
+- **WHEN** `/kt test toast`, `/kt test tooltip` or `/kt test copy` is used
+- **THEN** only that element appears; `/kt test` without a kind lists kinds
 
 #### Scenario: Toasts turned off
-- **WHEN** loot toasts are off and the player types `/kt demo`
-- **THEN** three sample toasts appear and fade like real ones
+- **WHEN** loot toasts are off and `/kt demo` is run
+- **THEN** three sample toasts appear and fade without enabling real toasts or consuming session deduplication
 
 ### Requirement: Debug report
 `/kt debug on` SHALL start recording diagnostics and `/kt log` SHALL show a copyable report that lists every setting, the detected integrations and their state, and recorded failures.

@@ -10,7 +10,9 @@ ns.defaults = {
         tooltip = true,          -- the tooltip line (the main feature)
         toast = false,           -- loot toast
         toastPosition = { point = "TOP", x = 0, y = -140 },
-        toastOpacity = 1,        -- the whole toast fades with this (OLED: dimmable)
+        toastOpacity = 1,        -- legacy alpha, migrated independently into background/text alpha
+        toastScale = 1,
+        toastLocked = false,
         maskOpacity = 0.4,       -- icon tint strength (OLED: dimmable)  -- where the first toast shows; more stack below
         mask = false,            -- icon tint
         colors = {

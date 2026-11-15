@@ -168,3 +168,51 @@ function A.ItemQualityHex(itemID)
     local function b255(v) return math.floor((v or 1) * 255 + 0.5) end
     return ("ff%02x%02x%02x"):format(b255(r), b255(g), b255(b))
 end
+
+local sampleTooltip, redrawSample
+function A.RefreshSamples()
+    if sampleTooltip and redrawSample then pcall(function()
+        if sampleTooltip:IsShown() then redrawSample(); sampleTooltip:Show() end
+    end) end
+end
+function A.IsSampleTooltip(tooltip) return tooltip == sampleTooltip end
+function A.ShowSampleTooltip(itemID, fallbackName, render)
+    local ok = pcall(function()
+        if not sampleTooltip then
+            sampleTooltip = A.Call("CreateFrame", "GameTooltip", "KeepThatSampleTooltip", A.Resolve("UIParent"), "GameTooltipTemplate")
+        end
+        if not sampleTooltip then return end
+        sampleTooltip:SetOwner(A.Resolve("UIParent"), "ANCHOR_CURSOR")
+        local function draw()
+            sampleTooltip:ClearLines()
+            -- Preserve native item name/quality, item description and vendor information when cached.
+            local name = A.ItemName(itemID)
+            sampleTooltip.cachedName = name
+            local populated = false
+            if name then
+                populated = pcall(function()
+                    if sampleTooltip.SetItemByID then sampleTooltip:SetItemByID(itemID)
+                    else sampleTooltip:SetHyperlink("item:" .. itemID) end
+                end)
+            else
+                -- Request item data even while showing the catalog fallback.
+                A.Call("C_Item.RequestLoadItemDataByID", itemID)
+            end
+            if not populated then sampleTooltip:AddLine(name or fallbackName, 0.867, 0.867, 0.867, true) end
+            local shift = A.IsShiftDown()
+            sampleTooltip.shift = shift
+            render(sampleTooltip, shift)
+            sampleTooltip:AddLine(ns.L["Preview — sample profession skills and bag counts"], 0.6, 0.6, 0.6, true)
+        end
+        redrawSample = draw
+        draw()
+        sampleTooltip.age = 0
+        sampleTooltip:SetScript("OnUpdate", function(self, dt)
+            self.age = self.age + dt
+            if self.age >= 15 then self:Hide()
+            elseif self.shift ~= A.IsShiftDown() or self.cachedName ~= A.ItemName(itemID) then draw(); self:Show() end
+        end)
+        sampleTooltip:Show()
+    end)
+    return ok and sampleTooltip ~= nil
+end

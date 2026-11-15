@@ -36,7 +36,7 @@ KeepThat adds one short line to an item's tooltip when it is a material worth ke
 - **Counts that fit you.** If you know the profession, the count runs from your current skill to 300. When the guides disagree, you see a range, such as `40-55`.
 - **Materials made from other materials.** If a bar is made from ore, the ore is marked too, and the tooltip says what it is used to make.
 - **Several professions.** One line lists them, with `+N` when there are more than two.
-- **Loot toast.** Off by default. A small pop-up when you loot a marked material.
+- **Loot toast.** Off by default. A small pop-up when you loot a marked material, with neutral item names and labeled category colors. Adjust background and text opacity independently, change scale, preview it, and move its locked or unlocked anchor with Done/Cancel.
 - **Icon tint.** Off by default. Colors the icon of marked items in your bags, bank and merchant windows, including the buyback tab.
 - **Your choice, item by item.** The Materials page lists every material by profession, with a colored square for endgame or leveling. Turn any one off, and copy its Wowhead links with one click.
 
@@ -77,3 +77,5 @@ Put both IDs in both TOC files (`## X-Curse-Project-ID`, `## X-Wago-ID`). With t
 
 1. Check the Game versions row still matches the `## Interface` values in both TOCs.
 2. Skim the description against `README.md` and the specs; update both if the features changed.
+
+Use `/kt demo` for three synthetic toasts, a mouse tooltip and an isolated tint, or `/kt preview` to choose one sample. Samples leave real loot state and settings intact. `/kt help` groups the commands, and `/kt status` reports your current scope and settings.

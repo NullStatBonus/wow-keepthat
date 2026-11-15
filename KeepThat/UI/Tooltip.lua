@@ -38,7 +38,7 @@ local function add(tooltip, text, kind)
     if not ok then error(err or "AddLine failed", 0) end
 end
 
-local function details(result, itemID)
+local function details(result, itemID, carried)
     local A = ns.Adapter
     local ctx = ns.Context.Get() or {}
     local catalog = ctx.catalog or {}
@@ -48,9 +48,18 @@ local function details(result, itemID)
         itemID = itemID,
         itemName = function(id) return A.ItemName(id) or (catalog.itemNames or {})[id] or ("#" .. id) end,
         spellName = function(id) return A.SpellName(id) or (catalog.spellNames or {})[id] or ("#" .. id) end,
-        carried = A.ItemCount,
+        carried = carried or A.ItemCount,
         colors = profile() and profile().colors or {},
     })
+end
+
+-- Both live tooltips and previews draw the same rows with the same semantic ink.
+function Tooltip.Draw(tooltip, itemID, result, shift, carried)
+    local colors = profile() and profile().colors or {}
+    add(tooltip, ns.Wording.ColoredLine(result, colors, { hint = not shift }), "line")
+    if shift then
+        for _, line in ipairs(details(result, itemID, carried)) do add(tooltip, line.text, line.kind) end
+    end
 end
 
 local function fill(tooltip, itemID)
@@ -63,18 +72,13 @@ local function fill(tooltip, itemID)
     if not ns.Wording.Line(result) then return end
     added[tooltip] = true
     local shift = ns.Adapter.IsShiftDown()
-    -- "KeepThat:" grey, only the category word colored, professions neutral; a grey "(Shift)" hint
-    -- while the details are collapsed.
-    local colors = profile() and profile().colors or {}
-    add(tooltip, ns.Wording.ColoredLine(result, colors, { hint = not shift }), "line")
-    if shift then
-        for _, line in ipairs(details(result, itemID)) do add(tooltip, line.text, line.kind) end
-    end
+    Tooltip.Draw(tooltip, itemID, result, shift)
     ns.Adapter.TooltipShow(tooltip)
 end
 
 -- Called by the hook for every item tooltip.
 function Tooltip.OnItem(tooltip, itemID)
+    if ns.Adapter.IsSampleTooltip and ns.Adapter.IsSampleTooltip(tooltip) then return end
     if disabled then return end
     local p = profile()
     -- /kt demo shows its sample tooltip whatever the setting.
@@ -111,3 +115,37 @@ ns.Start(function(addon)
     end
     addon:RegisterEvent("MODIFIER_STATE_CHANGED", Tooltip.OnModifier)
 end)
+
+-- Choose real material metadata, but classify a private hypothetical character: both categories
+-- enabled, no disabled items or integrations, and skills at the start of this item's route segments.
+function Tooltip.Sample(random)
+    local ctx = ns.Context.Get() or {}
+    local catalog, routes = ctx.catalog or {}, ctx.routes or {}
+    local candidates = {}
+    for id in pairs(catalog.endgame or {}) do candidates[id] = true end
+    for _, items in pairs(routes.materials or {}) do for id in pairs(items) do candidates[id] = true end end
+    local ids = {}; for id in pairs(candidates) do ids[#ids + 1] = id end; table.sort(ids)
+    if #ids == 0 then return nil end
+    local id = ids[(random or math.random)(#ids)]
+    local skills = {}
+    for profession, items in pairs(routes.materials or {}) do
+        local segments = items[id] or {}
+        for i = 1, #segments, 6 do
+            skills[profession] = math.min(skills[profession] or 300, segments[i + 1])
+        end
+    end
+    local result = ns.Classify.Item(id, { catalog = catalog, routes = routes, skills = skills,
+        settings = { endgame = true, leveling = true } })
+    local name = (ns.Adapter.ItemName and ns.Adapter.ItemName(id)) or (catalog.itemNames or {})[id] or ns.L["Item %d"]:format(id)
+    return { itemID = id, name = name, result = result, carried = 12 }
+end
+
+-- Private native item tooltip: sample counts never enter live Context or production hooks.
+function Tooltip.Preview()
+    if not ns.Adapter.ShowSampleTooltip then return false end
+    local sample = Tooltip.Sample()
+    if not sample then return false end
+    return ns.Adapter.ShowSampleTooltip(sample.itemID, sample.name, function(tooltip, shift)
+        Tooltip.Draw(tooltip, sample.itemID, sample.result, shift, function() return sample.carried end)
+    end)
+end

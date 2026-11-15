@@ -14,19 +14,23 @@ The loot toast SHALL be off by default and SHALL appear only when the player has
 - **THEN** no toast appears
 
 ### Requirement: Toast on looting a marked item
-When the toast is on and the player receives a marked item by looting, the addon SHALL show a toast with the item icon, name and count, and the same line the tooltip uses, in the same color. The toast SHALL fade after a few seconds without input.
+When enabled and a marked item is received by looting, the addon SHALL show an informational toast using the local visual contract: baseline 280 by 40 units, a 28-unit icon, neutral item name/count and secondary text with only the category word colored, plus a subtle category accent when background opacity is nonzero. Both categories SHALL be named when applicable. Long localized content SHALL grow rather than clip. The recommendation meaning SHALL match the tooltip; the whole line need not share one color. The toast SHALL fade after a few seconds without input.
 
 #### Scenario: Loot a marked item
-- **WHEN** the toast is on and the player loots one Arcanite Bar
-- **THEN** a toast shows the Arcanite Bar icon, `Arcanite Bar x1` and `Endgame: Blacksmithing` in purple, then fades
+- **WHEN** enabled toasts receive one looted Arcanite Bar
+- **THEN** the icon, neutral Arcanite Bar x1 title and Endgame category in its configured color appear with Blacksmithing, then fade
 
 #### Scenario: Loot an unmarked item
-- **WHEN** the player loots an item that is not marked
+- **WHEN** an unmarked item is looted
 - **THEN** no toast appears
 
 #### Scenario: Not a loot
 - **WHEN** a marked item arrives by purchase, mail, trade or crafting
 - **THEN** no toast appears
+
+#### Scenario: Long subtitle
+- **WHEN** the localized subtitle does not fit baseline geometry
+- **THEN** the toast expands without hiding its category or recommendation
 
 ### Requirement: One toast per item per session
 Each item SHALL produce at most one toast per game session. Later pickups of the same item while its toast is showing SHALL add to its count; pickups after it faded SHALL show nothing.

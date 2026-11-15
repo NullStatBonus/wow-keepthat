@@ -142,9 +142,9 @@ do
     H2.eq(Toast.Alpha(Toast.FADE_IN), 1, "fully shown after the fade in")
     H2.eq(Toast.Alpha(Toast.SHOW - Toast.FADE / 2), 0.5, "halfway through the fade out")
     p.toastOpacity = 0.5
-    H2.eq(Toast.Alpha(1), 0.5, "scaled by the opacity setting")
+    H2.eq(Toast.Alpha(1), 1, "lifetime alpha is independent of surface dimming")
     p.toastOpacity = 0
-    H2.eq(Toast.Alpha(1), 0, "opacity 0 hides it")
+    H2.eq(Toast.Alpha(1), 1, "legacy alpha is applied by the separate layers")
     p.toastOpacity = nil
 end
 
@@ -152,9 +152,9 @@ end
 Toast.Tick(10)
 ns.defaults.profile.toast = false
 eq(Toast.Demo(), true, "the demo runs with toasts off")
-eq(visible(), 3, "three sample toasts")
+eq(#Toast.samples, 3, "three isolated sample toasts")
 Toast.Demo()
-eq(visible(), 3, "running it again keeps exactly three (Codex review)")
+eq(#Toast.samples, 3, "running it again keeps exactly three isolated samples")
 Toast.Tick(10)
 eq(visible(), 0, "they fade like real toasts")
 

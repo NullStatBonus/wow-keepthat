@@ -163,3 +163,30 @@ Not yet probed.
 ## Baganator, Bagnon
 
 Not yet probed. Only one bag addon can be enabled at a time.
+
+## Local presentation contract v1 (2026-11-15)
+
+Source inspected inside this repository: bundled AceGUI `AceGUIWidget-Button.lua` uses `UIPanelButtonTemplate`; `AceGUIContainer-Frame.lua` uses the same native button template and `GameFontNormal`; `AceGUIWidget-Label.lua` uses `GameFontHighlightSmall`. AceConfigRegistry's real validator is exercised by `tests/test_smoke.lua` for both TOCs. Appearance uses existing AceConfig toggle/range/color/execute controls, not a new renderer. The Move frame uses those native button templates. Tooltip samples use a private `GameTooltipTemplate`, leaving GameTooltip, third-party rows and native tooltip chrome alone. No Blizzard checkout or live client was inspected during this repository-only implementation; template rendering and client compatibility still require the manual checks below.
+
+Custom toast geometry uses a 4-unit base, 8-unit inset, 280×40 minimum and 28-unit icon. Wrapped content grows the frame and stacking uses measured heights. Text uses client font objects, preferring GameFontHighlightSmall and falling back to GameFontNormal when available. Preferred fonts are resolved through Adapter; no fonts or global skins are installed. Missing CreateFrame disables Move with an explanation; creation errors are caught. Keyboard Escape cancels the transaction while other keys propagate. If keyboard propagation is missing, Move fails safely with an explanation; native Done/Cancel controls use the bundled button pattern. StaticPopupDialogs/StaticPopup_Show provide diagnostic-clear confirmation; if absent, diagnostics remain untouched. Missing item icons use 134400. Missing integrations retain existing status explanations and Classic Era restrictions.
+
+### Public settings boundary
+
+`Core/Presentation.lua` owns type, bounds, default, scope, getter, setter and refresh for each key. There were no existing slash numeric limits to reuse: these are the first public numeric settings, and UI ranges read this registry. All six entries use the active AceDB profile; shared Default and character opt-in semantics remain. No new aliases are introduced; legacy `/kt`, find, test, debug, log and probe remain. Pages: home, materials, integrations, appearance, advanced, about. Topics: appearance, diagnostics, domain. Preview kinds: toast, tooltip, tint, copy. Command words, enums and key/page/topic/kind identifiers are case insensitive; find/probe arguments retain their case.
+
+| Public key | Storage | Boundary / default |
+| --- | --- | --- |
+| toast | toast | on/off boolean; off |
+| tooltip | tooltip | on/off boolean; on |
+| appearance.toast.background-opacity | toastBackgroundOpacity | integer 0–100 ↔ alpha 0–1; 100 |
+| appearance.toast.text-opacity | toastTextOpacity | integer 0–100 ↔ alpha 0–1; 100 |
+| appearance.toast.scale | toastScale | integer 50–200 ↔ scale 0.5–2; 100 |
+| appearance.toast.locked | toastLocked | on/off boolean; off |
+
+Valid public setters invalidate Context, refresh visible toast/sample state and notify AceConfigRegistry. Locking cancels Move. Migration is run at initialization and profile callbacks; missing new alpha values inherit the exact old toastOpacity, including zero and fractional values. Get does not migrate or write. The old key is retained for compatibility, but no longer multiplies either rendered layer. Reset position touches only toastPosition. Profile changes cancel the old transaction before refreshing. Log reports flattened settings plus contract version, scope, sample count and Move state; clearing removes only diagnostics, not session loot deduplication or integrations.
+
+Lock blocks drag, Move, direct anchor save and Reset position. Unlock explicitly before resetting; reset preserves the other appearance and gameplay values.
+
+Tooltip preview refinement: choose a random item from the active catalog/routes union. Classify it through the plain model with a private hypothetical skill map at the start of its real route, both categories enabled and no integration callbacks. Native SetItemByID (SetHyperlink fallback) provides item content; uncached items show a catalog name and retry on cache arrival. Live and preview share `Tooltip.Draw`, including per-row ink. Only preview supplies a dummy bag count of 12 and a sample-data footer. The private tooltip is excluded from production hooks to prevent duplicate real classifications.
+
+Compact settings sizing: AceConfigDialog `SetDefaultSize` sets the initial standalone window to 600×460 (bundled default was 700×500). Normal Ace flow/scrolling and user resizing remain available. Appearance sliders and longer action buttons use 1.5 standard control widths; tint-location checkboxes use half width so the three short labels share a row. This uses the bundled AceConfigDialog width contract and does not change Blizzard’s host settings window or any shared library. CVN dimensions were not measured in this repository-only pass.

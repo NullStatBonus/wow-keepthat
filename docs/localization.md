@@ -34,3 +34,7 @@ You do not have to translate everything. Anything you leave out shows in English
 ## Nothing is matched by English text
 
 Materials, recipes and professions are recognised by ID, never by name, so the marks work on a client in any language. Only the addon's own sentences need translating.
+
+The presentation contract adds scope labels, Appearance controls, grouped command help, diagnostic-clear confirmation and synthetic sample labels. These use literal English `L[...]` keys and the existing English fallback; no locale file is required to keep a standalone install usable. Include wrapped long item names and complete Done/Cancel labels when reviewing a translation (manual test plan §7).
+
+Use the ASD-STE100 writing rules in [DESIGN.md](../DESIGN.md) for help text. Use short, active sentences and consistent control names. Keep scope, prerequisites and action results. Remove repeated explanations.
