@@ -2,7 +2,7 @@
 ## Title: KeepThat
 ## Notes: Adds a short tooltip line to the materials worth keeping for endgame crafting or profession leveling, so you never sell what you'll need later.
 ## Version: 0.0.0
-## Author: NullStatBonus
+## Author: Confused Orc
 ## SavedVariables: KeepThatDB
 ## OptionalDeps: Baganator, Bagnon, EllesmereUI, EllesmereUIBags, Auctionator, DFLProfessionJournal
 ## Category: Professions
