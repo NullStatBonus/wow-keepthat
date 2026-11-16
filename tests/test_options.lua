@@ -288,17 +288,24 @@ for _, k in ipairs({ "home", "materials", "integrations", "advanced", "about" })
 local registered, bliz, selected, opened = {}, {}, {}, 0
 local callbacks = {}
 local notified
+-- One shared AceConfigDialog fake, so its session tree state survives between calls.
+local treeGroups = {}
+local collapsedAtOpen
+local fakeAce = {
+    Status = { KeepThat = { status = { groups = { groups = treeGroups } }, children = {} } },
+    SetDefaultSize = function() end,
+    AddToBlizOptions = function(_, app, title, parent, path)
+        bliz[#bliz + 1] = (app ~= "KeepThat" and app .. ":" or "") .. title .. ">" .. tostring(parent) .. ">" .. tostring(path)
+    end,
+    Open = function() opened = opened + 1; collapsedAtOpen = treeGroups["materials\001tailoring"] == nil end,
+    SelectGroup = function(_, app, ...) selected[#selected + 1] = table.concat({...}, "/") end,
+}
 _G.LibStub = function(lib)
     if lib == "AceConfigRegistry-3.0" then
         return { RegisterOptionsTable = function(_, app, o) registered[app] = o end,
             NotifyChange = function(_, app) notified = app end }
     end
-    return {
-        SetDefaultSize = function() end,
-        AddToBlizOptions = function(_, app, title, parent, path) bliz[#bliz + 1] = title .. ">" .. tostring(parent) .. ">" .. path end,
-        Open = function() opened = opened + 1 end,
-        SelectGroup = function(_, app, ...) selected[#selected + 1] = table.concat({...}, "/") end,
-    }
+    return fakeAce
 end
 ns.addon.db.RegisterCallback = function(_, event) callbacks[#callbacks + 1] = event end
 eq(#ns.started, 1, "Options registers one starter")
@@ -306,17 +313,59 @@ ns.started[1](ns.addon)
 eq(type(registered.KeepThat), "function", "options table registered")
 eq(registered.KeepThat().args.home ~= nil, true, "registered table has the pages")
 eq(bliz[1], "KeepThat>nil>home", "Home is the AddOns entry")
-eq(bliz[2], "Materials>KeepThat>materials", "sub pages are listed under it")
+eq(bliz[2], "KeepThat Materials:Materials>KeepThat>nil", "Materials in the game's Settings window is the launcher")
+eq(bliz[3], "Integrations>KeepThat>integrations", "sub pages are listed under it")
+eq(bliz[6], "About>KeepThat>about", "in the same order")
 eq(#bliz, 6, "six pages")
+eq(type(registered["KeepThat Materials"]), "table", "launcher table registered")
+local launcher = registered["KeepThat Materials"]
+eq(launcher.args.open.name, "Open KeepThat", "launcher offers Open KeepThat")
+for _, w in pairs(launcher.args) do eq(w.type ~= "group", true, "launcher holds no material tree") end
+local closedSettings = 0
+ns.Adapter.CloseGameSettings = function() closedSettings = closedSettings + 1 end
+launcher.args.open.func()
+eq(closedSettings, 1, "Open KeepThat closes the game's Settings window")
+eq(selected[#selected], "materials", "and opens KeepThat on Materials")
+eq(opened, 1, "the KeepThat window opened")
+opened, selected = 0, {}
 eq(#callbacks, 3, "profile callbacks registered")
 ns.Options.Open()
 eq(opened, 1, "Open opens the dialog")
 eq(selected[1], "home", "on the Home page")
 ns.realNotify()
 eq(notified, "KeepThat", "search refresh notifies the KeepThat registry")
+-- Professions under Materials start collapsed; other open nodes and Materials itself stay.
+-- AceConfigDialog's own layout: the tree's status is Status[app].status.groups, expanded nodes in its .groups.
+local fakeDialog = { Status = { KeepThat = {
+    status = { groups = { selected = "materials", groups = { materials = true, ["materials\001blacksmithing"] = true,
+        ["materials\001blacksmithing\001i12360"] = true, appearance = true } } },
+    children = {},
+} } }
+ns.Options.CollapseMaterials(fakeDialog)
+local tree = fakeDialog.Status.KeepThat.status.groups.groups
+eq(tree["materials\001blacksmithing"], nil, "profession under Materials collapses")
+eq(tree["materials\001blacksmithing\001i12360"], nil, "nested node collapses")
+eq(tree.materials, true, "Materials itself keeps its state")
+eq(tree.appearance, true, "other pages keep their state")
+eq(fakeDialog.Status.KeepThat.status.groups.selected, "materials", "the selected page is kept")
+ns.Options.CollapseMaterials({})
+ns.Options.CollapseMaterials(nil)
+treeGroups["materials\001tailoring"] = true
 ns.Options.OpenMaterial({ category = "endgame", profession = "blacksmithing", itemID = ARC })
+eq(collapsedAtOpen, true, "opening a material collapses the other professions first")
 eq(opened, 2, "material opens dialog")
 eq(selected[2], "materials/blacksmithing/i12360", "material selects complete path")
+-- /kt find with several matches: Materials filtered, only professions with a visible match expanded.
+treeGroups["materials\001tailoring"] = true
+ns.Options.OpenSearch("arcanite bar", { { profession = "blacksmithing", visible = true },
+    { profession = "engineering" }, { profession = "alchemy", visible = false } })
+eq(treeGroups["materials\001blacksmithing"], true, "a profession with a match is expanded")
+eq(treeGroups["materials\001engineering"], true, "every one with a match")
+eq(treeGroups["materials\001alchemy"], nil, "one whose match is hidden by Home is not")
+eq(treeGroups["materials\001tailoring"], nil, "others are collapsed")
+eq(selected[#selected], "materials", "the window opens on Materials")
+eq(ns.Options.Materials(2).args.search.get(), "arcanite bar", "with the search set to the query")
+ns.Options.ClearSearch()
 -- Page context follows current scope and feature state, including nested pages.
 local contextual = ns.Options.Build()
 for _, key in ipairs({ "home", "materials", "integrations", "appearance", "about" }) do

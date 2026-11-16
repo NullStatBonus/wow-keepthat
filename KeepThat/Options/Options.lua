@@ -681,10 +681,31 @@ function Options.Find(query)
     return found
 end
 
+-- /kt find with several matches: Materials filtered to the query, with only the professions that
+-- have a visible match expanded (in the tree's open-node table, see CollapseMaterials).
+function Options.OpenSearch(query, found)
+    searches.all = query or ""
+    Options.NotifyChange()
+    local dialog = LibStub("AceConfigDialog-3.0")
+    Options.CollapseMaterials(dialog)
+    local app = dialog.Status and dialog.Status[APP]
+    local tree = type(app) == "table" and type(app.status) == "table" and app.status.groups
+    if type(tree) == "table" then
+        tree.groups = type(tree.groups) == "table" and tree.groups or {}
+        for _, r in ipairs(found or {}) do
+            if r.visible ~= false and r.profession then tree.groups["materials\001" .. r.profession] = true end
+        end
+    end
+    dialog:Open(APP)
+    dialog:SelectGroup(APP, "materials")
+    pcall(Options.UpdateFooter)
+end
+
 function Options.OpenMaterial(result)
     searches.all = ""
     Options.NotifyChange()
     local dialog = LibStub("AceConfigDialog-3.0")
+    Options.CollapseMaterials(dialog)
     dialog:Open(APP)
     dialog:SelectGroup(APP, "materials", result.profession, "i" .. result.itemID)
     pcall(Options.UpdateFooter)
@@ -893,8 +914,38 @@ function Options.Build()
     }
 end
 
+-- AceConfigDialog keeps which tree nodes are open for the whole session, so a profession opened
+-- once stays open. The tree's status table is Status[app].status.groups, and its expanded nodes are
+-- that table's .groups (AceConfigDialog:SelectGroup). Close every profession under Materials so the
+-- list starts collapsed; Materials itself and other pages keep their state.
+function Options.CollapseMaterials(dialog)
+    local app = dialog and dialog.Status and dialog.Status[APP]
+    local tree = type(app) == "table" and type(app.status) == "table" and app.status.groups
+    local open = type(tree) == "table" and tree.groups
+    if type(open) ~= "table" then return end
+    for key in pairs(open) do
+        if type(key) == "string" and key:find("^materials\001") then open[key] = nil end
+    end
+end
+
+-- The Materials entry in the game's Settings window: a launcher, not the tree. Leaving the full
+-- tree there froze the game for over a minute on WoW Forever; the KeepThat window does not.
+Options.LAUNCHER = APP .. " Materials"
+
+function Options.MaterialsLauncher()
+    local g = page(L["Materials"], 1)
+    introduction(g, L["Materials"], L["Review materials in the KeepThat window. It has room for the full list, search and shopping lists."])
+    add(g, "open", { type = "execute", width = 1.5, name = L["Open KeepThat"],
+        func = function()
+            if ns.Adapter and ns.Adapter.CloseGameSettings then ns.Adapter.CloseGameSettings() end
+            Options.Open("materials")
+        end })
+    return g
+end
+
 function Options.Open(pageName)
     local dialog = LibStub("AceConfigDialog-3.0")
+    Options.CollapseMaterials(dialog)
     dialog:Open(APP)
     dialog:SelectGroup(APP, pageName or "home")
     pcall(Options.UpdateFooter)
@@ -911,13 +962,18 @@ ns.Start(function(addon)
         return built
     end
     LibStub("AceConfigRegistry-3.0"):RegisterOptionsTable(APP, options)
+    LibStub("AceConfigRegistry-3.0"):RegisterOptionsTable(Options.LAUNCHER, Options.MaterialsLauncher())
     local dialog = LibStub("AceConfigDialog-3.0")
     dialog:SetDefaultSize(APP, 600, 460)
     dialog:AddToBlizOptions(APP, APP, nil, "home")
     for _, sub in ipairs({ { "materials", L["Materials"] },
         { "integrations", L["Integrations"] },
         { "appearance", L["Appearance"] }, { "advanced", L["Advanced"] }, { "about", L["About"] } }) do
-        dialog:AddToBlizOptions(APP, sub[2], APP, sub[1])
+        if sub[1] == "materials" then
+            dialog:AddToBlizOptions(Options.LAUNCHER, sub[2], APP)
+        else
+            dialog:AddToBlizOptions(APP, sub[2], APP, sub[1])
+        end
     end
     -- The bank's contents are known once it has been opened this session.
     if addon.RegisterEvent then addon:RegisterEvent("BANKFRAME_OPENED", function() Options.bankSeen = true end) end

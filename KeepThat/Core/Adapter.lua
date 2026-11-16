@@ -225,6 +225,31 @@ function A.FooterButton(widget, text, onClick, show)
     return true
 end
 
+-- Whether the client has an event: true or false from C_EventUtils.IsEventValid, nil when unknown.
+function A.EventKnown(event)
+    if not A.Has("C_EventUtils.IsEventValid") then return nil end
+    local valid = A.Call("C_EventUtils.IsEventValid", event)
+    if valid == nil then return nil end
+    return valid and true or false
+end
+
+-- Closes the game's Settings window (SettingsPanel, or the older InterfaceOptionsFrame).
+-- True when one was asked to close; nil when neither frame exists.
+function A.CloseGameSettings()
+    for _, name in ipairs({ "SettingsPanel", "InterfaceOptionsFrame" }) do
+        local frame = A.Resolve(name)
+        if type(frame) == "table" then
+            if A.Has("HideUIPanel") then
+                A.Call("HideUIPanel", frame)
+            elseif type(frame.Hide) == "function" then
+                pcall(frame.Hide, frame)
+            end
+            return true
+        end
+    end
+    return nil
+end
+
 -- Native confirmation, with no write when unavailable or cancelled.
 function A.ConfirmClearLog(accept)
     local dialogs = A.Resolve("StaticPopupDialogs")

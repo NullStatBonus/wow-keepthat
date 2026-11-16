@@ -238,14 +238,125 @@ local registered = env2.EUI_Bags.itemOverlayIcons.KeepThat
 ns2.Context.Invalidate()
 eq(env2.EUI_Bags.itemOverlayIcons.KeepThat, registered, "and does not start twice")
 
--- An integration whose hook point is missing reports why.
+-- Baganator's mixins appear after KeepThat starts: not detected, then started on the next addon load.
 local env3 = fakeEnv()
+local lateMixin = env3.BaganatorRetailLiveContainerItemButtonMixin
 env3.BaganatorRetailLiveContainerItemButtonMixin = nil
 local ns3 = build("forever", env3)
+local handlers = {}
+ns3.Listen = function(_, event, fn) handlers[event] = fn; return true end
 ns3.run()
-eq(ns3.Integrations.Status("baganator").reason:find("no Baganator item button mixin", 1, true) ~= nil, true,
-    "Baganator without its mixins is disabled and says why")
-eq(ns3.Log.failures[1].area, "baganator", "and it is logged")
+eq(ns3.Integrations.Status("baganator").reason, "not detected", "Baganator without its mixins is not detected yet")
+eq(ns3.Log.failures[1], nil, "and nothing is logged as a failure")
+eq(type(handlers.ADDON_LOADED), "function", "integrations retry when an addon loads")
+eq(type(handlers.PLAYER_LOGIN), "function", "and at login")
+env3.BaganatorRetailLiveContainerItemButtonMixin = lateMixin
+handlers.ADDON_LOADED()
+eq(ns3.Integrations.Status("baganator").working, true, "once the mixin exists, the next addon load starts it")
+local lateBtn = button({ GetParent = function() return { GetID = function() return 0 end } end })
+lateBtn.SetItemDetails = lateMixin.SetItemDetails
+lateBtn:SetItemDetails({ itemID = 2 })
+eq(shown(ns3, lateBtn), true, "and its buttons are tinted")
+
+-- A mixin that exists but cannot be hooked turns the integration off and says why.
+local env4 = fakeEnv()
+local ns4 = build("forever", env4)
+env4.hooksecurefunc = function() error("blocked") end
+ns4.run()
+eq(ns4.Integrations.Status("baganator").reason:find("could be hooked (1 found)", 1, true) ~= nil, true,
+    "Baganator that cannot be hooked is disabled and says how many mixins it found")
+local logged = false
+for _, f in ipairs(ns4.Log.failures) do if f.area == "baganator" then logged = true end end
+eq(logged, true, "and it is logged")
+
+-- Baganator 860 freezes its mixins: each button's own SetItemDetails is hooked instead. Buttons
+-- come from Baganator's public skin API: the ones built so far, then each new one.
+local env5 = fakeEnv()
+local mixin5 = env5.BaganatorRetailLiveContainerItemButtonMixin
+local originalDetails = mixin5.SetItemDetails
+local realHook = makeHook(env5)
+env5.hooksecurefunc = function(a, b, c)
+    if a == mixin5 then error("attempted to perform indexed assignment on a frozen table") end
+    return realHook(a, b, c)
+end
+local function bagButton(bag)
+    local b = button({ GetParent = function() return { GetID = function() return bag end } end })
+    b.SetItemDetails = mixin5.SetItemDetails
+    return b
+end
+local early = bagButton(0)
+early:SetItemDetails({ itemID = 2 })          -- filled before KeepThat starts
+local skinFrames, listeners5 = { { regionType = "ItemButton", region = early } }, {}
+env5.Baganator.API.Skins = {
+    GetAllFrames = function() return skinFrames end,
+    RegisterListener = function(fn) listeners5[#listeners5 + 1] = fn end,
+}
+local ns5 = build("forever", env5)
+ns5.run()
+eq(ns5.Integrations.Status("baganator").working, true, "frozen mixins: Baganator still starts")
+eq(mixin5.SetItemDetails, originalDetails, "and the frozen mixin is left alone")
+eq(shown(ns5, early), true, "a button built before KeepThat started is tinted at once")
+early:SetItemDetails({ itemID = 4 })
+eq(shown(ns5, early), false, "and repaints through its own hook")
+local later = bagButton(0)
+for _, fn in ipairs(listeners5) do fn({ regionType = "ItemButton", region = later }) end
+later:SetItemDetails({ itemID = 2 })
+eq(shown(ns5, later), true, "a button Baganator builds later is hooked too")
+local guild = button({ SetItemDetails = function() end })
+local guildDetails = guild.SetItemDetails
+for _, fn in ipairs(listeners5) do fn({ regionType = "ItemButton", region = guild }) end
+eq(guild.SetItemDetails, guildDetails, "buttons with other methods (guild, bag slots) are not hooked")
+for _, fn in ipairs(listeners5) do fn({ regionType = "ItemButton", region = later }) end
+eq(#listeners5, 1, "one listener")
+
+-- Cached views: the view's frame name decides bank or bags; cached guild buttons are not tinted.
+local function inView(name)
+    local view = { GetName = function() return name end }
+    local layout = { GetID = function() return 0 end, GetParent = function() return view end }
+    local b = button({ GetParent = function() return layout end })
+    b.SetItemDetails = mixin5.SetItemDetails
+    return b
+end
+local cachedBank = inView("Baganator_SingleViewBankViewFrame1")
+for _, fn in ipairs(listeners5) do fn({ regionType = "ItemButton", region = cachedBank }) end
+cachedBank:SetItemDetails({ itemID = 2 })
+eq(shown(ns5, cachedBank), true, "cached bank item is tinted")
+ns5.addon.db.profile.locations.bank = false
+ns5.Context.Invalidate()
+eq(shown(ns5, cachedBank), false, "and follows the Bank setting, not Bags")
+ns5.addon.db.profile.locations.bank = true
+local cachedGuild = inView("Baganator_SingleViewGuildViewFrame1")
+for _, fn in ipairs(listeners5) do fn({ regionType = "ItemButton", region = cachedGuild }) end
+cachedGuild:SetItemDetails({ itemID = 2 })
+eq(shown(ns5, cachedGuild), false, "cached guild bank items are not tinted")
+
+-- A button whose hook fails is not marked done, so a later report can hook it.
+local flaky = bagButton(0)
+local refuse = true
+local hookNow = env5.hooksecurefunc
+env5.hooksecurefunc = function(a, b, c)
+    if a == flaky and refuse then error("busy") end
+    return hookNow(a, b, c)
+end
+for _, fn in ipairs(listeners5) do fn({ regionType = "ItemButton", region = flaky }) end
+refuse = false
+for _, fn in ipairs(listeners5) do fn({ regionType = "ItemButton", region = flaky }) end
+flaky:SetItemDetails({ itemID = 2 })
+eq(shown(ns5, flaky), true, "a button whose first hook failed is hooked on the next report")
+
+-- Unfrozen Baganator: the mixin hook is used, and buttons built before it are still adopted.
+local env6 = fakeEnv()
+local mixin6 = env6.BaganatorRetailLiveContainerItemButtonMixin
+local before6 = button({ GetParent = function() return { GetID = function() return 0 end } end })
+before6.SetItemDetails = mixin6.SetItemDetails  -- copied before KeepThat hooks the mixin
+env6.Baganator.API.Skins = {
+    GetAllFrames = function() return { { regionType = "ItemButton", region = before6 } } end,
+    RegisterListener = function() end,
+}
+local ns6 = build("forever", env6)
+ns6.run()
+before6:SetItemDetails({ itemID = 2 })
+eq(shown(ns6, before6), true, "unfrozen: a button built before the mixin hook is tinted")
 
 ---- Classic Era ----------------------------------------------------------------------------------
 

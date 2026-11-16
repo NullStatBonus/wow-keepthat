@@ -73,13 +73,20 @@ eq(#ns.Slash.Run(" FIND Arcanite ", findDeps), 0, "one match prints nothing")
 eq(query, "Arcanite", "find preserves query")
 eq(selected, matches[1], "one match opens material")
 selected = nil
-for i = 2, 12 do matches[i] = { name = "Bar " .. i, categoryName = "Leveling materials", professionName = "Tailoring" } end
-local results = ns.Slash.Run("find bar", findDeps)
-eq(#results, 11, "many matches limited to ten plus remainder")
-eq(results[1], "Arcanite Bar - Endgame materials > Blacksmithing", "match path")
-eq(results[2], "Bar 2 - Leveling materials > Tailoring", "leveling category label")
-eq(results[11], "2 more matches. Refine your search.", "remaining count, with a next step")
-eq(selected, nil, "many matches open nothing")
+local searched
+findDeps.openSearch = function(q, found) searched = { query = q, found = found } end
+matches[2] = { name = "Arcanite Bar", categoryName = "Materials", professionName = "Engineering" }
+local results = ns.Slash.Run("find arcanite bar", findDeps)
+eq(#results, 0, "several matches print nothing in chat")
+eq(searched and searched.query, "arcanite bar", "several matches open Materials filtered to the query")
+eq(searched and #searched.found, 2, "with every match")
+eq(selected, nil, "and open no single material page")
+searched = nil
+matches = { { name = "Linen Cloth", visible = false, flags = { leveling = true } },
+    { name = "Linen Cloth", visible = false, flags = { leveling = true } } }
+eq(ns.Slash.Run("find linen", findDeps)[1], "Linen Cloth is a leveling material. Turn on Leveling materials on Home to see it.",
+    "several matches all hidden by Home: explained")
+eq(searched, nil, "and nothing opens")
 -- /kt find on a material the Home checkboxes hide: say which checkbox shows it, open nothing.
 local openedHidden = 0
 local hiddenDeps = { find = function() return { { name = "Linen Cloth", visible = false, flags = { leveling = true } } } end,
