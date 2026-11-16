@@ -13,7 +13,7 @@
 
 ## 3. In-game verification
 
-- [ ] 3.1 On WoW Forever and Classic Era: Esc > Options > AddOns > KeepThat > Materials shows the launcher; Open KeepThat closes Settings and opens `/kt` on Materials; moving from Materials to every other KeepThat entry has no noticeable pause; expanded professions are collapsed after closing and reopening `/kt`; `/kt find` opens only its profession. Record results in `docs/test-plan.md` section 8.
+- [x] 3.1 On WoW Forever and Classic Era: Esc > Options > AddOns > KeepThat > Materials shows the launcher; Open KeepThat closes Settings and opens `/kt` on Materials; moving from Materials to every other KeepThat entry has no noticeable pause; expanded professions are collapsed after closing and reopening `/kt`; `/kt find` opens only its profession. Record results in `docs/test-plan.md` section 8.
 
 ## 4. Fixes found while testing
 

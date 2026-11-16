@@ -145,7 +145,7 @@ All on WoW Forever with debugging on (`/kt debug`) unless a check says otherwise
 14. Search for `nonexistentmaterial`: one neutral no-match sentence appears. Reload: the search is empty.
 15. `/kt find` on a name with one path opens its material page. `/kt find Arcanite Bar` (Blacksmithing and Engineering) opens Materials with the search set to "Arcanite Bar", only those two professions expanded, and nothing printed in chat. With Endgame materials off on Home, `/kt find Arcanite Bar` says to turn it on and opens nothing. A nonexistent name prints the no-match sentence; `/kt find` prints usage.
 
-## 7. Cohesive presentation acceptance (pending in game)
+## 7. Cohesive presentation acceptance
 
 Run on Classic Era and Forever at the same UI scale with only KeepThat first, then supported optional addons. Enable script errors. Capture Home, Appearance, a real item tooltip, three demo toasts, the tint sample, Move controls and the log-clear confirmation. Record client/build, UI scale, addon scale and installed integrations with captures.
 
