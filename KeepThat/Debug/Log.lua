@@ -70,6 +70,27 @@ function Log.Report()
         out[#out + 1] = "  moving = " .. tostring(ns.Toast.move ~= nil)
         out[#out + 1] = "  samples = " .. tostring(#ns.Toast.samples)
     end
+    out[#out + 1] = "Stock:"
+    local R = ns.StockRecorder
+    local okS, st = pcall(function() return R and R.State and R.State() end)
+    if not okS or type(st) ~= "table" then
+        out[#out + 1] = "  stock: unknown"
+    else
+        local names = {}
+        for _, m in ipairs(st.missing or {}) do
+            local what = m.bank and m.mail and "bank and mailbox" or m.bank and "bank" or "mailbox"
+            names[#names + 1] = ("%s (%s)"):format(tostring(m.name), what)
+        end
+        local un = st.unavailable or {}
+        local unList = {}
+        if un.bank then unList[#unList + 1] = "bank" end
+        if un.mail then unList[#unList + 1] = "mailbox" end
+        out[#out + 1] = "  version = " .. tostring(st.version)
+        out[#out + 1] = "  characters = " .. tostring(st.characters)
+        out[#out + 1] = "  missing = " .. (#names > 0 and table.concat(names, ", ") or "(none)")
+        out[#out + 1] = "  unavailable = " .. (#unList > 0 and table.concat(unList, ", ") or "(none)")
+        out[#out + 1] = "  reminder = " .. (st.reminder and "on" or "off")
+    end
     out[#out + 1] = "Integrations:"
     local status = ns.Integrations and ns.Integrations.Status
     if type(status) ~= "function" then

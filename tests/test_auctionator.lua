@@ -116,6 +116,32 @@ eq(n, 1, "re-export: one KeepThat: Tailoring Leveling list")
 eq(lists["My own list"][1], "Peacebloom", "the player's own list is untouched")
 eq(#lists["My own list"], 1, "the player's own list is unchanged")
 
+-- Cross-character stock: the realm-and-faction total replaces the bags count when the recorder knows it.
+carry = 0
+local total, rtotal = 0, nil
+ns.StockRecorder = { Total = function(id) if id == BOLT then return rtotal end end }
+rtotal = need.high
+AH.Export("tailoring", "leveling")
+eq(find(lists["KeepThat: Tailoring Leveling"], names[BOLT]), nil, "enough on another character: no entry")
+rtotal = need.high - 3
+AH.Export("tailoring", "leveling")
+eq(find(lists["KeepThat: Tailoring Leveling"], names[BOLT]).quantity, 3, "part held elsewhere: the difference")
+carry = need.high -- bags alone would say enough; the (incomplete) counted total wins
+ns.StockRecorder.Total = function(id) if id == BOLT then return need.high - 2, false, {} end end
+AH.Export("tailoring", "leveling")
+eq(find(lists["KeepThat: Tailoring Leveling"], names[BOLT]).quantity, 2, "an incomplete total still uses the counted amount")
+ns.StockRecorder.Total = function() return nil end
+AH.Export("tailoring", "leveling")
+eq(find(lists["KeepThat: Tailoring Leveling"], names[BOLT]), nil, "recorder total unknown: bags behaviour")
+ns.StockRecorder = nil
+carry = need.high - 1
+AH.Export("tailoring", "leveling")
+eq(find(lists["KeepThat: Tailoring Leveling"], names[BOLT]).quantity, 1, "no recorder: bags behaviour")
+ns.StockRecorder = { Total = function() error("boom") end }
+AH.Export("tailoring", "leveling")
+eq(find(lists["KeepThat: Tailoring Leveling"], names[BOLT]).quantity, 1, "a failing recorder falls back to bags")
+ns.StockRecorder = nil
+
 -- A disabled leveling material is left out.
 carry = 0
 ns.defaults.profile.disabled.leveling[BOLT] = true

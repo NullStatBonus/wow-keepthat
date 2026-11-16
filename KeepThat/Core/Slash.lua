@@ -7,6 +7,27 @@ local L = ns.L
 local Slash = {}
 ns.Slash = Slash
 
+-- /kt status stock: the scope, then each character whose bank or mailbox is not counted yet.
+function Slash.StockStatus()
+    local R = ns.StockRecorder
+    local ok, name, realm, faction = pcall(function() if R and R.Identity then return R.Identity() end end)
+    local okM, missing = pcall(function() return R and R.Missing and R.Missing() end)
+    if not ok or not name or not realm or not faction or not okM or type(missing) ~= "table" then
+        return { L["Stock is not known yet."] }
+    end
+    local n = R.Counted and R.Counted() or 0
+    local out = {}
+    if n == 1 then out[1] = L["Stock: 1 character on %s (%s)."]:format(realm, faction)
+    else out[1] = L["Stock: %d characters on %s (%s)."]:format(n, realm, faction) end
+    for _, m in ipairs(missing) do
+        if m.bank and m.mail then out[#out + 1] = L["%s: bank and mailbox not counted."]:format(m.name)
+        elseif m.bank then out[#out + 1] = L["%s: bank not counted."]:format(m.name)
+        elseif m.mail then out[#out + 1] = L["%s: mailbox not counted."]:format(m.name) end
+    end
+    if #out == 1 then out[2] = L["Every bank and mailbox is counted."] end
+    return out
+end
+
 function Slash.Run(args, deps)
     local cmd, rest = (args or ""):match("^%s*(%S*)%s*(.-)%s*$")
     cmd = cmd:lower()
@@ -33,16 +54,18 @@ function Slash.Run(args, deps)
         local _, reply = P.Set(key, value); return { reply }
     elseif cmd == "help" or cmd == "status" then
         local topic = rest:lower()
-        if topic ~= "" and topic ~= "appearance" and topic ~= "diagnostics" and topic ~= "domain" then
-            return { L["Topics: appearance, diagnostics, domain."] }
+        if topic ~= "" and topic ~= "appearance" and topic ~= "diagnostics" and topic ~= "domain" and topic ~= "stock" then
+            return { L["Topics: appearance, diagnostics, domain, stock."] }
         end
+        if cmd == "status" and topic == "stock" then return Slash.StockStatus() end
         if cmd == "status" then return ns.Presentation and ns.Presentation.Status() or { L["Settings are unavailable."] } end
         if topic == "appearance" then return {
-            L["Keys: toast, tooltip, appearance.toast.background-opacity (0-100), appearance.toast.text-opacity (0-100), appearance.toast.scale (50-200), appearance.toast.locked (on|off)."],
+            L["Keys: toast, tooltip, appearance.toast.background-opacity (0-100), appearance.toast.text-opacity (0-100), appearance.toast.scale (50-200), appearance.toast.locked (on|off), stock.reminder (on|off)."],
             L["Example: /kt set appearance.toast.text-opacity 80. Use /kt preview toast, tooltip, tint or copy; /kt demo shows all samples."] }
         elseif topic == "diagnostics" then return { L["Diagnostics: /kt debug on|off, /kt log, /kt log clear (confirmation required), /kt probe [hover|path <name>]."] }
+        elseif topic == "stock" then return { L["Stock: /kt status stock lists banks and mailboxes not counted. /kt set stock.reminder on|off turns the login reminder on or off."] }
         elseif topic == "domain" then return { L["Materials: /kt find <name>; /kt settings materials; /kt settings integrations."] } end
-        return { L["Help: /kt help appearance, /kt help diagnostics, /kt help domain. Open /kt settings [page], read /kt status [topic], or try /kt demo."] }
+        return { L["Help: /kt help appearance, /kt help diagnostics, /kt help domain, /kt help stock. Open /kt settings [page], read /kt status [topic], or try /kt demo."] }
     elseif cmd == "preview" then
         local kind = rest:lower()
         if kind ~= "toast" and kind ~= "tooltip" and kind ~= "tint" and kind ~= "copy" then

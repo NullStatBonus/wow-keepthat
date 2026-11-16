@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.3.0
+
+- Tooltips, material pages and the Auctionator list count what all your characters on the realm and faction hold, in bags, bank and mailbox, with a login reminder when a bank or mailbox has not been counted yet.
+
 ## 0.2.2
 
 - KeepThat shows its badge icon in the game's AddOns list.

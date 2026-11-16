@@ -14,6 +14,7 @@ Wording.PROFESSIONS = {
 }
 Wording.MAX_NAMED = 2
 Wording.MAX_RECIPES = 3
+Wording.MAX_STOCK = 5
 
 -- The client's own profession names (Wording.UseClientNames), else the translated English ones.
 Wording.clientNames = {}
@@ -79,7 +80,7 @@ Wording.Paint = paint
 
 -- The one line with color codes: "KeepThat:" grey, only the category word in its color, profession
 -- names neutral, and an optional grey "(Shift)" hint. colors = { endgame = {r,g,b}, leveling = {r,g,b} }.
--- opts = { prefix = true/false (default true), hint = true/false }
+-- opts = { prefix = true/false (default true), hint = true/false, owned = total across characters }
 function Wording.ColoredLine(result, colors, opts)
     if not result or not Wording.Line(result) then return nil end
     opts = opts or {}
@@ -99,6 +100,9 @@ function Wording.ColoredLine(result, colors, opts)
     else label = leveling end
     local textValue = L["%s: %s"]:format(label, paint(Wording.NEUTRAL, professionList(names)))
     if opts.prefix ~= false then textValue = L["%s %s"]:format(paint(Wording.MUTED, L["KeepThat:"]), textValue) end
+    if type(opts.owned) == "number" and opts.owned > 0 then
+        textValue = L["%s %s"]:format(textValue, L["%s %s"]:format(paint(Wording.MUTED, "-"), paint(Wording.NEUTRAL, L["%d owned"]:format(opts.owned))))
+    end
     if opts.hint then textValue = L["%s %s"]:format(textValue, paint(Wording.NOTE, L["(Shift)"])) end
     return textValue
 end
@@ -147,7 +151,9 @@ end
 --       Guides: wow-professions.com, Wowhead        kind "note"
 -- Returns a list of { text = ..., kind = ... }.
 -- ctx = { catalog, routes, itemID, itemName = function(id), spellName = function(id),
---         carried = function(id) -> number or nil }
+--         carried = function(id) -> number or nil,
+--         stock = { { name, self, count }, ... } (holders, already ordered; nil or empty adds no block) }
+-- After the category blocks, a grey "Stock" heading and up to Wording.MAX_STOCK holder rows.
 function Wording.Details(result, ctx)
     local out = {}
     if not result then return out end
@@ -198,6 +204,16 @@ function Wording.Details(result, ctx)
         if need.sources and #need.sources > 0 then
             row(L["    Guides: %s"]:format(table.concat(need.sources, L[", "])), "note")
         end
+    end
+    local stock = ctx.stock
+    if stock and #stock > 0 then
+        row(paint(Wording.MUTED, L["  Stock"]), "line")
+        for i = 1, math.min(#stock, Wording.MAX_STOCK) do
+            local h = stock[i]
+            if h.self then row(L["    This character: %d"]:format(h.count), "body")
+            else row(L["    %s: %d"]:format(h.name, h.count), "body") end
+        end
+        if #stock > Wording.MAX_STOCK then row(L["    +%d more"]:format(#stock - Wording.MAX_STOCK), "note") end
     end
     return out
 end

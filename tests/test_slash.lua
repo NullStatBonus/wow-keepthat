@@ -94,4 +94,33 @@ local hiddenDeps = { find = function() return { { name = "Linen Cloth", visible 
 eq(ns.Slash.Run("find linen", hiddenDeps)[1], "Linen Cloth is a leveling material. Turn on Leveling materials on Home to see it.", "hidden by Home: explained")
 eq(openedHidden, 0, "nothing opened")
 
+-- /kt help stock, /kt status stock.
+eq(ns.Slash.Run("help bogus", deps)[1], "Topics: appearance, diagnostics, domain, stock.", "topic list names stock")
+eq(ns.Slash.Run("status bogus", deps)[1], "Topics: appearance, diagnostics, domain, stock.", "status topic list names stock")
+eq(ns.Slash.Run("help stock", deps)[1], "Stock: /kt status stock lists banks and mailboxes not counted. /kt set stock.reminder on|off turns the login reminder on or off.", "help stock")
+eq(ns.Slash.Run("status stock", deps)[1], "Stock is not known yet.", "no recorder: not known")
+local miss, counted, ident = {}, 3, function() return "Me", "Realm", "Alliance" end
+ns.StockRecorder = { Identity = function() return ident() end, Counted = function() return counted end,
+    Missing = function() return miss end }
+local o = ns.Slash.Run("STATUS Stock", deps)
+eq(o[1], "Stock: 3 characters on Realm (Alliance).", "scope line")
+eq(o[2], "Every bank and mailbox is counted.", "nothing missing")
+eq(#o, 2, "and no more lines")
+counted = 1
+eq(ns.Slash.Run("status stock", deps)[1], "Stock: 1 character on Realm (Alliance).", "singular scope line")
+counted = 3
+miss = { { name = "Me", self = true, bank = true, mail = false }, { name = "Alt", bank = false, mail = true },
+    { name = "Old", bank = true, mail = true } }
+o = ns.Slash.Run("status stock", deps)
+eq(o[2], "Me: bank not counted.", "bank only")
+eq(o[3], "Alt: mailbox not counted.", "mailbox only")
+eq(o[4], "Old: bank and mailbox not counted.", "both")
+eq(#o, 4, "no all-counted line when something is missing")
+ident = function() return nil end
+eq(ns.Slash.Run("status stock", deps)[1], "Stock is not known yet.", "identity unknown")
+ident = function() return "Me", "Realm", "Alliance" end
+ns.StockRecorder.Missing = function() return nil end
+eq(ns.Slash.Run("status stock", deps)[1], "Stock is not known yet.", "missing unknown")
+ns.StockRecorder = nil
+
 H.done()

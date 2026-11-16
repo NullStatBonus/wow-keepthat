@@ -18,7 +18,7 @@ The addon SHALL register KeepThat under Options > AddOns with Home, Materials, I
 - **THEN** existing configured category colors and opacity remain and are editable
 
 ### Requirement: Defaults
-A new install SHALL default to: endgame materials on, leveling materials off, tooltip line on, loot toast off, icon mask off, endgame color purple, leveling color green, and "Show marks in" with bags, bank and merchant checked.
+A new install SHALL default to: endgame materials on, leveling materials off, tooltip line on, loot toast off, login reminder on, icon mask off, endgame color purple, leveling color green, and "Show marks in" with bags, bank and merchant checked.
 
 #### Scenario: First login
 - **WHEN** the addon loads with no saved settings
@@ -91,15 +91,30 @@ On Classic Era, the addon SHALL not run any integration with another addon. The 
 - **THEN** Baganator shows no overlay, Blizzard's own bags do, and the Integrations page says integrations are not yet available on Classic Era
 
 ### Requirement: Material stock on its page
-Each material page SHALL show how many the player has in bags and in the bank (as far as the client knows it). A leveling page SHALL also show how many are still to get: the count still needed minus what the player has, as a range when the guides differ, or that the player has enough. An endgame page SHALL show what each leveling route still needs of the item when it is also a leveling material.
+Each material page SHALL keep its "Your stock" section. It SHALL give the realm-and-faction total split between this character and the player's other characters, then one line per character holding any: this character first, then the others by count, each other character with the grey age of its oldest counted source. Every holder SHALL be listed, and the page SHALL NOT ask the player to open a bank or mailbox.
+
+#### Scenario: Stock across characters
+- **WHEN** a route still needs 40 Runecloth, this character has 12 in bags and 8 in the bank, Bankmule has 30 in the bank, Hunter has 5 in the mailbox, and every bank and mailbox is counted
+- **THEN** the page shows `55 owned - 20 on this character, 35 on your other characters`, a line for each of the three characters, and "You have enough."
+
+#### Scenario: Nobody holds it
+- **WHEN** no character in scope holds the material
+- **THEN** the section says the player has none, with no per-character lines
+
+### Requirement: Still to get across characters
+A leveling page SHALL show how many are still to get: the count still needed minus the realm-and-faction total, as a range when the guides differ, or that the player has enough. While the total is incomplete, the still-to-get line SHALL be hidden. An endgame page SHALL show what each leveling route still needs of the item when it is also a leveling material.
 
 #### Scenario: Leveling material with some in the bank
-- **WHEN** a route still needs 40 Linen Cloth and the player has 10 in bags and 15 in the bank
-- **THEN** the page shows "10 in bags, 15 in the bank" and "Still to get: 15"
+- **WHEN** a route still needs 40 Linen Cloth, the player has 10 in bags and 15 in the bank, no other character holds any, and every bank and mailbox is counted
+- **THEN** the page shows `This character: 10 in bags, 15 in the bank` and "Still to get: 15"
 
 #### Scenario: Enough on hand
-- **WHEN** the player has at least the top of the range
+- **WHEN** the total is at least the top of the range and every bank and mailbox is counted
 - **THEN** the page says "You have enough."
+
+#### Scenario: Incomplete total
+- **WHEN** a route still needs 40 Linen Cloth and another character's mailbox has not been counted
+- **THEN** the still-to-get line is hidden and no note explains why
 
 ### Requirement: Sample visuals on demand
 `/kt demo` SHALL retain three sample loot toasts (endgame, leveling and both) at the toast position and a native tooltip at the mouse for a random real material with realistic sample profession skills and bag counts, whatever the real feature settings are, and SHALL include an isolated tint sample. It SHALL follow visual-preview safety and restoration rules. `/kt preview <kind>` SHALL target one surface; existing `/kt test toast`, `tooltip` and `copy` SHALL remain supported.
@@ -189,3 +204,10 @@ Both TOC files SHALL name the same KeepThat icon with `## IconTexture:`, and the
 #### Scenario: Icon in the AddOns list
 - **WHEN** the player opens the game's AddOns list on Classic Era or WoW Forever
 - **THEN** KeepThat shows its badge icon next to its name
+
+### Requirement: Login reminder setting
+Home SHALL have a "Login reminder" checkbox under "Where to show it", after "Loot toast" and before "Icon tint". Its hover text SHALL be "Remind you at login when a character's bank or mailbox is not counted." It SHALL control the character-stock login reminder and SHALL be the same setting as `/kt set stock.reminder`. The "displays are off" note on Home SHALL NOT consider it.
+
+#### Scenario: Turn the reminder off
+- **WHEN** the player clears "Login reminder" on Home
+- **THEN** `/kt get stock.reminder` returns `off` and no reminder prints at the next login

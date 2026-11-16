@@ -64,11 +64,12 @@ local function introduction(group, heading, purpose)
 end
 
 -- Toggles keep their help on hover; visible help is only for consequences that matter.
-local function profileToggle(group, key, name, desc)
+local function profileToggle(group, key, name, desc, publicKey)
+    publicKey = publicKey or key
     return add(group, key, {
         type = "toggle", width = "full", name = name, desc = desc,
         get = function() return profile()[key] end,
-        set = function(_, value) if ns.Presentation and ns.Presentation.keys[key] then ns.Presentation.Set(key, value and "on" or "off")
+        set = function(_, value) if ns.Presentation and ns.Presentation.keys[publicKey] then ns.Presentation.Set(publicKey, value and "on" or "off")
             else profile()[key] = value and true or false; changed() end end,
     })
 end
@@ -109,6 +110,7 @@ function Options.Home(order)
     note(g, "displayHelp", grey(L["Hold Shift on a tooltip for details. Toasts show looted materials. Icon tint marks items in the selected locations."]))
     profileToggle(g, "tooltip", L["Tooltip line"], L["Add a short line to the tooltip of a material worth keeping."])
     profileToggle(g, "toast", L["Loot toast"], L["Show a small message when you loot a material worth keeping."])
+    profileToggle(g, "stockReminder", L["Login reminder"], L["Remind you at login when a character's bank or mailbox is not counted."], "stock.reminder")
     profileToggle(g, "mask", L["Icon tint"], L["Tint the icon of a material worth keeping."])
     add(g, "locations", {
         type = "multiselect", width = "half", name = L["Show the tint in"], desc = L["Where the icon tint is shown."],
@@ -331,32 +333,67 @@ local function needFor(profession, id)
     return ns.Leveling.Need(ctx.routes, profession, id, skillFor(profession), extra)
 end
 
--- What the player has: bags, and the bank as far as the client knows it. bank is nil when unknown.
-function Options.Stock(id)
-    local A = ns.Adapter
-    if not A.ItemCount then return nil, nil end
-    local bags = A.ItemCount(id)
-    local total = A.ItemCount(id, true)
-    local bank = (bags and total and total >= bags) and (total - bags) or nil
-    -- A bank count of 0 is only trusted once the bank has been opened this session.
-    if bank == 0 and not Options.bankSeen then bank = nil end
-    return bags, bank
+-- Every character's stock of the item (realm and faction), from the recorder. nil when unknown.
+local function stockTotals(id)
+    local R = ns.StockRecorder
+    if not (R and R.Total) then return nil end
+    local total, complete, rows = R.Total(id)
+    if total == nil then return nil end
+    return total, complete, rows or {}
+end
+
+local function ageText(seconds)
+    if not (seconds and ns.Stock and ns.Stock.Age) then return nil end
+    local unit, n = ns.Stock.Age(seconds)
+    if unit == "minute" then return n == 1 and L["(1 minute ago)"] or L["(%d minutes ago)"]:format(n) end
+    if unit == "hour" then return n == 1 and L["(1 hour ago)"] or L["(%d hours ago)"]:format(n) end
+    if unit == "day" then return n == 1 and L["(1 day ago)"] or L["(%d days ago)"]:format(n) end
+    return nil
+end
+
+local function holderParts(row)
+    local parts = {}
+    if (row.bags or 0) > 0 then parts[#parts + 1] = L["%d in bags"]:format(row.bags) end
+    if (row.bank or 0) > 0 then parts[#parts + 1] = L["%d in the bank"]:format(row.bank) end
+    if (row.mail or 0) > 0 then parts[#parts + 1] = L["%d in the mailbox"]:format(row.mail) end
+    return table.concat(parts, L[", "])
 end
 
 local function stockLine(id)
-    local bags, bank = Options.Stock(id)
-    if not bags then return L["Your stock is not known yet."] end
-    if bank then return L["%d in bags, %d in the bank"]:format(bags, bank) end
-    return L["%d in bags (open your bank to count it)"]:format(bags)
+    local total, _, rows = stockTotals(id)
+    if not total then
+        local count = ns.Adapter.ItemCount and ns.Adapter.ItemCount(id)
+        if count then return L["%d in bags"]:format(count) end
+        return L["Your stock is not known yet."]
+    end
+    if total == 0 then return L["None on any of your characters."] end
+    local here = 0
+    for _, row in ipairs(rows) do if row.self then here = here + (row.count or 0) end end
+    if here == total then return L["%d owned, all on this character"]:format(total) end
+    if here == 0 then return L["%d owned, all on your other characters"]:format(total) end
+    return L["%d owned - %d on this character, %d on your other characters"]:format(total, here, total - here)
 end
 
--- "Still to get" from the count range and what the player has (bags and bank).
+-- One line per holding character; the whole block is a function so the row count is never frozen.
+local function stockRows(id)
+    local _, _, rows = stockTotals(id)
+    local out = {}
+    for _, row in ipairs(rows or {}) do
+        local label = row.self and L["This character"] or row.name
+        local text = "  " .. L["%s: %s"]:format(label, holderParts(row))
+        local age = not row.self and ageText(row.age) or nil
+        if age then text = text .. " " .. noted(age) end
+        out[#out + 1] = text
+    end
+    return table.concat(out, "\n")
+end
+
+-- "Still to get" from the count range and the realm-and-faction total; nil until the total is complete.
 local function toGetLine(need, id)
     if not need or not need.low then return nil end
-    local bags, bank = Options.Stock(id)
-    if not bags or not bank then return nil end   -- bags or bank not known yet: no shortfall shown
-    local have = (bags or 0) + (bank or 0)
-    local low, high = math.max(0, need.low - have), math.max(0, need.high - have)
+    local total, complete = stockTotals(id)
+    if not total or not complete then return nil end
+    local low, high = math.max(0, need.low - total), math.max(0, need.high - total)
     if high == 0 then return L["You have enough."] end
     if low == high then return L["Still to get: %d"]:format(high) end
     return L["Still to get: %d-%d"]:format(low, high)
@@ -505,7 +542,7 @@ local function materialNode(profession, id, flags, name, order)
     spacer(g, "s6")
     add(g, "h_stock", { type = "header", name = L["Your stock"] })
     line(g, "stock", function() return stockLine(id) end)
-    line(g, "stockHelp", muted(L["The bank count updates after you open your bank."]), "small")
+    line(g, "stockRows", function() return stockRows(id) end, "medium", function() return stockRows(id) == "" end)
     spacer(g, "s4")
 
     add(g, "h_links", { type = "header", name = L["Wowhead link"] })
@@ -975,8 +1012,6 @@ ns.Start(function(addon)
             dialog:AddToBlizOptions(APP, sub[2], APP, sub[1])
         end
     end
-    -- The bank's contents are known once it has been opened this session.
-    if addon.RegisterEvent then addon:RegisterEvent("BANKFRAME_OPENED", function() Options.bankSeen = true end) end
     -- A profile switch (or reset) changes every setting at once.
     local function refresh()
         if ns.Toast then ns.Toast.CancelMove() end
