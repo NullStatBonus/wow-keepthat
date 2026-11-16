@@ -1,12 +1,12 @@
 # slash-interface Specification
 
 ## Purpose
-TBD - created by archiving change cohesive-addon-presentation. Update Purpose after archive.
+Defines the `/kt` commands: settings pages, help and status topics, the allowlisted get/set settings registry, previews, the demo, and the debug log.
 
 ## Requirements
 
 ### Requirement: Common command discovery
-The addon SHALL provide `/kt settings [page]`, `status [topic]`, `help [topic]`, `demo`, `preview [kind]`, `get <key>`, `set <key> <value>`, `debug on|off`, `log` and `log clear`. Existing valid commands and bare-command behavior SHALL remain, except demo side effects explicitly superseded by visual-preview. Help, About and README SHALL document demo.
+The addon SHALL provide `/kt settings [page]`, `status [topic]`, `help [topic]`, `demo`, `preview [kind]`, `get <key>`, `set <key> <value>`, `debug on|off`, `log` and `log clear`. Status topics SHALL include `stock`, which lists each character in scope with a bank or mailbox not counted, and what is missing. Existing valid commands and bare-command behavior SHALL remain, except demo side effects explicitly superseded by visual-preview. Help, About and README SHALL document demo.
 
 #### Scenario: Legacy entry point
 - **WHEN** `/kt` or an existing valid domain command is used
@@ -27,6 +27,10 @@ The addon SHALL provide `/kt settings [page]`, `status [topic]`, `help [topic]`,
 #### Scenario: Topic help and status
 - **WHEN** help or status is requested
 - **THEN** help groups appearance, diagnostics and domain topics and rejects unknown topics with valid choices; status reports scope, effective values and feature availability
+
+#### Scenario: Stock status
+- **WHEN** `/kt status stock` is used while Bankmule's mailbox and Hunter's bank are not counted
+- **THEN** chat names the realm and faction and the number of characters counted, then shows `Bankmule: mailbox not counted.` and `Hunter: bank not counted.`
 
 #### Scenario: Log purpose
 - **WHEN** log or log clear is used
@@ -70,7 +74,12 @@ The initial public registry SHALL provide the keys, types, bounds, defaults and 
 | --- | --- | --- | --- |
 | toast | boolean on/off | off | active profile |
 | tooltip | boolean on/off | on | active profile |
+| stock.reminder | boolean on/off | on | active profile |
 | appearance.toast.background-opacity | integer 0–100 | 100 on new installs; migrate old alpha | active profile |
 | appearance.toast.text-opacity | integer 0–100 | 100 on new installs; migrate old alpha | active profile |
 | appearance.toast.scale | integer 50–200 | 100 | active profile |
 | appearance.toast.locked | boolean on/off | off | active profile |
+
+#### Scenario: Reminder key
+- **WHEN** `/kt set stock.reminder off` is used
+- **THEN** the Home "Login reminder" checkbox is cleared and no reminder prints at the next login

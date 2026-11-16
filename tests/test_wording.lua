@@ -95,4 +95,42 @@ eq(W.ColoredLine({ endgame = { { profession = "alchemy" } } }, colors, { prefix 
     "|cffff0000Endgame|r: |cffddddddAlchemy|r", "without the prefix (the toast)")
 eq(W.ColoredLine(nil, colors), nil, "unmarked: nothing")
 
+-- Owned across characters: grey dash, neutral count, before the grey (Shift) hint.
+local tail = { endgame = { { profession = "alchemy" } } }
+eq(W.ColoredLine(tail, colors, { hint = true, owned = 55 }),
+    "|cffaaaaaaKeepThat:|r |cffff0000Endgame|r: |cffddddddAlchemy|r |cffaaaaaa-|r |cffdddddd55 owned|r |cff999999(Shift)|r", "owned before the hint")
+eq(W.ColoredLine(tail, colors, { owned = 55 }):sub(-34), "|cffaaaaaa-|r |cffdddddd55 owned|r", "owned last without the hint")
+eq(W.ColoredLine(tail, colors, { hint = true, owned = 0 }), W.ColoredLine(tail, colors, { hint = true }), "0 owned omitted")
+eq(W.ColoredLine(tail, colors, { hint = true, owned = nil }):find("owned", 1, true), nil, "nil owned omitted")
+
+-- The Stock block: after the category blocks, grey heading, rows as given, 5 at most, then "+N more".
+local function holders(n)
+    local rows = { { name = "Me", self = true, count = 20 } }
+    for i = 2, n do rows[i] = { name = "Alt" .. i, count = 30 - i } end
+    return rows
+end
+local mixed = { endgame = { { profession = "blacksmithing", reason = "x" } }, leveling = { { profession = "tailoring", need = { from = 1, to = 50, low = 40, high = 55 } } } }
+local sd = W.Details(mixed, { catalog = cat, itemID = ORE, carried = function() return 7 end, stock = holders(3) })
+local n = #sd
+eq(sd[n - 3].text, "|cffaaaaaa  Stock|r", "grey Stock heading")
+eq(sd[n - 3].kind, "line", "Stock heading is a colored line")
+eq(sd[n - 2].text, "    This character: 20", "own row first")
+eq(sd[n - 1].text, "    Alt2: 28", "others in the given order")
+eq(sd[n].text, "    Alt3: 27", "last holder")
+local sd8 = W.Details(mixed, { catalog = cat, itemID = ORE, stock = holders(8) })
+eq(sd8[#sd8].text, "    +3 more", "more than five holders: +3 more")
+eq(sd8[#sd8 - 1].text, "    Alt5: 25", "five holder rows shown")
+eq(sd8[#sd8].kind, "note", "+N more is a grey note")
+local sd5 = W.Details(mixed, { catalog = cat, itemID = ORE, stock = holders(5) })
+eq(sd5[#sd5].text, "    Alt5: 25", "exactly five: no +N more")
+local plainDetails = W.Details(mixed, { catalog = cat, itemID = ORE })
+local function hasStock(d) for _, r in ipairs(d) do if r.text:find("Stock", 1, true) then return true end end return false end
+eq(hasStock(plainDetails), false, "no stock: no block")
+eq(hasStock(W.Details(mixed, { catalog = cat, itemID = ORE, stock = {} })), false, "empty stock: no block")
+local eo = W.Details({ endgame = { { profession = "blacksmithing", reason = "x" } } }, { catalog = cat, itemID = ORE, stock = holders(2) })
+eq(hasStock(eo), true, "endgame-only item shows stock")
+local need = W.Details({ leveling = { { profession = "tailoring", need = { from = 1, to = 50, low = 40, high = 55 } } } },
+    { catalog = cat, itemID = ORE, carried = function() return 12 end, stock = holders(2) })
+eq(need[2].text, "    40-55 needed, 12 in bags", "need row unchanged by stock")
+
 H.done()

@@ -52,7 +52,13 @@ local function itemName(itemID)
     return name
 end
 
+-- The realm-and-faction total (even when incomplete) when stock is known, else this character's bags.
 local function carried(itemID)
+    local R = ns.StockRecorder
+    if R and R.Total then
+        local ok, total = pcall(R.Total, itemID)
+        if ok and type(total) == "number" then return total end
+    end
     local A = ns.Adapter
     local n = A and A.ItemCount and A.ItemCount(itemID)
     return type(n) == "number" and n or 0

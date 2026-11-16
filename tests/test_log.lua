@@ -50,6 +50,21 @@ has(r, "bagnon: detected=false, working=false", "undetected integration")
 has(r, "[baganator] overlay hook failed", "failure is listed")
 has(r, "[baganator] FAILED: overlay hook failed", "failure is also a recorded line")
 
+-- Stock state.
+has(r, "stock: unknown", "no recorder: stock unknown")
+ns.StockRecorder = { State = function() return { version = 1, characters = 3,
+    missing = { { name = "Alt", bank = true, mail = true }, { name = "Bob", bank = false, mail = true } },
+    unavailable = { bank = true, mail = false }, reminder = false } end }
+r = Log.Report()
+has(r, "version = 1", "stock version")
+has(r, "characters = 3", "stock characters")
+has(r, "missing = Alt (bank and mailbox), Bob (mailbox)", "missing sources by name")
+has(r, "unavailable = bank\n", "unavailable sources")
+has(r, "reminder = off", "reminder setting")
+ns.StockRecorder = { State = function() error("boom") end }
+has(Log.Report(), "stock: unknown", "a failing State is reported as unknown")
+ns.StockRecorder = nil
+
 -- A Status that errors does not break the report.
 ns.Integrations = { Status = function() error("boom") end }
 has(Log.Report(), "error:", "a failing Status is reported, not raised")

@@ -38,7 +38,16 @@ local function add(tooltip, text, kind)
     if not ok then error(err or "AddLine failed", 0) end
 end
 
-local function details(result, itemID, carried)
+-- The realm-and-faction stock { total, rows }, or nil when the recorder does not know.
+local function liveStock(itemID)
+    local R = ns.StockRecorder
+    if not (R and R.Total) then return nil end
+    local total, _, rows = R.Total(itemID)
+    if total == nil then return nil end
+    return { total = total, rows = rows }
+end
+
+local function details(result, itemID, carried, stock)
     local A = ns.Adapter
     local ctx = ns.Context.Get() or {}
     local catalog = ctx.catalog or {}
@@ -50,15 +59,18 @@ local function details(result, itemID, carried)
         spellName = function(id) return A.SpellName(id) or (catalog.spellNames or {})[id] or ("#" .. id) end,
         carried = carried or A.ItemCount,
         colors = profile() and profile().colors or {},
+        stock = stock and stock.rows,
     })
 end
 
 -- Both live tooltips and previews draw the same rows with the same semantic ink.
-function Tooltip.Draw(tooltip, itemID, result, shift, carried)
+-- stock = { total, rows } for a preview; nil reads the recorder.
+function Tooltip.Draw(tooltip, itemID, result, shift, carried, stock)
     local colors = profile() and profile().colors or {}
-    add(tooltip, ns.Wording.ColoredLine(result, colors, { hint = not shift }), "line")
+    stock = stock or liveStock(itemID)
+    add(tooltip, ns.Wording.ColoredLine(result, colors, { hint = not shift, owned = stock and stock.total }), "line")
     if shift then
-        for _, line in ipairs(details(result, itemID, carried)) do add(tooltip, line.text, line.kind) end
+        for _, line in ipairs(details(result, itemID, carried, stock)) do add(tooltip, line.text, line.kind) end
     end
 end
 
@@ -137,7 +149,8 @@ function Tooltip.Sample(random)
     local result = ns.Classify.Item(id, { catalog = catalog, routes = routes, skills = skills,
         settings = { endgame = true, leveling = true } })
     local name = (ns.Adapter.ItemName and ns.Adapter.ItemName(id)) or (catalog.itemNames or {})[id] or ns.L["Item %d"]:format(id)
-    return { itemID = id, name = name, result = result, carried = 12 }
+    return { itemID = id, name = name, result = result, carried = 12, stock = {
+        total = 55, rows = { { name = "", self = true, count = 20 }, { name = "Bankmule", count = 30 }, { name = "Hunter", count = 5 } } } }
 end
 
 -- Private native item tooltip: sample counts never enter live Context or production hooks.
@@ -146,6 +159,6 @@ function Tooltip.Preview()
     local sample = Tooltip.Sample()
     if not sample then return false end
     return ns.Adapter.ShowSampleTooltip(sample.itemID, sample.name, function(tooltip, shift)
-        Tooltip.Draw(tooltip, sample.itemID, sample.result, shift, function() return sample.carried end)
+        Tooltip.Draw(tooltip, sample.itemID, sample.result, shift, function() return sample.carried end, sample.stock)
     end)
 end

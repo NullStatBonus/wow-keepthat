@@ -23,9 +23,11 @@ ns.defaults = {
         locations = { bags = true, bank = true, merchant = true },
         disabled = { endgame = {}, leveling = {} },       -- [itemID] = true for materials turned off
         integrations = { baganator = true, bagnon = true, ellesmereui = true, auctionator = true, professionjournal = true },
+        stockReminder = true,    -- login reminder when a bank or mailbox is not counted
         debug = false,
     },
     global = {
         log = {},                -- debug log lines (Debug/Log.lua)
+        -- stock: per-character stock (Model/Stock.lua), created by Core/Stock.lua at login, not here
     },
 }

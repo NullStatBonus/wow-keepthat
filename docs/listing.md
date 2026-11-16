@@ -36,6 +36,7 @@ KeepThat adds one short line to an item's tooltip when it is a material worth ke
 - **Counts that fit you.** If you know the profession, the count runs from your current skill to 300. When the guides disagree, you see a range, such as `40-55`.
 - **Materials made from other materials.** If a bar is made from ore, the ore is marked too, and the tooltip says what it is used to make.
 - **Several professions.** One line lists them, with `+N` when there are more than two.
+- **Stock across characters.** The tooltip shows what you own on all your characters on the same realm and faction (bags, bank and mailbox), such as `55 owned`; Shift lists each character. Auctionator lists only buy what that total does not cover. The guild bank is never counted.
 - **Loot toast.** Off by default. A small pop-up when you loot a marked material, with neutral item names and labeled category colors. Adjust background and text opacity independently, change scale, preview it, and move its locked or unlocked anchor with Done/Cancel.
 - **Icon tint.** Off by default. Colors the icon of marked items in your bags, bank and merchant windows, including the buyback tab.
 - **Your choice, item by item.** The Materials page lists every material by profession, with a colored square for endgame or leveling. Turn any one off, and copy its Wowhead links with one click.
@@ -52,6 +53,7 @@ Search the materials pages by item name, or use `/kt find <name>` to jump to a s
 
 - Counts follow the free guides above. Your own route may need more or less, so a range shows how much the guides agree.
 - WoW Forever uses the Classic Era endgame lists for now. They will change as Forever's new content and guides settle.
+- Stock counts a character after it logs in once and you open its bank and mailbox there. Only your characters on the same realm and faction are counted. `/kt status stock` lists what is missing.
 - Settings are shared by your whole account. You can switch one character to its own settings on the Advanced page.
 - If another addon changes and KeepThat can't work with it, KeepThat turns off only that part and says why on the Integrations page.
 

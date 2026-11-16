@@ -27,11 +27,13 @@ An item used by several professions lists them in the same line: up to two by na
 Hold **Shift** to see the details below the line:
 
 - For an endgame material: the recipes that use it, with the quantity each needs (`Storm Gauntlets x2`). For a material that is marked because it makes another one, it says so (`Blacksmithing: used to make Thorium Bar for Arcanite Bar`).
-- For a leveling material: the skill range, how many you still need, and how many you have in your bags (`Tailoring 260-280: 40 needed, 12 in bags`). When the leveling guides disagree, the count is a range (`40-55 needed`).
+- For a leveling material: the skill range, how many you still need, and how many you carry in your bags (`Tailoring 260-280: 40 needed, 12 in bags`). When the leveling guides disagree, the count is a range (`40-55 needed`).
+
+Stock across characters: when any of your characters holds the item, the line ends with the total you own, such as `KeepThat: Leveling: Tailoring - 55 owned (Shift)`. The total covers every character on this realm and faction, counting bags, bank and mailbox, and never the guild bank or the account bank. Shift adds a short `Stock` block below the details: `This character: 20`, then one line per other character (`Bankmule: 30`), with `+3 more` after five lines.
 
 Release Shift and the tooltip goes back to the single line. The line shows on item tooltips everywhere the game shows them: bags, bank, merchant, auction house, loot, mail, trade, chat item links and recipe reagents, and only once per tooltip. The colors can be changed in the settings, and "Tooltip line" turns the line off (it is on by default). The change takes effect on the next tooltip, without a reload.
 
-Good to know: if something goes wrong while drawing the line (for example after a game patch), KeepThat turns the tooltip line off until the next reload instead of showing a Lua error, and `/kt log` names the failure. The bag count covers your bags, not the bank.
+Good to know: if something goes wrong while drawing the line (for example after a game patch), KeepThat turns the tooltip line off until the next reload instead of showing a Lua error, and `/kt log` names the failure.
 
 ### Loot toast (optional)
 
@@ -75,7 +77,7 @@ On Classic Era, the page says integrations are not yet available there. The icon
 
 With Auctionator installed, KeepThat can turn the materials you still need into an Auctionator shopping list, so buying them takes one search instead of many. Pick a profession and either endgame or leveling materials and export: Auctionator gets a list named "KeepThat: <Profession> <Category>" (for example "KeepThat: Tailoring Leveling") with one exact search per material you have left turned on.
 
-- Leveling lists only include what you still need from your current skill. When a guide gives a count, a material you already carry enough of is left out, and the rest carry the difference as the quantity.
+- Leveling lists only include what you still need from your current skill. When a guide gives a count, a material you already own enough of across your characters (same realm and faction) is left out, and the rest carry the difference as the quantity.
 - Exporting the same profession and category again replaces that KeepThat list. Your own Auctionator lists are never touched.
 - Without Auctionator, or with an Auctionator version whose interface has changed, the export control is disabled and says why. Nothing errors.
 - It can be turned off on the Integrations page. On Classic Era integrations are not yet available.
@@ -91,8 +93,26 @@ When DFL Profession Journal is installed, its leveling route counts as one more 
 
 ### Good to know about integrations
 
-- The Auctionator quantity uses what you carry in your bags. (Lead: confirm once `ns.Adapter.ItemCount` exists, and whether it counts the bank.)
+- The Auctionator list buys only what your realm-and-faction total does not cover: what you own across your characters' bags, bank and mailbox is subtracted from the quantity.
 - Profession Journal's live plan (which changes with your bags and prices) is not used; KeepThat uses its fixed route for your faction, so the counts stay steady.
+
+### Stock across characters
+
+KeepThat remembers what each of your characters has in bags, bank and mailbox and adds it up for the tooltip, the Materials page and the Auctionator list. Nothing needs setting up: log in on a character, open its bank and its mailbox once, and it counts from then on. The guild bank and the account bank are never counted.
+
+- `/kt status stock` shows `Stock: 3 characters on <Realm> (<Faction>).`, then one line per character whose bank or mailbox is not counted (`<Name>: bank not counted.`, `mailbox not counted.` or `bank and mailbox not counted.`), or `Every bank and mailbox is counted.`
+- While any bank or mailbox is not counted, the item page hides "Still to get", because the total could be too low.
+- Login reminder (Home, on by default; `/kt set stock.reminder off` turns it off): once per session, at login and after a `/reload`, a chat line such as `KeepThat: 2 characters have a bank or mailbox not counted. /kt status stock lists them.` It stays silent when every bank and mailbox is counted.
+
+Good to know about stock:
+
+- Only characters on the same realm and faction are counted.
+- A character counts after it logs in once with KeepThat. Its bags count right away; its bank and mailbox count once you open them.
+- Mail on its way to another character is not counted until it arrives.
+- Only the mail the game shows is counted, so a mailbox with more than 50 mails can be short.
+- Cash-on-delivery items count before they are paid for.
+- Characters not seen for 90 days, and bank or mailbox counts older than 90 days, are left out. A renamed or deleted character drops out the same way.
+- Two characters leveling the same profession both count the same stock.
 
 ## Settings
 
@@ -100,8 +120,8 @@ For the reusable layout and interaction decisions, see [DESIGN.md](DESIGN.md).
 
 Open the settings with `/kt`, or under Options > AddOns > KeepThat. In the game's Options window, Materials only has an **Open KeepThat** button, which closes Options and opens the KeepThat window on Materials; the full material list lives there. Changes apply on the next tooltip or bag refresh; no reload needed. Settings are saved for your whole account by default.
 
-- **Home**: choose what to mark and where to show it. Endgame and tooltips start on; leveling, loot toasts and icon tint start off. Choose bags, bank and merchant for icon tint.
-- **Materials**: profession, then material, following what you mark on Home. A small square in each tint color shows whether a material is for endgame, leveling or both. Each material page shows its icon and name (in the item's quality color), "Keep for endgame" / "Keep for leveling", what it is used for, how many you still need, every recipe that uses it, your stock, and a button that copies its Wowhead link. Search by name at the top; Clear search works from any profession page. Each profession page can export its endgame or leveling list to Auctionator. Every profession starts collapsed each time the settings open. Materials an update adds start on; the ones you turned off stay off.
+- **Home**: choose what to mark and where to show it. Endgame and tooltips start on; leveling, loot toasts and icon tint start off. Choose bags, bank and merchant for icon tint. **Login reminder** (on by default) tells you at login when a character's bank or mailbox is not counted in your stock.
+- **Materials**: profession, then material, following what you mark on Home. A small square in each tint color shows whether a material is for endgame, leveling or both. Each material page shows its icon and name (in the item's quality color), "Keep for endgame" / "Keep for leveling", what it is used for, how many you still need, every recipe that uses it, your stock ("Your stock": `55 owned - 20 on this character, 35 on your other characters`, then a line per character such as `Bankmule: 30 in the bank (3 days ago)`), and a button that copies its Wowhead link. Search by name at the top; Clear search works from any profession page. Each profession page can export its endgame or leveling list to Auctionator. Every profession starts collapsed each time the settings open. Materials an update adds start on; the ones you turned off stay off.
 - **Integrations**: Baganator, Bagnon, EllesmereUI Bags, Auctionator and DFL Profession Journal, each with whether it is detected and working, and a toggle. Integrations are not yet available on Classic Era.
 - **Appearance**: category colors, icon tint strength, independent Background opacity and Text and icon opacity (0–100), Scale (50–200), Preview, Move, Lock position and Reset position. Move saves only on Done (or right-click); Cancel or Escape restores the start. Reset affects only the anchor. Black surfaces and accents disappear at background opacity 0. Older whole-toast opacity migrates to both layers without changing brightness.
 - **Advanced**: use separate settings for this character (switches to a profile named after the character, and back to the shared Default profile), debug recording, and a button for the debug report.
@@ -122,6 +142,8 @@ Search Materials by part of an item name and press Enter. Clear search works fro
 | `/kt status [topic]` | Reports scope, effective public values and integration availability; accepts the same topics as help. |
 | `/kt get <key>` | Reads an allowlisted setting without writing. |
 | `/kt set <key> <value>` | Validates and updates one public setting, with one acknowledgement. |
+| `/kt status stock` | Lists the characters counted in your stock and which banks or mailboxes are not counted yet. |
+| `/kt help stock` | Explains the stock commands and settings. |
 | `/kt preview [kind]` | Lists kinds, or shows one isolated toast, tooltip, tint or copy sample. |
 | `/kt log clear` | Confirms before clearing recorded diagnostics and failures; retains gameplay data and settings. |
 | `/kt test toast` | Shows one sample loot toast. |
@@ -135,7 +157,7 @@ Search Materials by part of an item name and press Enter. Clear search works fro
 | `/kt probe hover` | The same for the item under the mouse. |
 | `/kt probe path <name>` | Describes one global table, e.g. `DFLProfessionJournalNS.API`. |
 
-Public keys use the active profile. `toast` (off), `tooltip` (on) and `appearance.toast.locked` (off) accept `on` or `off`. `appearance.toast.background-opacity` and `appearance.toast.text-opacity` accept whole numbers 0–100 (new installs: 100); `appearance.toast.scale` accepts whole numbers 50–200 (default: 100). For example: `/kt set appearance.toast.text-opacity 80`. Existing saved values take precedence. No SavedVariables paths, executable input or trailing arguments are accepted. Existing command names remain; no new aliases are introduced. Toasts fade after four seconds; the tooltip sample expires after fifteen seconds and the tint after four. Samples do not consume real loot deduplication or trigger integrations.
+Public keys use the active profile. `toast` (off), `tooltip` (on), `stock.reminder` (on) and `appearance.toast.locked` (off) accept `on` or `off`. `appearance.toast.background-opacity` and `appearance.toast.text-opacity` accept whole numbers 0–100 (new installs: 100); `appearance.toast.scale` accepts whole numbers 50–200 (default: 100). For example: `/kt set appearance.toast.text-opacity 80`. Existing saved values take precedence. No SavedVariables paths, executable input or trailing arguments are accepted. Existing command names remain; no new aliases are introduced. Toasts fade after four seconds; the tooltip sample expires after fifteen seconds and the tint after four. Samples do not consume real loot deduplication or trigger integrations.
 
 ## Where the data comes from
 

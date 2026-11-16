@@ -26,6 +26,7 @@ local function fresh(opts)
     H.load("Model/Leveling.lua", ns)
     H.load("Model/Classify.lua", ns)
     H.load("Model/Wording.lua", ns)
+    H.load("Model/Stock.lua", ns)
     H.load("Core/Context.lua", ns)
     ns.Data = { Catalog = {
         client = ns.client,
@@ -68,6 +69,34 @@ eq(d.locations.bags and d.locations.bank and d.locations.merchant, true, "bags, 
 local n = 0
 for _ in pairs(d.locations) do n = n + 1 end
 eq(n, 3, "only the three v1 locations (auction house, mail, loot and trade are deferred)")
+
+-- Home: Login reminder sits after Loot toast and before Icon tint, and routes through Presentation.Set.
+do
+    local ns = fresh()
+    local h = ns.Options.Home(1)
+    eq(h.args.stockReminder.name, "Login reminder", "login reminder toggle")
+    eq(h.args.stockReminder.desc, "Remind you at login when a character's bank or mailbox is not counted.", "hover text")
+    eq(h.args.toast.order < h.args.stockReminder.order and h.args.stockReminder.order < h.args.mask.order, true, "after Loot toast, before Icon tint")
+    local setKey, setVal
+    ns.Presentation.keys["stock.reminder"] = ns.Presentation.keys["stock.reminder"] or { storage = "stockReminder" }
+    local realSet = ns.Presentation.Set
+    ns.Presentation.Set = function(k, v) setKey, setVal = k, v end
+    h.args.stockReminder.set(nil, false)
+    eq(setKey, "stock.reminder", "routes through Presentation.Set with the public key")
+    eq(setVal, "off", "off")
+    h.args.stockReminder.set(nil, true)
+    eq(setVal, "on", "on")
+    ns.Presentation.Set = realSet
+    ns.Presentation.keys["stock.reminder"] = nil
+    setKey = nil
+    h.args.stockReminder.set(nil, false)
+    eq(ns.addon.db.profile.stockReminder, false, "falls back to the profile when the key is missing")
+    eq(h.args.stockReminder.get(), false, "get reads the profile")
+    ns.addon.db.profile.stockReminder = true
+    -- "All displays are off" ignores the reminder
+    for _, k in ipairs({ "tooltip", "toast", "mask" }) do ns.addon.db.profile[k] = false end
+    eq(h.args.noSurfaces.hidden(), false, "displays-off note shown with only the reminder on")
+end
 
 -- Home: every setter invalidates the context; the pages read the profile.
 local home = ns.Options.Home(1)
@@ -133,20 +162,76 @@ eq(linen.args.keep_leveling.get(), true, "Keep for leveling")
 eq(plainName(linen.args.usedLeveling), "Leveling: Tailoring, skill 1-50", "Used for: leveling line")
 eq(plainName(linen.args.many), "Needed for remaining Tailoring steps: 40", "How many names the profession")
 eq(linen.args.h_stock.name, "Your stock", "a Your stock section")
-ns.Adapter.ItemCount = function(_, bank) return bank and 25 or 10 end
-eq(plainName(linen.args.stock), "10 in bags, 15 in the bank", "bags and bank")
-eq(plainName(linen.args.toGet), "Still to get: 15", "still to get: needed minus bags and bank")
-ns.Adapter.ItemCount = function(_, bank) return bank and 60 or 10 end
-eq(plainName(linen.args.toGet), "You have enough.", "enough on hand")
+-- Stock comes from the recorder: summary, one line per holder, ages, to-get.
+local DAY = 86400
+local rec = { total = 20, complete = true, rows = { { name = "Me", self = true, bags = 10, bank = 15, count = 25 } } }
+ns.StockRecorder = { Total = function() if rec.unknown then return nil end return rec.total, rec.complete, rec.rows end }
+rec.total = 25
+eq(plainName(linen.args.stock), "25 owned, all on this character", "all on this character")
+eq(plainName(linen.args.stockRows), "  This character: 10 in bags, 15 in the bank", "this character line, no age")
+eq(plainName(linen.args.toGet), "Still to get: 15", "still to get: needed minus total")
+eq(linen.args.toGet.hidden(), false, "shown when complete")
+rec.complete = false
+eq(linen.args.toGet.hidden(), true, "hidden while incomplete")
+rec.complete = true
+rec.total = 60; rec.rows[1].count = 25
+eq(plainName(linen.args.toGet), "You have enough.", "enough: range clamps")
+-- three characters, ages, singular forms
+rec.total = 55
+rec.rows = {
+    { name = "Me", self = true, bags = 12, bank = 8, count = 20, age = 7200 },
+    { name = "Bankmule", bank = 30, count = 30, age = 3 * DAY + 5 },
+    { name = "Hunter", mail = 5, count = 5, age = 60 },
+}
+eq(plainName(linen.args.stock), "55 owned - 20 on this character, 35 on your other characters", "split summary")
+eq(plainName(linen.args.stockRows),
+    "  This character: 12 in bags, 8 in the bank\n  Bankmule: 30 in the bank (3 days ago)\n  Hunter: 5 in the mailbox (1 minute ago)",
+    "three holder lines with ages")
+eq(name(linen.args.stockRows):find("|cff999999(3 days ago)|r", 1, true) ~= nil, true, "age in grey")
+eq(linen.args.stockRows.hidden(), false, "rows shown")
+rec.rows[3].age = 3600; rec.rows[2].age = 5 * 3600
+eq(plainName(linen.args.stockRows):find("Bankmule: 30 in the bank (5 hours ago)", 1, true) ~= nil, true, "plural hours")
+eq(plainName(linen.args.stockRows):find("(1 hour ago)", 1, true) ~= nil, true, "singular hour")
+rec.rows[3].age = DAY; rec.rows[2].age = 120
+eq(plainName(linen.args.stockRows):find("(1 day ago)", 1, true) ~= nil, true, "singular day")
+eq(plainName(linen.args.stockRows):find("(2 minutes ago)", 1, true) ~= nil, true, "plural minutes")
+-- a holder appears and disappears without rebuilding the tree
+rec.rows[4] = { name = "Zed", bags = 1, count = 1, age = 60 }; rec.total = 56
+eq(plainName(linen.args.stockRows):find("Zed: 1 in bags", 1, true) ~= nil, true, "new holder shows without a rebuild")
+rec.rows[4] = nil; rec.total = 55
+eq(plainName(linen.args.stockRows):find("Zed", 1, true), nil, "removed holder disappears")
+-- summary variants
+rec.total = 30; rec.rows = { { name = "Bankmule", bank = 30, count = 30, age = 60 } }
+eq(plainName(linen.args.stock), "30 owned, all on your other characters", "all elsewhere")
+rec.total = 0; rec.rows = {}
+eq(plainName(linen.args.stock), "None on any of your characters.", "none anywhere")
+eq(linen.args.stockRows.hidden(), true, "no rows when nobody holds it")
+-- incomplete range clamp: Still to get 0-15 style
+rec.total = 25; rec.rows = { { name = "Me", self = true, bags = 25, count = 25 } }
+eq(plainName(linen.args.toGet), "Still to get: 15", "need 40 minus 25")
+-- unknown stock: live bags fallback, no to-get
+rec.unknown = true
 ns.Adapter.ItemCount = function() return 10 end
-eq(linen.args.toGet.hidden(), true, "no shortfall while the bank is not known")
-eq(plainName(linen.args.stock), "10 in bags (open your bank to count it)", "a bank of 0 is not trusted before the bank is opened")
-ns.Options.bankSeen = true
-eq(plainName(linen.args.stock), "10 in bags, 0 in the bank", "after the bank was opened, 0 is real")
-ns.Options.bankSeen = nil
+eq(plainName(linen.args.stock), "10 in bags", "unknown recorder falls back to live bags")
+eq(linen.args.toGet.hidden(), true, "to-get hidden when unknown")
 ns.Adapter.ItemCount = nil
 eq(plainName(linen.args.stock), "Your stock is not known yet.", "no count API")
-eq(linen.args.toGet.hidden(), true, "no shortfall while the stock is unknown")
+local function scan(node, seen)
+    if type(node) ~= "table" then return end
+    for k, v in pairs(node) do
+        if k == "name" or k == "desc" then
+            local t = type(v) == "function" and v() or v
+            if type(t) == "string" then
+                eq(t:lower():find("open your bank", 1, true), nil, "no bank prompt: " .. t)
+                eq(t:lower():find("bank count updates", 1, true), nil, "no bank count help: " .. t)
+            end
+        elseif type(v) == "table" then scan(v) end
+    end
+end
+rec.unknown = nil
+scan(linen)
+eq(linen.args.stockHelp, nil, "stockHelp removed")
+eq(ns.Options.bankSeen, nil, "bankSeen gone")
 
 -- Toggles write disabled[...] (shared by every profession) and invalidate.
 before = ns.invalidated

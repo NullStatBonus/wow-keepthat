@@ -176,3 +176,22 @@ Run on WoW Forever and Classic Era, first with only KeepThat enabled.
 3. Back in Esc > Options > AddOns > KeepThat, move from Materials to each other KeepThat entry (Home, Integrations, Appearance, Advanced, About): each opens without a noticeable pause.
 4. In `/kt`, expand Blacksmithing and Tailoring under Materials, close the window, type `/kt` again and open Materials: every profession is collapsed.
 5. `/kt find Arcanite Bar`: Materials opens filtered to it, with only Blacksmithing and Engineering expanded.
+
+## 9. Cross-character stock
+
+Use three characters on the same realm and faction (call them Main, Bankmule and Hunter), each with KeepThat, and Runecloth with leveling marks and Tailoring on Main. Run everything on Classic Era first, then on WoW Forever, where the bank has modern tabs.
+
+1. Log in on Bankmule with 30 Runecloth in its bank; open the bank and the mailbox, then log out. Log in on Hunter with 5 Runecloth in its mailbox; open the bank and the mailbox, then log out.
+2. Log in on Main with 12 Runecloth in its bags and 8 in its bank; open the bank and the mailbox. Hover Runecloth: `KeepThat: Leveling: Tailoring - 55 owned (Shift)`.
+3. Hold Shift: the need row still reads `40 needed, 12 in bags`, and below the details a `Stock` block shows `This character: 20`, `Bankmule: 30` and `Hunter: 5`, in that order. With more than five characters holding it, five lines show, then a line such as `+3 more`.
+4. Open the item's page under Materials > Your stock: `55 owned - 20 on this character, 35 on your other characters`, then `This character: 12 in bags, 8 in the bank`, `Bankmule: 30 in the bank (3 days ago)` and `Hunter: 5 in the mailbox (2 hours ago)`, with the real ages. Check the wording for an item only on this character (`20 owned, all on this character`), only on others (`35 owned, all on your other characters`) and on none (`None on any of your characters.`).
+5. Deposit 10 of the item from Main's bags into its bank, then close the bank. The total on the tooltip does not change; the holder line moves 10 from bags to the bank.
+6. Open the mailbox on Main, take an attachment into bags, close it: the total stays right, with no double count while the mail is open. On Forever, also move an item between bank tabs and check the total.
+7. Log in on a third character (same realm and faction) without opening its bank or mailbox. `/kt status stock` lists it as `<Name>: bank and mailbox not counted.`. Open only the bank: it changes to `<Name>: mailbox not counted.`. Open the mailbox: `Every bank and mailbox is counted.`.
+8. On a character with a bank or mailbox not counted, the item page hides "Still to get". Once every bank and mailbox is counted it shows again.
+9. Reminder: with a bank or mailbox not counted, log in: one chat line `KeepThat: 2 characters have a bank or mailbox not counted. /kt status stock lists them.` (with the right count). `/reload`: it shows once more. Do it again after completing every bank and mailbox: no line. No raw `|` in the chat text.
+10. Turn off Login reminder on Home: log in and `/reload`; no line. Turn it on and run `/kt set stock.reminder off` then `/kt get stock.reminder`: the Home checkbox follows. `/kt set stock.reminder on` restores it. `/kt help stock` explains the commands. `/kt log` lists the setting.
+11. Auctionator (WoW Forever): with Auctionator loaded, export a leveling list for a profession on Main. A material the realm-and-faction total already covers is left out, and the others carry only the missing quantity.
+12. Put items in the guild bank and the account bank (Forever, if available) and open them: no total, tooltip or `/kt status stock` line changes.
+13. Log in on a character of the other faction on the same realm (or another realm): it is not counted in Main's totals, and `/kt status stock` shows only the realm and faction of the character you are on.
+14. Rename or delete a character, or leave one unseen for 90 days (set the system date, or check the saved data with `/kt log`): its stock drops out of the totals and `/kt status stock`.

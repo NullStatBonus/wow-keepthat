@@ -192,6 +192,30 @@ for _, kind in ipairs({ "postcall", "settitem" }) do
     eq(lines[3].text, "    40-55 needed, 12 in bags", kind .. ": the count and bags")
     s.env.shift = false
 
+    -- Stock across characters: the total joins the line, the rows join the Shift details; the recorder may be absent.
+    local recorderCalls = 0
+    local rows = { { name = "Me", self = true, count = 20 }, { name = "Bankmule", count = 30 }, { name = "Hunter", count = 5 } }
+    s.ns.StockRecorder = { Total = function(id) recorderCalls = recorderCalls + 1; return 55, true, rows end }
+    lines = s.show(tip, LINEN)
+    eq(plain(lines[1].text), "KeepThat: Leveling: Tailoring - 55 owned (Shift)", kind .. ": owned, then the hint")
+    s.env.shift = true
+    lines = s.show(tip, LINEN)
+    eq(plain(lines[1].text), "KeepThat: Leveling: Tailoring - 55 owned", kind .. ": owned without the hint on Shift")
+    eq(lines[3].text, "    40-55 needed, 12 in bags", kind .. ": need row unchanged")
+    eq(plain(lines[#lines - 3].text), "  Stock", kind .. ": Stock heading")
+    eq(lines[#lines - 2].text, "    This character: 20", kind .. ": own row")
+    eq(lines[#lines].text, "    Hunter: 5", kind .. ": last holder")
+    s.env.shift = false
+    s.ns.StockRecorder = { Total = function() return 0, true, {} end }
+    eq(plain(s.show(tip, LINEN)[1].text), "KeepThat: Leveling: Tailoring (Shift)", kind .. ": 0 owned adds nothing")
+    s.env.shift = true
+    eq(#s.show(tip, LINEN), 4, kind .. ": no stock block without holders")
+    s.env.shift = false
+    s.ns.StockRecorder = { Total = function() return nil end }
+    eq(plain(s.show(tip, LINEN)[1].text), "KeepThat: Leveling: Tailoring (Shift)", kind .. ": recorder unknown adds nothing")
+    s.ns.StockRecorder = nil
+    eq(plain(s.show(tip, LINEN)[1].text), "KeepThat: Leveling: Tailoring (Shift)", kind .. ": no recorder adds nothing")
+
     -- The setting off adds nothing (checked at call time), and back on works without reload.
     s.profile.tooltip = false
     eq(#s.show(tip, ARCANITE), 0, kind .. ": setting off adds nothing")

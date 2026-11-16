@@ -46,6 +46,7 @@ entry("appearance.toast.background-opacity", "toastBackgroundOpacity", "integer"
 entry("appearance.toast.text-opacity", "toastTextOpacity", "integer", 0, 100, 100, 100)
 entry("appearance.toast.scale", "toastScale", "integer", 50, 200, 100, 100)
 entry("appearance.toast.locked", "toastLocked", "boolean", nil, nil, false)
+entry("stock.reminder", "stockReminder", "boolean", nil, nil, true)
 function P.Value(key)
     local e = P.keys[key]; if not e then return nil end
     local v = e.get()

@@ -17,6 +17,7 @@ local p = { tooltip = false, endgame = false, leveling = false, disabled = { end
     colors = { endgame = { r = 0.6, g = 0.2, b = 0.9 }, leveling = { r = 0.1, g = 1, b = 0 } } }
 ns.addon = { db = { profile = p } }
 local productionCalls = 0
+ns.StockRecorder = { Total = function() error("preview must not read saved stock") end }
 ns.Context = { Get = function() return { catalog = catalog, routes = routes } end,
     Classify = function() productionCalls = productionCalls + 1; error("preview must not call production classification") end }
 H.load("UI/Tooltip.lua", ns)
@@ -56,6 +57,7 @@ eq(nativeCalls, 1, "native item tooltip populated")
 eq(tip.lines[1].g, 1, "native quality ink retained")
 eq(tip.lines[2].text, "Native item description", "native item content retained")
 eq(tip.lines[3].text:find("Shift", 1, true) ~= nil, true, "same collapsed Shift hint as live")
+eq(tip.lines[3].text:find("55 owned", 1, true) ~= nil, true, "sample total shown")
 eq(tip.lines[4].text, "Preview — sample profession skills and bag counts", "sample data clearly labeled")
 p.tooltip = true
 ns.Tooltip.Preview()
@@ -68,10 +70,11 @@ local all = table.concat(text, "\n")
 eq(all:find("Real Recipe - 5 per craft", 1, true) ~= nil, true, "real recipe rendered")
 eq(all:find("40-45 needed, 12 in bags", 1, true) ~= nil, true, "dummy bag count and real route need rendered")
 eq(all:find("Real guide", 1, true) ~= nil, true, "real guide rendered")
+eq(all:find("  Stock|r\n    This character: 20\n    Bankmule: 30\n    Hunter: 5", 1, true) ~= nil, true, "sample stock rows rendered")
 -- Exact live/preview row and color parity, apart from native item content and explicit sample label.
 local live = { lines = {} }; live.AddLine = tip.AddLine
 ns.Adapter.env.GetItemCount = function() return 12 end
-ns.Tooltip.Draw(live, sample.itemID, sample.result, true)
+ns.Tooltip.Draw(live, sample.itemID, sample.result, true, nil, sample.stock)
 eq(#live.lines, #previewRows, "same live and preview row count")
 for i, row in ipairs(live.lines) do
     for _, k in ipairs({ "text", "r", "g", "b" }) do eq(previewRows[i][k], row[k], "live/preview parity " .. i .. " " .. k) end
