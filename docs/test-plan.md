@@ -128,7 +128,7 @@ All on WoW Forever with debugging on (`/kt debug`) unless a check says otherwise
 
 ## 6. Settings and commands
 
-1. Type `/kt`. The KeepThat settings open on the Home page. Options > AddOns lists KeepThat with Materials, Integrations, Appearance, Advanced and About beneath it.
+1. Type `/kt`. The KeepThat settings open on the Home page. Options > AddOns lists KeepThat with Materials (an Open KeepThat launcher), Integrations, Appearance, Advanced and About beneath it.
 2. On a fresh profile (`/run KeepThatDB=nil` then `/reload`), Home shows: endgame on, leveling off, tooltip on, toast off, mask off, "Show the tint in" with Bags, Bank and Merchant checked, and no other locations listed.
 3. Turn leveling materials on and hover a leveling material (for example Linen Cloth). The tooltip shows the `Leveling:` line without a reload. Turn it off; the line goes away.
 4. On Appearance change the endgame color; the mask or toast color changes on the next refresh. Check each "Show marks in" box once.
@@ -165,3 +165,13 @@ Tooltip preview parity: repeat `/kt preview tooltip` several times. Items must c
 Settings context review: open all six top-level pages plus one profession and one item page directly. Each must explain its purpose and next action. Scope guidance appears on Advanced and where it changes a choice; it should not repeat on every page. In Appearance, check section grouping and the separate toast/tooltip/tint preview buttons. Turn features on/off and lock/unlock position: enabling instructions must appear only when relevant. Begin Move and verify the guidance and Done/Cancel states update immediately. Check integration descriptions distinguish permission from actual detection/working status, and that Advanced explains profile switching and the complete record/reproduce/copy workflow. At smaller window sizes and with long translations, text must wrap without obscuring controls.
 
 Compact settings: after reload, `/kt` starts at 600×460. Check that appearance sliders and action buttons do not span the content panel, and Bags/Bank/Merchant fit in a compact row. Resize narrower/wider and verify prose wraps, labels remain complete, all controls remain reachable by scrolling, and material-tree navigation still works. Compare beside CVN at the same UI scale; CVN’s exact dimensions have not been measured here.
+
+## 8. Materials launcher and collapsed professions
+
+Run on WoW Forever and Classic Era, first with only KeepThat enabled.
+
+1. Open Esc > Options > AddOns > KeepThat > Materials. The page shows a short explanation and an **Open KeepThat** button, and no material list.
+2. Click Open KeepThat: the game's Options window closes and the KeepThat window opens on Materials.
+3. Back in Esc > Options > AddOns > KeepThat, move from Materials to each other KeepThat entry (Home, Integrations, Appearance, Advanced, About): each opens without a noticeable pause.
+4. In `/kt`, expand Blacksmithing and Tailoring under Materials, close the window, type `/kt` again and open Materials: every profession is collapsed.
+5. `/kt find Arcanite Bar`: only the profession it opens under is expanded, with Arcanite Bar selected.

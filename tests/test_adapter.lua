@@ -92,4 +92,24 @@ eq(lastButton.shown, false, "and the button is hidden")
 eq(lastX(w1.statusbg), -132, "and the status bar restored")
 eq(made, 1, "the same button is reused")
 
+
+-- Closing the game's Settings window: the current SettingsPanel, the older frame, or nothing.
+local hidden = {}
+local function panel(name) return { Hide = function() hidden[#hidden + 1] = name .. ":Hide" end } end
+A.env = { SettingsPanel = panel("SettingsPanel"), HideUIPanel = function(f) hidden[#hidden + 1] = f == A.env.SettingsPanel and "SettingsPanel" or "other" end }
+eq(A.CloseGameSettings(), true, "SettingsPanel closed")
+eq(hidden[#hidden], "SettingsPanel", "through HideUIPanel")
+A.env = { InterfaceOptionsFrame = panel("InterfaceOptionsFrame") }
+eq(A.CloseGameSettings(), true, "older options frame closed")
+eq(hidden[#hidden], "InterfaceOptionsFrame:Hide", "with Hide when HideUIPanel is missing")
+A.env = { SettingsPanel = panel("SettingsPanel"), HideUIPanel = function() error("blocked") end }
+eq(A.CloseGameSettings(), true, "an error while closing is contained")
+A.env = {}
+eq(A.CloseGameSettings(), nil, "no Settings window: nil")
+-- Events: the client says which exist; unknown when it cannot.
+A.env = { C_EventUtils = { IsEventValid = function(e) return e == "LEARNED_SPELL_IN_SKILL_LINE" end } }
+eq(A.EventKnown("LEARNED_SPELL_IN_SKILL_LINE"), true, "a client event is known")
+eq(A.EventKnown("LEARNED_SPELL_IN_TAB"), false, "a removed event is not")
+A.env = {}
+eq(A.EventKnown("LEARNED_SPELL_IN_TAB"), nil, "no IsEventValid: unknown")
 H.done()

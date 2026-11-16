@@ -113,7 +113,15 @@ function I.Keys()
     return out
 end
 
-ns.Start(function() I.Start() end)
+-- Start at login, and again whenever another addon finishes loading: an addon (or its hook point)
+-- that appears late is picked up then. Started and failed integrations are skipped.
+ns.Start(function(addon)
+    I.Start()
+    if ns.Listen and addon then
+        ns.Listen(addon, "ADDON_LOADED", function() I.Start() end)
+        ns.Listen(addon, "PLAYER_LOGIN", function() I.Start() end)
+    end
+end)
 if ns.Context and ns.Context.OnChange then
     ns.Context.OnChange(function() if I.started then I.Start() end end)
 end

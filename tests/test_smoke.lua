@@ -79,6 +79,8 @@ for toc, client in pairs({ Vanilla = "era", Camelot = "forever" }) do
         hooksecurefunc = function() end,
         C_Timer = { After = function() end },
         GetTime = function() return 0 end,
+        -- Forever has removed LEARNED_SPELL_IN_TAB; Era cannot say which events exist.
+        C_EventUtils = client == "forever" and { IsEventValid = function(e) return e ~= "LEARNED_SPELL_IN_TAB" end } or nil,
         LOOT_ITEM_SELF = "You receive loot: %s.",
         LOOT_ITEM_SELF_MULTIPLE = "You receive loot: %sx%d.",
         -- Forever's tooltip hook, or Era's OnTooltipSetItem script.
@@ -99,6 +101,11 @@ for toc, client in pairs({ Vanilla = "era", Camelot = "forever" }) do
     if addon.OnEnable then
         ok, err = pcall(addon.OnEnable, addon)
         eq(ok, true, toc .. ": OnEnable runs (" .. tostring(err) .. ")")
+        eq(type(events.SKILL_LINES_CHANGED), "function", toc .. ": skill changes are watched")
+        if client == "forever" then
+            eq(events.LEARNED_SPELL_IN_TAB, nil, toc .. ": a removed event is not registered")
+            eq(type(events.LEARNED_SPELL_IN_SKILL_LINE), "function", toc .. ": its replacement is")
+        end
     end
     eq(type(commands.kt), "function", toc .. ": /kt is registered")
     for _, cmd in ipairs({ "demo", "test", "test toast", "test tooltip", "test copy" }) do

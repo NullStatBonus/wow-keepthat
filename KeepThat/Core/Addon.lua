@@ -17,10 +17,20 @@ function addon:OnInitialize()
     end
 end
 
--- A profession rank changed: counts and leveling marks depend on it.
+-- Registers only events the client has: registering a removed event raises a Lua error.
+-- When the client cannot say, try it and drop the error.
+function ns.Listen(target, event, fn)
+    if ns.Adapter.EventKnown(event) == false then return false end
+    return (pcall(target.RegisterEvent, target, event, fn))
+end
+
+-- A profession rank changed: counts and leveling marks depend on it. Newer clients renamed
+-- LEARNED_SPELL_IN_TAB to LEARNED_SPELL_IN_SKILL_LINE.
 function addon:OnEnable()
-    self:RegisterEvent("SKILL_LINES_CHANGED", function() ns.Context.Invalidate() end)
-    self:RegisterEvent("LEARNED_SPELL_IN_TAB", function() ns.Context.Invalidate() end)
+    local invalidate = function() ns.Context.Invalidate() end
+    for _, event in ipairs({ "SKILL_LINES_CHANGED", "LEARNED_SPELL_IN_TAB", "LEARNED_SPELL_IN_SKILL_LINE" }) do
+        ns.Listen(self, event, invalidate)
+    end
 end
 
 -- Feature files call ns.Start(fn) at load; fn(addon) runs once saved settings are ready.
