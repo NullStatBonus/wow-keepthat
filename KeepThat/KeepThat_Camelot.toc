@@ -1,11 +1,12 @@
 ## Interface: 16001
 ## Title: KeepThat
 ## Notes: Adds a short tooltip line to the materials worth keeping for endgame crafting or profession leveling, so you never sell what you'll need later.
-## Version: 0.2.1
+## Version: 0.2.2
 ## Author: NullStatBonus
 ## SavedVariables: KeepThatDB
 ## OptionalDeps: Baganator, Bagnon, EllesmereUI, EllesmereUIBags, Auctionator, DFLProfessionJournal
 ## Category: Professions
+## IconTexture: Interface\AddOns\KeepThat\Media\icon.tga
 ## X-Curse-Project-ID: 1807741
 ## X-Wago-ID: Q6aqVg6W
 

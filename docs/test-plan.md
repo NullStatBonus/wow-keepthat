@@ -144,6 +144,7 @@ All on WoW Forever with debugging on (`/kt debug`) unless a check says otherwise
 13. On Materials, search part of a name in mixed case and press Enter: only matching materials and professions remain. Check a cached client name and its English name, and literal `%` and `.` searches. Search applies across professions. Clear the box: all return.
 14. Search for `nonexistentmaterial`: one neutral no-match sentence appears. Reload: the search is empty.
 15. `/kt find` on a name with one path opens its material page. `/kt find Arcanite Bar` (Blacksmithing and Engineering) opens Materials with the search set to "Arcanite Bar", only those two professions expanded, and nothing printed in chat. With Endgame materials off on Home, `/kt find Arcanite Bar` says to turn it on and opens nothing. A nonexistent name prints the no-match sentence; `/kt find` prints usage.
+16. Open the game's AddOns list (Menu > AddOns): KeepThat shows its round "KEEP THAT!" badge next to its name, on Classic Era and WoW Forever.
 
 ## 7. Cohesive presentation acceptance
 
