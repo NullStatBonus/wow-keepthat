@@ -127,7 +127,7 @@ Settings SHALL be saved for the whole account by default, with the option to use
 - **THEN** that character uses the same KeepThat settings
 
 ### Requirement: Material search
-The Materials page SHALL have a session-only search input that filters materials and professions by literal, case-insensitive client or English item names, reports no matches, and can be cleared from the Materials page or any profession page. `/kt find <name>` SHALL open a single matching path, list up to ten paths for several, report none, or say which Home checkbox shows a hidden match.
+The Materials page SHALL have a session-only search input that filters materials and professions by literal, case-insensitive client or English item names, reports no matches, and can be cleared from the Materials page or any profession page. `/kt find <name>` SHALL open a single matching path, open Materials filtered to the query for several, report none, or say which Home checkbox shows a hidden match.
 
 #### Scenario: Filter materials
 - **WHEN** the player enters part of an item name and presses Enter on the Materials page
@@ -142,8 +142,12 @@ The Materials page SHALL have a session-only search input that filters materials
 - **THEN** settings open on that material page
 
 #### Scenario: Find several material paths
-- **WHEN** several paths match `/kt find <name>`
-- **THEN** chat lists up to ten paths sorted by item name with category and profession, plus the remaining count, and settings do not open
+- **WHEN** several paths match `/kt find <name>`, for example Arcanite Bar under Blacksmithing and Engineering
+- **THEN** the KeepThat window opens on Materials with the search set to the name, only the professions with a match are expanded, and nothing is listed in chat
+
+#### Scenario: Find only hidden materials
+- **WHEN** several paths match `/kt find <name>` and the Home checkboxes hide all of them
+- **THEN** chat says which Home checkbox shows them, and settings do not open
 
 #### Scenario: Find no material
 - **WHEN** no paths match `/kt find <name>`
@@ -176,5 +180,5 @@ Every profession under Materials SHALL start collapsed each time the KeepThat wi
 - **THEN** Materials lists every profession collapsed
 
 #### Scenario: Find opens one profession
-- **WHEN** the player uses `/kt find` to open Arcanite Bar
-- **THEN** only the profession it is opened under is expanded, with Arcanite Bar selected
+- **WHEN** the player uses `/kt find` on a name that matches one material under one profession
+- **THEN** only that profession is expanded, with the material selected

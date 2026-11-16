@@ -355,6 +355,17 @@ ns.Options.OpenMaterial({ category = "endgame", profession = "blacksmithing", it
 eq(collapsedAtOpen, true, "opening a material collapses the other professions first")
 eq(opened, 2, "material opens dialog")
 eq(selected[2], "materials/blacksmithing/i12360", "material selects complete path")
+-- /kt find with several matches: Materials filtered, only professions with a visible match expanded.
+treeGroups["materials\001tailoring"] = true
+ns.Options.OpenSearch("arcanite bar", { { profession = "blacksmithing", visible = true },
+    { profession = "engineering" }, { profession = "alchemy", visible = false } })
+eq(treeGroups["materials\001blacksmithing"], true, "a profession with a match is expanded")
+eq(treeGroups["materials\001engineering"], true, "every one with a match")
+eq(treeGroups["materials\001alchemy"], nil, "one whose match is hidden by Home is not")
+eq(treeGroups["materials\001tailoring"], nil, "others are collapsed")
+eq(selected[#selected], "materials", "the window opens on Materials")
+eq(ns.Options.Materials(2).args.search.get(), "arcanite bar", "with the search set to the query")
+ns.Options.ClearSearch()
 -- Page context follows current scope and feature state, including nested pages.
 local contextual = ns.Options.Build()
 for _, key in ipairs({ "home", "materials", "integrations", "appearance", "about" }) do

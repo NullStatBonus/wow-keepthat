@@ -681,6 +681,26 @@ function Options.Find(query)
     return found
 end
 
+-- /kt find with several matches: Materials filtered to the query, with only the professions that
+-- have a visible match expanded (in the tree's open-node table, see CollapseMaterials).
+function Options.OpenSearch(query, found)
+    searches.all = query or ""
+    Options.NotifyChange()
+    local dialog = LibStub("AceConfigDialog-3.0")
+    Options.CollapseMaterials(dialog)
+    local app = dialog.Status and dialog.Status[APP]
+    local tree = type(app) == "table" and type(app.status) == "table" and app.status.groups
+    if type(tree) == "table" then
+        tree.groups = type(tree.groups) == "table" and tree.groups or {}
+        for _, r in ipairs(found or {}) do
+            if r.visible ~= false and r.profession then tree.groups["materials\001" .. r.profession] = true end
+        end
+    end
+    dialog:Open(APP)
+    dialog:SelectGroup(APP, "materials")
+    pcall(Options.UpdateFooter)
+end
+
 function Options.OpenMaterial(result)
     searches.all = ""
     Options.NotifyChange()

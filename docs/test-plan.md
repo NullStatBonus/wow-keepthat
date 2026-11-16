@@ -143,7 +143,7 @@ All on WoW Forever with debugging on (`/kt debug`) unless a check says otherwise
 
 13. On Materials, search part of a name in mixed case and press Enter: only matching materials and professions remain. Check a cached client name and its English name, and literal `%` and `.` searches. Search applies across professions. Clear the box: all return.
 14. Search for `nonexistentmaterial`: one neutral no-match sentence appears. Reload: the search is empty.
-15. `/kt find Arcanite Bar` opens its material page when it has one path. `/kt find bar` lists matching paths sorted by name, at most ten plus a remaining count, and opens nothing. Check both category labels. A nonexistent name prints the no-match sentence; `/kt find` prints usage.
+15. `/kt find` on a name with one path opens its material page. `/kt find Arcanite Bar` (Blacksmithing and Engineering) opens Materials with the search set to "Arcanite Bar", only those two professions expanded, and nothing printed in chat. With Endgame materials off on Home, `/kt find Arcanite Bar` says to turn it on and opens nothing. A nonexistent name prints the no-match sentence; `/kt find` prints usage.
 
 ## 7. Cohesive presentation acceptance (pending in game)
 
@@ -174,4 +174,4 @@ Run on WoW Forever and Classic Era, first with only KeepThat enabled.
 2. Click Open KeepThat: the game's Options window closes and the KeepThat window opens on Materials.
 3. Back in Esc > Options > AddOns > KeepThat, move from Materials to each other KeepThat entry (Home, Integrations, Appearance, Advanced, About): each opens without a noticeable pause.
 4. In `/kt`, expand Blacksmithing and Tailoring under Materials, close the window, type `/kt` again and open Materials: every profession is collapsed.
-5. `/kt find Arcanite Bar`: only the profession it opens under is expanded, with Arcanite Bar selected.
+5. `/kt find Arcanite Bar`: Materials opens filtered to it, with only Blacksmithing and Engineering expanded.

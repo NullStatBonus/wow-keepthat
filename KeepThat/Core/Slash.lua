@@ -53,26 +53,24 @@ function Slash.Run(args, deps)
     elseif cmd == "find" then
         if rest == "" then return { L["Usage: /kt find <name>"] } end
         local found = deps.find(rest)
-        if #found == 1 then
-            local r = found[1]
-            -- Hidden by the Home checkboxes: say which one shows it instead of opening a hidden page.
-            if r.visible == false then
-                if r.flags and r.flags.leveling then
-                    return { L["%s is a leveling material. Turn on Leveling materials on Home to see it."]:format(r.name) }
-                end
-                return { L["%s is an endgame material. Turn on Endgame materials on Home to see it."]:format(r.name) }
-            end
-            deps.openMaterial(r)
-            return {}
-        end
         if #found == 0 then return { L['No materials match "%s".']:format(rest) } end
-        local lines = {}
-        for i = 1, math.min(10, #found) do
-            local result = found[i]
-            lines[i] = L["%s - %s > %s"]:format(result.name, result.categoryName, result.professionName)
+        local shown
+        for _, r in ipairs(found) do if r.visible ~= false then shown = r; break end end
+        -- Hidden by the Home checkboxes: say which one shows it instead of opening a hidden page.
+        if not shown then
+            local r = found[1]
+            if r.flags and r.flags.leveling then
+                return { L["%s is a leveling material. Turn on Leveling materials on Home to see it."]:format(r.name) }
+            end
+            return { L["%s is an endgame material. Turn on Endgame materials on Home to see it."]:format(r.name) }
         end
-        if #found > 10 then lines[#lines + 1] = L["%d more matches. Refine your search."]:format(#found - 10) end
-        return lines
+        -- One path opens its page; several open Materials filtered to the query.
+        if #found == 1 then
+            deps.openMaterial(shown)
+        else
+            deps.openSearch(rest, found)
+        end
+        return {}
     elseif cmd == "debug" then
         local arg = rest:lower()
         if arg == "on" then
@@ -126,6 +124,7 @@ function Slash.Register(addon)
     deps = {
         find = function(query) return ns.Options.Find(query) end,
         openMaterial = function(result) return ns.Options.OpenMaterial(result) end,
+        openSearch = function(query, found) return ns.Options.OpenSearch(query, found) end,
         probe = ns.Probe,
         show = function(...) return ns.Export.Show(...) end,
         open = function(page) return ns.Options.Open(page) end,

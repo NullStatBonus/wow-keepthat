@@ -115,7 +115,7 @@ Search Materials by part of an item name and press Enter. Clear search works fro
 
 | Command | What it does |
 | --- | --- |
-| `/kt find <name>` | Finds materials by client or English name; one match opens its page, several list up to ten paths. |
+| `/kt find <name>` | Finds materials by client or English name; one match opens its page, several open Materials filtered to the name. |
 | `/kt` | Opens the settings on the Home page. |
 | `/kt settings [page]` | Opens Home, Materials, Integrations, Appearance, Advanced or About; page names are case insensitive. |
 | `/kt help [topic]` | Lists commands or targeted appearance, diagnostics or domain help. |
