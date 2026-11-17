@@ -365,6 +365,7 @@ eq(ns.addon.db.profile.debug, true, "debug toggle writes the profile")
 local about = ns.Options.About(6)
 eq(about.args.title.name, "KeepThat", "about: the name, large")
 eq(plain(about.args.version.name), "Version 9.9.9", "the version, small and grey")
+eq(about.args.guide, nil, "no line listing the pages; the tree already names them")
 eq(about.args.cmd_kt.name, "|cffdddddd/kt|r  |cffaaaaaaOpen these settings.|r", "one command per line, neutral then grey")
 local tree = ns.Options.Build()
 for _, k in ipairs({ "home", "materials", "integrations", "advanced", "about" }) do eq(tree.args[k] ~= nil, true, "page " .. k) end

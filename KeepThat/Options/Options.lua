@@ -917,7 +917,6 @@ function Options.About(order)
     note(g, "version", grey(L["Version %s"]:format(tostring(ns.version))))
     gap(g, "g0")
     text(g, "what", L["Marks the materials worth keeping, so you do not sell what you will need later."])
-    text(g, "guide", L["Home: features. Materials: item details. Integrations: addon support. Appearance: visual settings. Advanced: scope and problem reports."])
     gap(g, "g1")
     add(g, "h_cmds", { type = "header", name = L["Commands"] })
     local commands = {
