@@ -40,12 +40,13 @@ do
     H.load("Core/Addon.lua", n2)
     n2.defaults = { profile = {} }
     n2.Adapter = { LegacyCharacterKey = function() return "Me - Realm" end, ProfessionDisplayNames = function() return {} end }
-    n2.ProfileKey = { Migrate = function(db, key) order[#order + 1] = "profile:" .. key; eq(db, fakeDb, "migration gets the db") end }
+    n2.ProfileKey = { Migrate = function(db, key) order[#order + 1] = "profile:" .. key; eq(db, fakeDb, "migration gets the db") end,
+        Rename = function(db, key) order[#order + 1] = "rename:" .. key; eq(db, fakeDb, "rename gets the db") end }
     n2.Presentation = { Migrate = function() order[#order + 1] = "presentation" end }
     n2.Wording = { UseClientNames = function() end }
     n2.Slash = { Register = function() end }
     n2.addon:OnInitialize()
-    eq(table.concat(order, ","), "profile:Me - Realm,presentation", "profile migration first, with the old key")
+    eq(table.concat(order, ","), "profile:Me - Realm,rename:Me - Realm,presentation", "migrate, then rename, then the presentation upgrade")
     stubs.restore()
 end
 

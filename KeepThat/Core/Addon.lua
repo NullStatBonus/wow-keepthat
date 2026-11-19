@@ -6,7 +6,9 @@ ns.addon = addon
 function addon:OnInitialize()
     self.db = LibStub("AceDB-3.0"):New("KeepThatDB", ns.defaults, true)
     -- First, so the restored profile is the one the presentation upgrade runs on (SetProfile replaces it).
-    ns.ProfileKey.Migrate(self.db, ns.Adapter.LegacyCharacterKey())
+    local oldKey = ns.Adapter.LegacyCharacterKey()
+    ns.ProfileKey.Migrate(self.db, oldKey)
+    ns.ProfileKey.Rename(self.db, oldKey)
     ns.Presentation.Migrate(self.db.profile)
     -- Profession names in KeepThat's own text come from the client, so they match the game's language
     -- with no translation file needed.

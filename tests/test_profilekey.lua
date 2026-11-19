@@ -100,6 +100,82 @@ eq(Migrate({ sv = { profileKeys = { [OLD] = "Gone" }, profiles = {} }, keys = { 
     GetCurrentProfile = function() return "Default" end, SetProfile = function() error("no") end }, OLD), false,
     "a chosen profile that no longer exists is not applied")
 
+-- Rename (issue #20): the old-named profile moves to the new name, so "This character" off and on keeps it.
+local Rename = ns.ProfileKey.Rename
+local NEW = "Me Smith"
+local function load(saved, opts)
+    local d = stubs.loadAceDB(saved, ns.defaults, opts)
+    Migrate(d, OLD); Rename(d, OLD)
+    return d
+end
+
+-- (a) A 0.4.2 save using its own profile: one load restores it under the new name.
+saved = oldSave()
+db = load(saved, { forever = true })
+eq(db:GetCurrentProfile(), NEW, "now under the new name")
+eq(db.profile.toastScale, 1.5, "same values")
+eq(saved.profiles[OLD], nil, "the old-named profile is gone")
+
+-- (b) Toggle off and on: the same settings come back.
+db:SetProfile("Default")
+eq(db.profile.toastScale, ns.defaults.profile.toastScale, "shared settings while off")
+db:SetProfile(db.keys.char)
+eq(db.profile.toastScale, 1.5, "back on: the same settings, not defaults")
+
+-- A character 0.4.3 already restored (current is the old-named profile) is renamed too.
+saved = oldSave()
+db = stubs.loadAceDB(saved, ns.defaults, { forever = true })
+Migrate(db, OLD)
+eq(db:GetCurrentProfile(), OLD, "0.4.3 state: on the old-named profile")
+db = load(saved, { forever = true })
+eq(db:GetCurrentProfile(), NEW, "next load: renamed")
+eq(db.profile.toastScale, 1.5, "with its values")
+
+-- (c) On the shared settings with an old-named profile (toggled off under 0.4.3): moved, not switched.
+saved = { profileKeys = { [NEW] = "Default" }, profiles = { [OLD] = { toastScale = 1.5 }, Default = {} } }
+db = load(saved, { forever = true })
+eq(db:GetCurrentProfile(), "Default", "stays on the shared settings")
+eq(saved.profiles[OLD], nil, "old name gone")
+eq(saved.profiles[NEW].toastScale, 1.5, "moved to the new name")
+db:SetProfile(db.keys.char)
+eq(db.profile.toastScale, 1.5, "turning This character on brings it back")
+
+-- (d) Both names exist: nothing changes.
+saved = { profileKeys = { [NEW] = NEW }, profiles = { [OLD] = { toastScale = 1.5 }, [NEW] = { toastScale = 0.7 } } }
+db = load(saved, { forever = true })
+eq(db:GetCurrentProfile(), NEW, "current kept")
+eq(db.profile.toastScale, 0.7, "new-name values kept")
+eq(saved.profiles[OLD].toastScale, 1.5, "old-named profile left as is")
+
+-- (e) Classic Era: deep-equal.
+saved = oldSave()
+db = stubs.loadAceDB(saved, ns.defaults, {})
+afterLoad = copy(saved)
+Migrate(db, OLD); eq(Rename(db, OLD), false, "Era: nothing to rename")
+eq(same(saved, afterLoad), true, "Era saved data unchanged")
+
+-- (f) A second load does nothing more.
+saved = oldSave()
+load(saved, { forever = true })
+local once = copy(saved)
+db = load(saved, { forever = true })
+eq(Rename(db, OLD), false, "second run: nothing to do")
+eq(same(saved.profiles, once.profiles), true, "profiles unchanged by later loads")
+
+-- (g) CopyProfile fails: back on the old profile, no half-made new one, failure recorded.
+failures = {}
+local current = OLD
+local fdb = { sv = { profileKeys = {}, profiles = { [OLD] = { toastScale = 1.5 } } }, keys = { char = NEW } }
+function fdb:GetCurrentProfile() return current end
+function fdb:SetProfile(n) current = n; if not self.sv.profiles[n] then self.sv.profiles[n] = {} end end
+function fdb:CopyProfile() error("copy broke") end
+function fdb:DeleteProfile(n) self.sv.profiles[n] = nil end
+eq(Rename(fdb, OLD), false, "failed copy: not renamed")
+eq(current, OLD, "back on the old profile")
+eq(fdb.sv.profiles[NEW], nil, "no half-made new profile")
+eq(fdb.sv.profiles[OLD].toastScale, 1.5, "old profile intact")
+eq(#failures, 1, "failure recorded")
+
 _G.KeepThatDB = nil
 stubs.restore()
 H.done()
