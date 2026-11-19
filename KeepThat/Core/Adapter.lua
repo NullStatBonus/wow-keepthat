@@ -32,6 +32,16 @@ function A.Call(path, ...)
     return unpack(res, 2, table.maxn(res))
 end
 
+-- AceDB-3.0 minor 33's character key, "Name - Realm" (UnitName and GetRealmName, realm spaces kept), used
+-- to find a profile choice saved before AceDB 40 changed the key on WoW Forever (Model/ProfileKey.lua).
+-- nil when either part is missing or empty.
+function A.LegacyCharacterKey()
+    local name = A.Call("UnitName", "player")
+    local realm = A.Call("GetRealmName")
+    if type(name) ~= "string" or name == "" or type(realm) ~= "string" or realm == "" then return nil end
+    return name .. " - " .. realm
+end
+
 -- Profession name keys by skill line ID (the same on both clients).
 A.SKILL_LINES = {
     [171] = "alchemy", [164] = "blacksmithing", [333] = "enchanting", [202] = "engineering",

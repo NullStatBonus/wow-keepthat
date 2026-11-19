@@ -27,31 +27,33 @@ eq(table.concat(created.mixins, ","), "AceEvent-3.0,AceConsole-3.0", "the Ace mi
 
 stubs.restore()
 
+-- OnInitialize restores the profile choice before the presentation upgrade (SetProfile replaces db.profile).
+do
+    local order, fakeDb = {}, { profile = {}, keys = { char = "Me Smith" } }
+    stubs.install({ LibStub = function(lib)
+        if lib == "AceAddon-3.0" then return { NewAddon = function() return {} end } end
+        return { New = function() return fakeDb end }
+    end })
+    local n2 = {}
+    H.locale(n2)
+    H.load("Core/Init.lua", n2)
+    H.load("Core/Addon.lua", n2)
+    n2.defaults = { profile = {} }
+    n2.Adapter = { LegacyCharacterKey = function() return "Me - Realm" end, ProfessionDisplayNames = function() return {} end }
+    n2.ProfileKey = { Migrate = function(db, key) order[#order + 1] = "profile:" .. key; eq(db, fakeDb, "migration gets the db") end }
+    n2.Presentation = { Migrate = function() order[#order + 1] = "presentation" end }
+    n2.Wording = { UseClientNames = function() end }
+    n2.Slash = { Register = function() end }
+    n2.addon:OnInitialize()
+    eq(table.concat(order, ","), "profile:Me - Realm,presentation", "profile migration first, with the old key")
+    stubs.restore()
+end
+
 -- Saved data through the real AceDB-3.0 and the real defaults.
 local function loadAceDB(saved)
-    stubs.install({
-        UnitName = function() return "Me" end,
-        GetRealmName = function() return "Realm" end,
-        UnitClass = function() return "Mage", "MAGE" end,
-        UnitRace = function() return "Human", "Human" end,
-        UnitFactionGroup = function() return "Alliance" end,
-        GetLocale = function() return "enUS" end,
-        GetCurrentRegion = function() return 1 end,
-        GetCurrentRegionName = function() return "US" end,
-        CreateFrame = function() return { RegisterEvent = function() end, SetScript = function() end } end,
-    })
-    _G.KeepThatDB = saved
-    local old = { LibStub = _G.LibStub }
-    _G.LibStub = nil
-    for _, f in ipairs({ "LibStub/LibStub.lua", "CallbackHandler-1.0/CallbackHandler-1.0.lua", "AceDB-3.0/AceDB-3.0.lua" }) do
-        assert(loadfile("KeepThat/Libs/" .. f))("x", {})
-    end
     local dbns = {}
     H.load("Core/Defaults.lua", dbns)
-    local db = _G.LibStub("AceDB-3.0"):New("KeepThatDB", dbns.defaults, true)
-    local lib = _G.LibStub
-    _G.LibStub = old.LibStub
-    return db, lib
+    return stubs.loadAceDB(saved, dbns.defaults)
 end
 
 -- An existing save keeps its log and its stock; the reminder default fills in.
