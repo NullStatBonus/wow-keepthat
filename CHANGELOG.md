@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.4.1
+
+- Removes a library KeepThat never used; nothing changes in game.
+
 ## 0.4.0
 
 - Loot toasts play a sound you can pick: the auction house sound by default, nine other well-known game sounds, sound packs, or none.
