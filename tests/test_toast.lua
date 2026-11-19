@@ -38,7 +38,7 @@ Toast.factory = function()
     made = made + 1
     local f = { alpha = 1, visible = false }
     function f:Set(ic, title, line, c) self.title, self.line, self.color = title, line, c end
-    function f:Place() end
+    function f:Place(p, x, y) self.point, self.x, self.y = p, x, y end
     function f:SetAlpha(a) self.alpha = a end
     function f:Show() self.visible = true end
     function f:Hide() self.visible = false end
@@ -131,8 +131,12 @@ do
     H2.eq(point .. " " .. x .. " " .. y, "TOP 0 -140", "default position")
     Toast.SavePosition("BOTTOMLEFT", 120.4, 300.6)
     H2.eq(p.toastPosition.point .. " " .. p.toastPosition.x .. " " .. p.toastPosition.y, "BOTTOMLEFT 120 301", "saved, rounded")
-    point, x, y = Toast.Position(3)
-    H2.eq(point .. " " .. x .. " " .. y, "BOTTOMLEFT 120 209", "the third toast stacks two spacings below")
+    local three = { { frame = {} }, { frame = {} }, { frame = {} } }
+    point, x, y = Toast.Position(3, three)
+    H2.eq(point .. " " .. x .. " " .. y, "BOTTOMLEFT 120 301", "the newest of three sits at the saved position")
+    point, x, y = Toast.Position(1, three)
+    H2.eq(y, 301 + 2 * Toast.SPACING, "the oldest of three is two spacings above")
+    H2.eq(select(3, Toast.Position(1, {})), 301, "alone (or the mover): the saved position")
     Toast.ResetPosition()
     H2.eq(p.toastPosition.y, -140, "reset to the default")
 
@@ -140,12 +144,96 @@ do
     p.toastOpacity = nil
     H2.eq(Toast.Alpha(0), 0, "starts transparent")
     H2.eq(Toast.Alpha(Toast.FADE_IN), 1, "fully shown after the fade in")
-    H2.eq(Toast.Alpha(Toast.SHOW - Toast.FADE / 2), 0.5, "halfway through the fade out")
+    H2.eq(Toast.Alpha(0.15), 0.5, "fade in takes 0.3 s")
+    H2.eq(Toast.Alpha(3.25), 0.5, "halfway through the 1.5 s fade out")
+    H2.eq(Toast.Alpha(2.5), 1, "fully shown until the fade out starts")
+    H2.eq(Toast.Alpha(4), 0, "gone at 4 s")
     p.toastOpacity = 0.5
     H2.eq(Toast.Alpha(1), 1, "lifetime alpha is independent of surface dimming")
     p.toastOpacity = 0
     H2.eq(Toast.Alpha(1), 1, "legacy alpha is applied by the separate layers")
     p.toastOpacity = nil
+end
+
+-- Upward stack and glide (spec loot-toast, "Toasts stay out of the way").
+do
+    local p = ns.defaults.profile
+    p.toastPosition = { point = "TOP", x = 0, y = -140 }
+    Toast.Tick(10); Toast.Reset()
+    for i = 51, 53 do marked[i] = true end
+    loot(msg(51, 1))
+    local a = Toast.active[1]
+    eq(a.frame.y, -140, "first toast at the saved position")
+    Toast.Tick(0.5)
+    loot(msg(52, 1))
+    local b = Toast.active[2]
+    eq(b.frame.y, -140, "the new toast appears at the saved position")
+    eq(a.frame.y, -140, "the older one has not jumped")
+    Toast.Tick(0.1)
+    eq(a.frame.y > -140 and a.frame.y < -140 + Toast.SPACING, true, "part way up after 0.1 s")
+    Toast.Tick(0.1)
+    eq(a.frame.y, -140 + Toast.SPACING, "one place above after 0.2 s")
+    loot(msg(53, 1))
+    Toast.Tick(0.4)
+    eq(a.frame.y, -140 + 2 * Toast.SPACING, "oldest two places above")
+    local c = Toast.active[3]
+    local by, cy = b.frame.y, c.frame.y
+    Toast.Tick(Toast.SHOW - a.age + 0.01)
+    eq(Toast.active[1] == b, true, "the oldest left")
+    eq(b.frame.y, by, "the others did not move")
+    eq(c.frame.y, cy, "the newest did not move")
+    Toast.Tick(10)
+end
+
+-- Codex review fixes: burst arrivals get their own places, heights per anchor, Refresh keeps the
+-- glide, real toasts wait behind samples.
+do
+    local p = ns.defaults.profile
+    p.toastPosition = { point = "TOP", x = 0, y = -140 }
+    Toast.Tick(10); Toast.Reset()
+    for i = 61, 66 do marked[i] = true end
+    loot(msg(61, 1)); loot(msg(62, 1)); loot(msg(63, 1))
+    local ys = {}
+    for i, e in ipairs(Toast.active) do ys[i] = e.frame.y end
+    eq(ys[3], -140, "burst: newest at the anchor")
+    eq(ys[2], -140 + Toast.SPACING, "burst: second in its own place")
+    eq(ys[1], -140 + 2 * Toast.SPACING, "burst: oldest in its own place, no overlap")
+    Toast.Tick(10)
+
+    -- Unequal heights: with a TOP anchor the gap is the upper panel's height plus 8.
+    local function e(h) return { frame = { Height = function() return h end } } end
+    local list = { e(60), e(40) }
+    eq(select(3, Toast.Position(1, list)), -140 + 68, "TOP: upper 60 px panel clears the lower")
+    p.toastPosition = { point = "BOTTOM", x = 0, y = 100 }
+    eq(select(3, Toast.Position(1, list)), 100 + 48, "BOTTOM: the lower 40 px panel's height")
+    p.toastPosition = { point = "CENTER", x = 0, y = 0 }
+    eq(select(3, Toast.Position(1, list)), 58, "CENTER: half of each")
+    p.toastPosition = { point = "TOP", x = 0, y = -140 }
+
+    -- Refresh (an appearance change) does not finish a glide.
+    loot(msg(64, 1)); Toast.Tick(0.5); loot(msg(65, 1))
+    local older = Toast.active[1]
+    Toast.Tick(0.05)
+    local mid = older.frame.y
+    Toast.Refresh()
+    eq(older.frame.y, mid, "Refresh keeps the current place")
+    Toast.Tick(0.3)
+    eq(older.frame.y, -140 + Toast.SPACING, "and the glide finishes")
+    Toast.Tick(10)
+
+    -- A real toast that arrives behind samples starts its life when they clear.
+    Toast.Demo(1)
+    loot(msg(66, 1))
+    local real = Toast.active[1]
+    Toast.Tick(1)
+    eq(real.age, 0, "no aging while samples show")
+    Toast.Tick(Toast.SHOW)
+    eq(#Toast.samples, 0, "samples gone")
+    eq(real.age, 0, "the tick that clears the samples does not age it either")
+    Toast.Tick(0.15)
+    eq(Toast.active[1] == real, true, "still showing")
+    eq(Toast.Alpha(real.age), 0.5, "the real toast still fades in")
+    Toast.Tick(10)
 end
 
 -- /kt demo: three sample toasts, whatever the settings say (toast off here).

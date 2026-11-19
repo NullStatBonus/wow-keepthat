@@ -192,7 +192,7 @@ function Options.Appearance(order)
     note(g, "positionHelp", function()
         if profile().toastLocked then return grey(L["Position is locked. Clear Lock position to move or reset it."]) end
         if ns.Toast and ns.Toast.move then return grey(L["Move is active. Drag the sample. Select Done to save. Select Cancel or press Escape to discard changes."]) end
-        return grey(L["Select Move to place the first toast. Other toasts appear below it. Reset position changes only the position."])
+        return grey(L["Select Move to place the newest toast. Older toasts appear above it. Reset position changes only the position."])
     end)
     control("locked", "appearance.toast.locked", L["Lock position"])
     add(g, "toastMove", { type = "execute", name = L["Move"],

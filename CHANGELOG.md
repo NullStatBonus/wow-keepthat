@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.4.2
+
+- Loot toasts rise from their position, newest at the bottom, glide into place and fade in and out gently.
+
 ## 0.4.1
 
 - Removes a library KeepThat never used; nothing changes in game.

@@ -45,7 +45,7 @@ Run every check on **both clients**: Classic Era (TOC 11509, the `OnTooltipSetIt
 6. After the toast has faded, loot more of the same item in the same session. No toast appears.
 7. /reload, then loot the same item. A toast appears again.
 8. Click through a toast onto the game world (or target something behind it). The toast does not take the click.
-9. Loot five different marked items at once (for example from several corpses or a mining run). At most three toasts show, stacked; the others show as earlier ones fade.
+9. Loot five different marked items at once (for example from several corpses or a mining run). At most three toasts show: the newest at the saved position, older ones above it. The others show as earlier ones fade.
 10. Set the leveling and endgame colors to different values and loot one of each. Each toast names its category in that category color; both category names appear when applicable.
 11. Default sound: with toasts on and default settings, loot a marked material for the first time this session. The auction house opening sound plays once as the toast appears.
 12. Loot more of the same item while its toast shows. The count rises and no sound plays.
@@ -55,6 +55,7 @@ Run every check on **both clients**: Classic Era (TOC 11509, the `OnTooltipSetIt
 16. With an addon that registers LibSharedMedia sounds installed (for example SharedMedia), open the Sound picker: its sounds are listed after the ten as "<name> (sound pack)". Choose one, loot a new marked item, hear it. Disable that addon and /reload: the picker shows Auction open, a new toast plays Auction open, and no Lua error appears. Re-enable it: the saved pack is chosen again.
 17. With "Loot toast" off, select Preview loot toast, /kt test toast and /kt demo. Each plays the chosen sound once. The Sound and Sound channel dropdowns are disabled while the toast is off.
 18. /kt log lists toastSound and toastSoundChannel under Settings and "sound packs = <count>" (or "none") under Presentation.
+19. Motion: loot one marked item, then another a second later. The new toast appears at the saved position and the first glides up (no jump). Each fades in, then fades out over its last second and a half. When the top toast fades away, the ones below it stay put. Move a toast near the top of the screen with Move and check the stack stays on screen with /kt demo.
 
 ## 4. Icon mask
 
