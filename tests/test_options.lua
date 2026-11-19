@@ -27,6 +27,7 @@ local function fresh(opts)
     H.load("Model/Classify.lua", ns)
     H.load("Model/Wording.lua", ns)
     H.load("Model/Stock.lua", ns)
+    H.load("Model/Sounds.lua", ns)
     H.load("Core/Context.lua", ns)
     ns.Data = { Catalog = {
         client = ns.client,
@@ -63,6 +64,8 @@ eq(d.leveling, false, "leveling off by default")
 eq(d.tooltip, true, "tooltip on by default")
 eq(d.toast, false, "toast off by default")
 eq(d.mask, false, "mask off by default")
+eq(d.toastSound, "auction", "toast sound Auction open by default")
+eq(d.toastSoundChannel, "Master", "toast sound on Master by default")
 eq(d.colors.endgame.b > d.colors.endgame.g and d.colors.endgame.r > d.colors.endgame.g, true, "endgame color is purple")
 eq(d.colors.leveling.g > d.colors.leveling.r and d.colors.leveling.g > d.colors.leveling.b, true, "leveling color is green")
 eq(d.locations.bags and d.locations.bank and d.locations.merchant, true, "bags, bank and merchant checked")
@@ -475,5 +478,52 @@ eq(appearance.previewTooltip.name, "Preview item tooltip", "preview identifies i
 eq(contextual.args.materials.args.blacksmithing.args.scope, nil, "profession page does not repeat scope")
 eq(contextual.args.materials.args.blacksmithing.args.i12360.args.scope, nil, "material page does not repeat scope")
 _G.LibStub = nil
+
+-- Appearance > Loot toast: Sound and Sound channel pickers (spec settings, "Toast sound picker").
+do
+    local ns = fresh()
+    local plays, packs = {}, nil
+    ns.Adapter.SoundPacks = function() return packs end
+    ns.Adapter.PlaySound = function(id, ch) plays[#plays + 1] = { id, ch }; return true end
+    ns.Adapter.PlaySoundFile = function(p, ch) plays[#plays + 1] = { p, ch }; return true end
+    local a = ns.Options.Appearance(4).args
+    local s, c = a.toastSound, a.toastSoundChannel
+    eq(s.type, "select", "sound is a dropdown")
+    eq(s.order > a.scale.order and c.order == s.order + 1, true, "after Scale, then channel")
+    local order = s.sorting()
+    eq(#order, 11, "None and ten sounds without the library")
+    eq(order[1], "none", "None first"); eq(order[2], "auction", "Auction open next"); eq(order[8], "murloc", "Murloc aggro listed")
+    eq(s.values().murloc, "Murloc aggro", "label")
+    packs = { ["Air Horn"] = "horn.ogg" }
+    order = s.sorting()
+    eq(order[12], "lsm:Air Horn", "sound pack after the built-in sounds")
+    eq(s.values()["lsm:Air Horn"], "Air Horn (sound pack)", "pack label")
+    eq(s.get(), "auction", "default shown")
+
+    -- Choosing plays once and saves; None saves and plays nothing.
+    s.set(nil, "levelup")
+    eq(ns.addon.db.profile.toastSound, "levelup", "saved"); eq(#plays, 1, "played once"); eq(plays[1][1], 888, "the chosen sound")
+    eq(plays[1][2], "Master", "on the chosen channel")
+    s.set(nil, "none")
+    eq(ns.addon.db.profile.toastSound, "none", "None saved"); eq(#plays, 1, "None plays nothing")
+
+    -- A saved pack that is gone shows the default without overwriting the saved choice.
+    ns.addon.db.profile.toastSound = "lsm:Air Horn"
+    eq(s.get(), "lsm:Air Horn", "present pack shown")
+    packs = nil
+    eq(s.get(), "auction", "missing pack shows Auction open")
+    eq(ns.addon.db.profile.toastSound, "lsm:Air Horn", "saved choice kept")
+
+    -- Channel.
+    eq(c.values.Master, "Master", "Master label"); eq(c.values.SFX, "Sound effects", "Sound effects label")
+    eq(c.get(), "Master", "Master by default")
+    c.set(nil, "SFX"); eq(ns.addon.db.profile.toastSoundChannel, "SFX", "channel saved"); eq(c.get(), "SFX", "shown")
+
+    -- Disabled while the toast is off, like opacity and scale.
+    ns.addon.db.profile.toast = false
+    eq(s.disabled(), true, "sound disabled with toast off"); eq(c.disabled(), true, "channel disabled with toast off")
+    ns.addon.db.profile.toast = true
+    eq(s.disabled(), false, "enabled with toast on")
+end
 
 H.done()

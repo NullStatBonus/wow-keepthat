@@ -69,4 +69,15 @@ ns.StockRecorder = nil
 ns.Integrations = { Status = function() error("boom") end }
 has(Log.Report(), "error:", "a failing Status is reported, not raised")
 
+-- Toast sound: both settings listed; sound packs counted, or none without the library.
+r = Log.Report()
+has(r, "toastSound = auction", "toast sound setting listed")
+has(r, "toastSoundChannel = Master", "toast channel setting listed")
+ns.Adapter = { SoundPacks = function() return nil end }
+has(Log.Report(), "sound packs = none", "no library")
+ns.Adapter = { SoundPacks = function() return { a = "x", b = "y" } end }
+has(Log.Report(), "sound packs = 2", "packs counted")
+ns.Adapter = { SoundPacks = function() error("boom") end }
+has(Log.Report(), "sound packs = none", "an error is contained")
+
 H.done()

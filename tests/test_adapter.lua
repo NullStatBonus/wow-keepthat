@@ -112,4 +112,29 @@ eq(A.EventKnown("LEARNED_SPELL_IN_SKILL_LINE"), true, "a client event is known")
 eq(A.EventKnown("LEARNED_SPELL_IN_TAB"), false, "a removed event is not")
 A.env = {}
 eq(A.EventKnown("LEARNED_SPELL_IN_TAB"), nil, "no IsEventValid: unknown")
+
+-- Sounds (Core/Adapter_Sound.lua): guarded play calls, channel limited to Master/SFX, sound packs.
+H.load("Core/Adapter_Sound.lua", ns)
+A.env = {}
+eq(A.PlaySound(5274, "Master"), nil, "no PlaySound: nil")
+eq(A.SoundPacks(), nil, "no LibStub: nil")
+local played
+A.env = { PlaySound = function(id, ch) played = { id, ch }; return true, 7 end,
+    PlaySoundFile = function(p, ch) played = { p, ch }; return false end }
+eq(A.PlaySound(416, "Music"), true, "willPlay returned")
+eq(played[1], 416, "id passed"); eq(played[2], "Master", "unknown channel becomes Master")
+A.PlaySound(416, "SFX"); eq(played[2], "SFX", "SFX kept")
+eq(A.PlaySoundFile("x.ogg", "SFX"), false, "PlaySoundFile willPlay false passed through")
+A.env = { PlaySound = function() error("boom") end }
+eq(A.PlaySound(416), nil, "an error gives nil")
+A.env = { LibStub = function(name, silent) return nil end }
+eq(A.SoundPacks(), nil, "LibStub without the library: nil")
+local lsm = { HashTable = function(self, kind) return kind == "sound" and { None = "x", ["Air Horn"] = "horn.ogg", Bad = {} } or {} end }
+A.env = { LibStub = setmetatable({}, { __call = function(_, name) return name == "LibSharedMedia-3.0" and lsm or nil end }) }
+local packs = A.SoundPacks()
+eq(packs["Air Horn"], "horn.ogg", "a registered sound")
+eq(packs.None, nil, "the library's None entry is left out")
+eq(packs.Bad, nil, "a non-path value is left out")
+lsm.HashTable = function() error("broken") end
+eq(A.SoundPacks(), nil, "a library error gives nil")
 H.done()

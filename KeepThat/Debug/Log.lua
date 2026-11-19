@@ -70,6 +70,11 @@ function Log.Report()
         out[#out + 1] = "  moving = " .. tostring(ns.Toast.move ~= nil)
         out[#out + 1] = "  samples = " .. tostring(#ns.Toast.samples)
     end
+    -- Sound packs from LibSharedMedia-3.0 for the toast sound picker (Core/Adapter_Sound.lua).
+    local okP, packs = pcall(function() return ns.Adapter and ns.Adapter.SoundPacks and ns.Adapter.SoundPacks() end)
+    local nPacks = 0
+    if okP and type(packs) == "table" then for _ in pairs(packs) do nPacks = nPacks + 1 end end
+    out[#out + 1] = "  sound packs = " .. ((okP and type(packs) == "table") and tostring(nPacks) or "none")
     out[#out + 1] = "Stock:"
     local R = ns.StockRecorder
     local okS, st = pcall(function() return R and R.State and R.State() end)

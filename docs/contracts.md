@@ -214,3 +214,25 @@ Source review of Syndicator (`Core/Constants.lua`, `Tracking/BagCache.lua`, `Tra
 - **Reading a container:** `C_Container.GetContainerNumSlots`, then `C_Container.GetContainerItemInfo(bag, slot)` taking `.itemID` and `.stackCount` (BagCache.lua:36-46, 409-457).
 - **Mail:** `MAIL_INBOX_UPDATE` defers a full rescan to the next frame (MailCache.lua:52, 153-154, 175-218). It replaces the whole record with `GetInboxNumItems()` mails, each with `GetInboxHeaderInfo(i)` and `ATTACHMENTS_MAX` calls of `GetInboxItem(i, a)`. That returns name, itemID, texture, count, quality, canUse (line 31); an attachment counts only when itemID is non-nil (lines 32, 197-198). It does not use the header's `hasItem`, ignores COD, and does nothing about mail beyond the 50 the inbox lists.
 - **KeepThat uses:** `GetInboxNumItems`, `GetInboxHeaderInfo` (non-nil header; 8th return `hasItem`), `GetInboxItem` (name, itemID, count), `GetInboxItemLink` (itemID fallback), `ATTACHMENTS_MAX_RECEIVE or ATTACHMENTS_MAX or 16`; `C_Bank.FetchPurchasedBankTabData`, `Enum.BagIndex.CharacterBankTab_N`, `NUM_BAG_SLOTS`, `NUM_BANKBAGSLOTS`, `NUM_TOTAL_EQUIPPED_BAG_SLOTS`, `REAGENTBANK_CONTAINER`; `C_Container.GetContainerNumSlots`, `GetContainerItemInfo`, `GetContainerItemID` (legacy globals as fallback); `UnitFullName`, `UnitFactionGroup`, `time`, `C_Timer.After`. A mail past the inbox's 50 and COD amounts are not counted, same as Syndicator.
+
+## Loot toast sounds (read 2026-11-18)
+
+Game sound kits played by ID through `PlaySound(id, channel)` (`Model/Sounds.lua`). Each ID has a `SoundKitEntry` row on both clients (wago.tools DB2, Era build 1.15.9.70576 and Forever build 1.60.1.70938); file names come from the community listfile. KeepThat ships no sound files. Level up, both bell tolls and others have no `SOUNDKIT` constant on Era, so they are played by number.
+
+| Label | Kit | File | Length |
+|---|---|---|---|
+| Auction open (default) | 5274 | sound/interface/auctionwindowopen.ogg | 2.24 s |
+| Level up | 888 | sound/spells/levelup.ogg | 4.36 s |
+| Quest complete | 878 | sound/interface/iquestcomplete.ogg | 8.35 s |
+| Ready check | 8960 | sound/interface/readycheck.ogg | 2.90 s |
+| Raid warning | 8959 | sound/interface/raidwarning.ogg | 1.29 s |
+| PvP queue ready | 8459 | sound/spells/pvpthroughqueue.ogg | 5.10 s |
+| Murloc aggro | 416 | sound/creature/murloc/mmurlocaggroold.ogg | 1.75 s |
+| Bell toll (Alliance) | 6594 | sound/doodad/belltollalliance.ogg | 1.81 s |
+| Bell toll (Horde) | 6595 | sound/doodad/belltollhorde.ogg | 2.92 s |
+| Battle.net toast | 18019 | sound/interface/ui_bnettoast.ogg | 1.03 s |
+
+- Not usable: `UI_EPICLOOT_TOAST` (31578) is listed in Era's `SoundKitConstants.lua` but has no `SoundKitEntry` row on Era, so it is silent there.
+- `PlaySound` and `PlaySoundFile` return `willPlay`; KeepThat treats only `false` as "did not play" (as Don't Do That does) and then falls back to the default.
+- LibSharedMedia-3.0 (when another addon provides it): read only with `LibStub("LibSharedMedia-3.0", true)` and `:HashTable("sound")` (name to path, the library's own "None" entry skipped), in `Core/Adapter_Sound.lua`.
+- In game (2026-11-18, Era and Forever): the player reported the test plan checks for the toast sound working.

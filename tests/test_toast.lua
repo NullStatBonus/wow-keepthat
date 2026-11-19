@@ -158,4 +158,70 @@ eq(#Toast.samples, 3, "running it again keeps exactly three isolated samples")
 Toast.Tick(10)
 eq(visible(), 0, "they fade like real toasts")
 
+-- Toast sound (spec loot-toast): once on acceptance, silent count merges, one per burst, samples apart.
+do
+    local plays, clock = {}, 100
+    ns.Sounds = { Play = function(key, ch) plays[#plays + 1] = { key, ch }; return key ~= "none" end }
+    ns.Adapter.Now = function() return clock end
+    local p = ns.defaults.profile
+    p.toastSound, p.toastSoundChannel = "auction", "Master"
+    Toast.Tick(10); Toast.Reset(); Toast.lastSound = nil
+    for i = 31, 40 do marked[i] = true end
+
+    p.toast = false
+    loot(msg(31, 1))
+    eq(#plays, 0, "toast off: no sound")
+    p.toast = true
+
+    loot(msg(31, 1))
+    eq(#plays, 1, "first pickup plays once")
+    eq(plays[1][1] .. " " .. plays[1][2], "auction Master", "chosen sound and channel")
+    clock = 110
+    loot(msg(31, 2))
+    eq(#plays, 1, "count added: silent")
+    Toast.Tick(10)
+
+    -- Five at once: one sound, none when the queued fourth and fifth show later.
+    clock = 200; plays = {}
+    for i = 32, 36 do loot(msg(i, 1)) end
+    eq(#plays, 1, "five items at once: one sound")
+    eq(#Toast.queue, 2, "two wait")
+    clock = 204.1; Toast.Tick(4.1)
+    eq(#Toast.queue, 0, "the waiting ones showed")
+    eq(#plays, 1, "no sound when queued toasts show")
+    clock = 201.5; loot(msg(37, 1))
+    eq(#plays, 1, "within the cooldown: silent")
+    clock = 214; loot(msg(38, 1))
+    eq(#plays, 2, "after the cooldown: plays again")
+    Toast.Tick(10)
+
+    -- None: the toast shows, silently (Sounds.Play is asked with "none" and plays nothing).
+    p.toastSound = "none"; clock = 300; plays = {}
+    loot(msg(39, 1))
+    local shown39 = false
+    for _, e in ipairs(Toast.active) do if e.itemID == 39 then shown39 = true end end
+    eq(shown39, true, "None: the toast still shows")
+    eq(plays[1][1], "none", "None passed to Sounds.Play")
+    p.toastSound = "auction"
+    Toast.Tick(10)
+
+    -- Samples: once per request, with toasts off and inside the cooldown, without blocking real loot.
+    p.toast = false; clock = 400; Toast.lastSound = 399.5; plays = {}
+    Toast.Demo(1); eq(#plays, 1, "preview plays once with toasts off, cooldown ignored")
+    Toast.Demo(); eq(#plays, 2, "demo plays once for three samples")
+    eq(Toast.lastSound, 399.5, "samples do not record the cooldown")
+    Toast.Tick(10)
+    p.toast = true; clock = 402; Toast.lastSound = nil
+    Toast.Demo(1); plays = {}
+    loot(msg(40, 1))
+    eq(#plays, 1, "real loot right after a sample still plays")
+    Toast.Tick(10)
+
+    -- Unknown time: plays and records nothing.
+    ns.Adapter.Now = function() return nil end
+    Toast.Reset(); Toast.lastSound = nil; plays = {}
+    marked[41] = true; loot(msg(41, 1))
+    eq(#plays, 1, "no clock: plays"); eq(Toast.lastSound, nil, "no clock: nothing recorded")
+end
+
 H.done()
