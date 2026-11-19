@@ -9,13 +9,13 @@ ns.defaults = {
         leveling = false,        -- mark leveling materials
         tooltip = true,          -- the tooltip line (the main feature)
         toast = false,           -- loot toast
-        toastPosition = { point = "TOP", x = 0, y = -140 },
+        toastPosition = { point = "TOP", x = 0, y = -140 }, -- where the newest toast shows; older ones stack above
         toastOpacity = 1,        -- legacy alpha, migrated independently into background/text alpha
         toastScale = 1,
         toastLocked = false,
         toastSound = "auction",  -- Model/Sounds.lua key; "none" is silent
         toastSoundChannel = "Master", -- or "SFX"
-        maskOpacity = 0.4,       -- icon tint strength (OLED: dimmable)  -- where the first toast shows; more stack below
+        maskOpacity = 0.4,       -- icon tint strength (OLED: dimmable)
         mask = false,            -- icon tint
         colors = {
             endgame = { r = 0.64, g = 0.21, b = 0.93 },   -- purple (epic quality color)

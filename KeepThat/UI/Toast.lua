@@ -7,7 +7,8 @@ local L = ns.L
 local Toast = {
     MAX = 3,          -- toasts visible at once
     SHOW = 4,         -- seconds a toast lasts
-    FADE = 1,         -- the last second fades out
+    FADE = 1.5,       -- the last 1.5 seconds fade out
+    GLIDE = 0.2,      -- seconds to glide one place when the stack moves
     seen = {},        -- itemID -> true, one toast per item per session
     active = {},      -- visible entries { itemID, count, age, frame }
     queue = {},       -- waiting entries { itemID, count }
@@ -43,18 +44,43 @@ Toast.DEFAULT_POSITION = { point = "TOP", x = 0, y = -140 }
 
 function Toast.Position(index, entries)
     local pos = profile().toastPosition or Toast.DEFAULT_POSITION
-    local offset = 0
-    for i = 1, (index or 1) - 1 do
-        local e = (entries or Toast.active)[i]
-        offset = offset + (e and e.frame.Height and e.frame:Height() + 8 or Toast.SPACING)
+    local list = entries or Toast.active
+    local point = pos.point or "TOP"
+    -- The gap between two neighbours depends on which edge the anchor holds: a TOP anchor needs the
+    -- upper panel's height, a BOTTOM anchor the lower one's, anything else half of each.
+    local function height(e)
+        local h = e and e.frame and e.frame.Height and e.frame:Height()
+        return type(h) == "number" and h or Toast.SPACING - 8
     end
-    return pos.point or "TOP", pos.x or 0, (pos.y or 0) - offset
+    local offset = 0
+    for i = (index or 1), #list - 1 do
+        local upper, lower = height(list[i]), height(list[i + 1])
+        local h = point:find("TOP") and upper or point:find("BOTTOM") and lower or (upper + lower) / 2
+        offset = offset + h + 8
+    end
+    return point, pos.x or 0, (pos.y or 0) + offset
+end
+
+-- Places every entry of a list (oldest first). A new entry starts at its place; the others glide toward
+-- theirs at one spacing per GLIDE seconds as time passes (dt), so nothing jumps. snap places all at once.
+function Toast.Layout(list, dt, snap)
+    local speed = Toast.SPACING / Toast.GLIDE
+    for i, e in ipairs(list) do
+        local point, x, y = Toast.Position(i, list)
+        if snap or e.y == nil or e.age == 0 then
+            e.y = y
+        elseif dt and dt > 0 then
+            local d, step = y - e.y, speed * dt
+            if math.abs(d) <= step then e.y = y else e.y = e.y + (d > 0 and step or -step) end
+        end
+        e.frame:Place(point, x, e.y)
+    end
 end
 
 function Toast.SavePosition(point, x, y)
     if profile().toastLocked then return false end
     profile().toastPosition = { point = point or "TOP", x = math.floor((x or 0) + 0.5), y = math.floor((y or 0) + 0.5) }
-    for i, e in ipairs(Toast.active) do e.frame:Place(i) end
+    Toast.Layout(Toast.active, nil, true)
 end
 
 function Toast.ResetPosition()
@@ -68,7 +94,7 @@ end
 -- subtitle with only the category word colored, and a thin accent bar in the category color. The whole
 -- lifetime fade multiplies independent background and ink layers.
 Toast.WIDTH, Toast.HEIGHT = (ns.Presentation or {}).width or 280, (ns.Presentation or {}).height or 40
-Toast.FADE_IN = 0.15
+Toast.FADE_IN = 0.3
 
 local function buildFrame(create, parent, strata)
     local f = create("Frame", nil, parent)
@@ -137,7 +163,7 @@ end
 function Toast.BeginMove()
     if profile().toastLocked then return false end
     if Toast.move then return true end
-    local point, x, y = Toast.Position(1)
+    local point, x, y = Toast.Position(1, {})
     Toast.move = { profile = profile(), point = point, x = x, y = y }
     notifyMove()
     return true
@@ -201,7 +227,7 @@ local function showMover()
         end
     end
     if moverStyle then moverStyle() end
-    local point, x, y = Toast.Position(1)
+    local point, x, y = Toast.Position(1, {})
     mover:ClearAllPoints(); mover:SetPoint(point, parent, point, x, y); mover:Show()
     return true
 end
@@ -217,7 +243,7 @@ function Toast.ShowMover()
 end
 
 -- Real frame, replaceable in tests: Toast.factory() returns an object with
--- Set(icon, title, line, color), Place(index), SetAlpha(a), Show(), Hide().
+-- Set(icon, title, line, color), Place(point, x, y), SetAlpha(a), Show(), Hide().
 function Toast.factory()
     local create = ns.Adapter.Resolve("CreateFrame")
     local parent = ns.Adapter.Resolve("UIParent")
@@ -227,8 +253,9 @@ function Toast.factory()
     f:Hide()
     return {
         Set = function(_, ic, title, lineText, c) set(ic, title, lineText, c) end,
-        Place = function(_, index, entries)
-            local point, x, y = Toast.Position(index, entries)
+        Place = function(self, point, x, y)
+            if self.placed == point .. ":" .. x .. ":" .. y then return end
+            self.placed = point .. ":" .. x .. ":" .. y
             f:ClearAllPoints()
             f:SetPoint(point, parent, point, x, y)
         end,
@@ -302,7 +329,7 @@ function Toast.Demo(only)
         frame:Show()
     end
     for _, e in ipairs(Toast.active) do e.frame:Hide() end
-    for i, e in ipairs(Toast.samples) do e.frame:Place(i, Toast.samples) end
+    Toast.Layout(Toast.samples, nil, true)
     playSound() -- samples: once per request, whatever the toast setting and cooldown, without recording
     return true
 end
@@ -329,7 +356,7 @@ local function startNext()
             if #Toast.samples == 0 then frame:Show() else frame:Hide() end
         end
     end
-    for i, e in ipairs(Toast.active) do e.frame:Place(i) end
+    Toast.Layout(Toast.active)
 end
 
 local function find(list, itemID)
@@ -359,6 +386,7 @@ end
 
 -- Advance time by dt seconds: fade and retire toasts, then show queued ones.
 function Toast.Tick(dt)
+    local hidden = #Toast.samples > 0 -- real toasts hidden behind samples at the start of this tick
     for i = #Toast.samples, 1, -1 do
         local e = Toast.samples[i]; e.age = e.age + dt
         if e.age >= Toast.SHOW then e.frame:Hide(); Toast.sampleFree[#Toast.sampleFree + 1] = e.frame; table.remove(Toast.samples, i)
@@ -366,7 +394,8 @@ function Toast.Tick(dt)
     end
     for i = #Toast.active, 1, -1 do
         local e = Toast.active[i]
-        e.age = e.age + dt
+        -- Hidden behind samples: its life (and fade-in) waits until they clear.
+        if not hidden then e.age = e.age + dt end
         if e.age >= Toast.SHOW then
             e.frame:Hide()
             Toast.free[#Toast.free + 1] = e.frame
@@ -376,6 +405,8 @@ function Toast.Tick(dt)
         end
     end
     startNext()
+    Toast.Layout(Toast.active, dt)
+    Toast.Layout(Toast.samples, dt)
     for _, e in ipairs(Toast.active) do
         if #Toast.samples > 0 then e.frame:Hide() else e.frame:Show() end
     end
@@ -395,8 +426,9 @@ function Toast.Refresh()
                     ns.Wording.ColoredLine(d.result, colors, { prefix = false }) or "",
                     colors[d.result.endgame and "endgame" or "leveling"] or { r = 1, g = 1, b = 1 })
             end
-            e.frame:SetAlpha(Toast.Alpha(e.age)); e.frame:Place(i, list)
+            e.frame:SetAlpha(Toast.Alpha(e.age))
         end
+        Toast.Layout(list)
     end
 end
 
