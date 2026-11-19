@@ -23,7 +23,7 @@ eq(ns.name, "KeepThat", "the addon name comes from the game")
 eq(ns.version, "9.9.9", "the version comes from the TOC")
 eq(ns.addon, created, "the Ace addon is stored in ns")
 eq(created.name, "KeepThat", "the Ace addon is named after the addon")
-eq(table.concat(created.mixins, ","), "AceEvent-3.0,AceConsole-3.0,AceHook-3.0", "the Ace mixins")
+eq(table.concat(created.mixins, ","), "AceEvent-3.0,AceConsole-3.0", "the Ace mixins")
 
 stubs.restore()
 
