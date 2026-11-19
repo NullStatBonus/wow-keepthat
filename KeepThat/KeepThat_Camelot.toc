@@ -1,7 +1,7 @@
 ## Interface: 16001
 ## Title: KeepThat
 ## Notes: Adds a short tooltip line to the materials worth keeping for endgame crafting or profession leveling, so you never sell what you'll need later.
-## Version: 0.4.2
+## Version: 0.4.3
 ## Author: NullStatBonus
 ## SavedVariables: KeepThatDB
 ## OptionalDeps: Baganator, Bagnon, EllesmereUI, EllesmereUIBags, Auctionator, DFLProfessionJournal
@@ -41,6 +41,7 @@ Model\Classify.lua
 Model\Wording.lua
 Model\Stock.lua
 Model\Sounds.lua
+Model\ProfileKey.lua
 Core\Context.lua
 Core\Stock.lua
 

@@ -1,5 +1,35 @@
-Ace3 subset bundled from https://github.com/WoWUIDev/Ace3
-Tag: Release-r1403
-Commit: d295b12f8b889a30e86e0e901c5494df4b149c49
-Bundled: LibStub, CallbackHandler-1.0, AceAddon-3.0, AceDB-3.0, AceEvent-3.0, AceConsole-3.0, AceConfig-3.0 (Registry/Cmd/Dialog), AceGUI-3.0 (with widgets)
-Files copied unmodified. License: see LICENSE-Ace3.txt
+Ace3 libraries embedded in KeepThat
+
+Upstream:  https://github.com/WoWUIDev/Ace3
+Commit:    ac3d1225037e0dc74e025a72342c0f7824aae147 (committed 2026-10-28, after Release-r1403)
+Retrieved: 2026-11-18, from https://codeload.github.com/WoWUIDev/Ace3/tar.gz/ac3d122
+License:   LICENSE-Ace3.txt (upstream LICENSE.txt, unchanged)
+Local patches: none. Every file below is byte-identical to the upstream commit.
+
+Modules (MAJOR, MINOR as read from the shipped files):
+  LibStub                 2
+  CallbackHandler-1.0     8
+  AceAddon-3.0            13
+  AceEvent-3.0            4
+  AceDB-3.0               40
+  AceConsole-3.0          7
+  AceGUI-3.0              41
+    widgets: BlizOptionsGroup 26, DropdownGroup 22, Frame 30, InlineGroup 22, ScrollFrame 26,
+             SimpleGroup 20, TabGroup 38, TreeGroup 49, Window 8, Button 24, CheckBox 27,
+             ColorPicker 29, Dropdown 36 (pullout 5), Dropdown items 1-4, EditBox 29, Heading 21,
+             Icon 22, InteractiveLabel 21, Keybinding 27, Label 29, MultiLineEditBox 33, Slider 24
+  AceConfig-3.0           3
+    AceConfigRegistry-3.0 22
+    AceConfigCmd-3.0      14
+    AceConfigDialog-3.0   93
+
+Not shipped: AceHook-3.0 (removed in 0.4.1), AceBucket, AceComm, AceDBOptions, AceLocale,
+AceSerializer, AceTab, AceTimer.
+
+Updating:
+  1. Download the commit tarball into an empty scratch directory.
+  2. Copy only the paths already under KeepThat/Libs (Lua and XML), same layout; keep embeds.xml.
+  3. Record the new commit, date and every MAJOR/MINOR above.
+  4. sha256 every file against the tarball (no local patches) and against the sibling addons'
+     copies of the same files (wow-closest-vendor, wow-dontdothat); they must match.
+  5. make test && make check.

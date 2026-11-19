@@ -113,6 +113,16 @@ eq(A.EventKnown("LEARNED_SPELL_IN_TAB"), false, "a removed event is not")
 A.env = {}
 eq(A.EventKnown("LEARNED_SPELL_IN_TAB"), nil, "no IsEventValid: unknown")
 
+-- AceDB 33's character key: UnitName - GetRealmName, realm spaces kept; nil when a part is missing.
+A.env = { UnitName = function() return "Bob" end, GetRealmName = function() return "Argent Dawn" end }
+eq(A.LegacyCharacterKey(), "Bob - Argent Dawn", "realm with a space kept as is")
+A.env = { UnitName = function() return "Bob" end }
+eq(A.LegacyCharacterKey(), nil, "no GetRealmName: nil")
+A.env = { UnitName = function() return "" end, GetRealmName = function() return "R" end }
+eq(A.LegacyCharacterKey(), nil, "empty name: nil")
+A.env = { UnitName = function() error("x") end, GetRealmName = function() return "R" end }
+eq(A.LegacyCharacterKey(), nil, "an error: nil")
+
 -- Sounds (Core/Adapter_Sound.lua): guarded play calls, channel limited to Master/SFX, sound packs.
 H.load("Core/Adapter_Sound.lua", ns)
 A.env = {}

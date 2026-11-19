@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.4.3
+
+- On WoW Forever, characters that use their own KeepThat settings keep them after the shared settings library update.
+- Updates the bundled settings libraries, which fixes color pickers with transparency on WoW Forever.
+
 ## 0.4.2
 
 - Loot toasts rise from their position, newest at the bottom, glide into place and fade in and out gently.

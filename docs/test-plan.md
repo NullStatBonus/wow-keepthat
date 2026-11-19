@@ -204,3 +204,11 @@ Use three characters on the same realm and faction (call them Main, Bankmule and
 12. Put items in the guild bank and the account bank (Forever, if available) and open them: no total, tooltip or `/kt status stock` line changes.
 13. Log in on a character of the other faction on the same realm (or another realm): it is not counted in Main's totals, and `/kt status stock` shows only the realm and faction of the character you are on.
 14. Rename or delete a character, or leave one unseen for 90 days (set the system date, or check the saved data with `/kt log`): its stock drops out of the totals and `/kt status stock`.
+
+## 10. Library update and Forever profile
+
+1. With KeepThat, Don't Do That and Closest Vendor all installed, on Classic Era and on WoW Forever: open each addon's settings window, `/reload`, visit a merchant. No Lua errors (BugSack or `/console scriptErrors 1`).
+2. Forever carry-over: on 0.4.2, turn on Advanced > "This character" on one character and change a setting (for example Scale 150); keep another character shared. Update to 0.4.3 and log in on the first character: "This character" is still on and Scale is still 150. The second character still uses the shared settings.
+3. On that first character, turn "This character" off, `/reload`: it uses the shared settings and stays so after another `/reload`.
+4. Known limit: turning "This character" on again after step 3 starts a new, empty profile (defaults), not the pre-0.4.3 one.
+5. Classic Era: a character with "This character" on keeps its profile and values after the update.
