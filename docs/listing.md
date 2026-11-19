@@ -37,7 +37,7 @@ KeepThat adds one short line to an item's tooltip when it is a material worth ke
 - **Materials made from other materials.** If a bar is made from ore, the ore is marked too, and the tooltip says what it is used to make.
 - **Several professions.** One line lists them, with `+N` when there are more than two.
 - **Stock across characters.** The tooltip shows what you own on all your characters on the same realm and faction (bags, bank and mailbox), such as `55 owned`; Shift lists each character. Auctionator lists only buy what that total does not cover. The guild bank is never counted.
-- **Loot toast.** Off by default. A small pop-up when you loot a marked material, with neutral item names and labeled category colors. Adjust background and text opacity independently, change scale, preview it, and move its locked or unlocked anchor with Done/Cancel.
+- **Loot toast.** Off by default. A small pop-up when you loot a marked material, with neutral item names and labeled category colors. It plays a game sound you choose (auction house opening by default, or None). Adjust background and text opacity independently, change scale, preview it, and move its locked or unlocked anchor with Done/Cancel.
 - **Icon tint.** Off by default. Colors the icon of marked items in your bags, bank and merchant windows, including the buyback tab.
 - **Your choice, item by item.** The Materials page lists every material by profession, with a colored square for endgame or leveling. Turn any one off, and copy its Wowhead links with one click.
 

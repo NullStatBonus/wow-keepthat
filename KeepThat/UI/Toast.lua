@@ -14,6 +14,8 @@ local Toast = {
     samples = {},
     sampleFree = {},
     free = {},        -- idle frames
+    SOUND_COOLDOWN = 2, -- seconds after a real-loot sound during which new toasts stay silent
+    lastSound = nil,  -- time of the last real-loot sound
 }
 ns.Toast = Toast
 
@@ -259,6 +261,25 @@ Toast.DEMO = {
     { itemID = 12359, count = 5, result = { endgame = { { profession = "blacksmithing" } }, leveling = { { profession = "blacksmithing" } } } },
 }
 
+-- The chosen toast sound, once (spec loot-toast, "Toast sound"; design D4). Model/Sounds.lua falls back
+-- to the default and contains any error.
+local function playSound()
+    if not (ns.Sounds and ns.Sounds.Play) then return false end
+    local p = profile()
+    return ns.Sounds.Play(p.toastSound, p.toastSoundChannel, ns.Adapter)
+end
+
+-- Real loot: one sound per burst. A toast accepted within SOUND_COOLDOWN seconds of the last sound is
+-- silent, including toasts that wait in the queue and show later. Unknown time: play, record nothing.
+function Toast.Chime()
+    local now = ns.Adapter.Now and ns.Adapter.Now()
+    if type(now) == "number" then
+        if Toast.lastSound and now - Toast.lastSound < Toast.SOUND_COOLDOWN then return false end
+        Toast.lastSound = now
+    end
+    return playSound()
+end
+
 -- only: optional number, show just that many of the samples (1 = the endgame sample, for /kt test toast).
 function Toast.Demo(only)
     local colors = profile().colors or {}
@@ -282,6 +303,7 @@ function Toast.Demo(only)
     end
     for _, e in ipairs(Toast.active) do e.frame:Hide() end
     for i, e in ipairs(Toast.samples) do e.frame:Place(i, Toast.samples) end
+    playSound() -- samples: once per request, whatever the toast setting and cooldown, without recording
     return true
 end
 
@@ -330,6 +352,7 @@ function Toast.Handle(itemID, count, name)
     if not ns.Wording.Line(ns.Context.Classify(itemID)) then return false end
     Toast.seen[itemID] = true
     Toast.queue[#Toast.queue + 1] = { itemID = itemID, count = count, name = name }
+    Toast.Chime()
     startNext()
     return true
 end

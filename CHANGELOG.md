@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.4.0
+
+- Loot toasts play a sound you can pick: the auction house sound by default, nine other well-known game sounds, sound packs, or none.
+
 ## 0.3.0
 
 - Tooltips, material pages and the Auctionator list count what all your characters on the realm and faction hold, in bags, bank and mailbox, with a login reminder when a bank or mailbox has not been counted yet.

@@ -144,7 +144,7 @@ function Options.Appearance(order)
     gap(g, "toastGap")
     add(g, "h_toast", { type = "header", name = L["Loot toast"] })
     note(g, "toastContext", grey(L["Background opacity controls the panel and accent. Text and icon opacity controls the content. Set Scale to 100 for normal size."]))
-    note(g, "toastHelp", grey(L["Loot toast is off. Turn it on in Home to change opacity and scale. Preview and Move remain available."]), function() return profile().toast end)
+    note(g, "toastHelp", grey(L["Loot toast is off. Turn it on in Home to change opacity, scale and sound. You can still preview the toast."]), function() return profile().toast end)
     local function control(id, key, label)
         local e = ns.Presentation.keys[key]
         add(g, id, { type = e.type == "boolean" and "toggle" or "range", width = e.type == "boolean" and "full" or 1.5, name = label,
@@ -155,6 +155,38 @@ function Options.Appearance(order)
     control("backgroundOpacity", "appearance.toast.background-opacity", L["Background opacity"])
     control("textOpacity", "appearance.toast.text-opacity", L["Text and icon opacity"])
     control("scale", "appearance.toast.scale", L["Scale"])
+    -- Toast sound (spec settings, "Toast sound picker"; design D5). The list is built when the page is built or
+    -- refreshed, since sound packs register with LibSharedMedia after login; a pack registered while the page
+    -- is open appears on the next refresh. A saved pack that is gone shows the default.
+    local S = ns.Sounds
+    local function packs() return ns.Adapter and ns.Adapter.SoundPacks and ns.Adapter.SoundPacks() or nil end
+    local function channel() return profile().toastSoundChannel end
+    add(g, "toastSound", { type = "select", width = 1.5, name = L["Sound"],
+        desc = L["Plays when a new loot toast appears. Choosing a different sound previews it once."],
+        disabled = function() return not profile().toast end,
+        values = function()
+            local v = {}
+            for _, e in ipairs(S.Entries(packs())) do v[e.key] = e.label end
+            return v
+        end,
+        sorting = function()
+            local keys = {}
+            for _, e in ipairs(S.Entries(packs())) do keys[#keys + 1] = e.key end
+            return keys
+        end,
+        get = function() return S.Effective(profile().toastSound or S.default, packs()) end,
+        set = function(_, key)
+            profile().toastSound = key
+            S.Play(key, channel(), ns.Adapter)
+            changed()
+        end })
+    add(g, "toastSoundChannel", { type = "select", name = L["Sound channel"],
+        desc = L["Master plays even when game sound effects are off."],
+        disabled = function() return not profile().toast end,
+        values = { Master = L["Master"], SFX = L["Sound effects"] },
+        sorting = { "Master", "SFX" },
+        get = function() return channel() == "SFX" and "SFX" or "Master" end,
+        set = function(_, v) profile().toastSoundChannel = v; changed() end })
     gap(g, "positionGap")
     add(g, "h_position", { type = "header", name = L["Toast position"] })
     note(g, "positionHelp", function()
