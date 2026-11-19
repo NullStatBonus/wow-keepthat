@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.4.4
+
+- On WoW Forever, turning "This character" off and on again brings back your own settings instead of starting fresh.
+
 ## 0.4.3
 
 - On WoW Forever, characters that use their own KeepThat settings keep them after the shared settings library update.

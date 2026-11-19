@@ -210,5 +210,6 @@ Use three characters on the same realm and faction (call them Main, Bankmule and
 1. With KeepThat, Don't Do That and Closest Vendor all installed, on Classic Era and on WoW Forever: open each addon's settings window, `/reload`, visit a merchant. No Lua errors (BugSack or `/console scriptErrors 1`).
 2. Forever carry-over: on 0.4.2, turn on Advanced > "This character" on one character and change a setting (for example Scale 150); keep another character shared. Update to 0.4.3 and log in on the first character: "This character" is still on and Scale is still 150. The second character still uses the shared settings.
 3. On that first character, turn "This character" off, `/reload`: it uses the shared settings and stays so after another `/reload`.
-4. Known limit: turning "This character" on again after step 3 starts a new, empty profile (defaults), not the pre-0.4.3 one.
+4. Turn "This character" on again after step 3: the same settings come back (Scale still 150), not defaults.
 5. Classic Era: a character with "This character" on keeps its profile and values after the update.
+6. Forever, a character that already toggled "This character" off and on under 0.4.3 (so it has both an old-named and a new-named profile): after 0.4.4 it keeps the profile it was using; nothing is overwritten.
