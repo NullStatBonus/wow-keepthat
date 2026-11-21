@@ -218,7 +218,7 @@ Use three characters on the same realm and faction (call them Main, Bankmule and
 
 On WoW Forever, with a save used by KeepThat 0.4.4 or earlier: two characters, A and B, on the same realm and faction with different surnames, and A's bank opened once before the update with Runecloth in it.
 
-1. Log in on A: `/kt status stock` names the realm, not A's surname.
+1. Log in on A: `/kt status stock` says `Stock: 1 character on PvE (Alliance).` (your ruleset and faction), not A's surname. On 0.4.5 it said `Stock is not known yet.`
 2. Log in on B: hold Shift over Runecloth; the `Stock` block lists A by first name and surname with its bank count.
 3. On A, turn on Advanced > "This character", set Scale to 150, `/reload`: Scale is still 150.
 
@@ -228,6 +228,7 @@ Setup, before you start:
 - KeepThat 0.4.6 on one character (call it A), standing in a capital city with a bank and a mailbox.
 - A has exactly 20 Linen Cloth: 2 in its bags and a stack of 18 in its bank. Linen Cloth is always counted, whatever your settings.
 - Someone (an alt, or a friend) has mailed A a letter with 5 Linen Cloth attached. Leave it unopened.
+- WoW Forever first: `/kt status stock` must start `Stock: … characters on PvE (Alliance).` (your ruleset and faction). If it says `Stock is not known yet.`, stop: stock is not being recorded.
 - To see A's stock at any point, type `/kt find linen cloth` and click **Linen Cloth** in the list. The "Your stock" lines show the total, for example `20 owned, all on this character` and `This character: 2 in bags, 18 in the bank`.
 
 1. **Bank: take and close at once.**

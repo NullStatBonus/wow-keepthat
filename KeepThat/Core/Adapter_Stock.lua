@@ -15,20 +15,39 @@ local function str(v)
     return type(v) == "string" and v ~= "" and v or nil
 end
 
+-- WoW Forever has no realm names: characters share a world per ruleset, so the realm is the ruleset, keyed
+-- the way AceDB-3.0 minor 40 and Syndicator key it. nil when the client has no game rules.
+local function ruleset()
+    local rules = A.Resolve("Enum.GameRule")
+    if type(rules) ~= "table" or not A.Has("C_GameRules.IsGameRuleActive") then return nil end
+    local function active(name)
+        if rules[name] == nil then return false end
+        local _, on = try("C_GameRules.IsGameRuleActive", rules[name])
+        return on == true
+    end
+    if active("HardcoreRuleset") then return "Hardcore" end
+    local rp, pvp = active("RPRuleset"), active("PvPRuleset")
+    if rp and pvp then return "RP-PvP" end
+    if rp then return "RP" end
+    if pvp then return "PvP" end
+    return "PvE"
+end
+
 -- name, realm, faction (strings) or nil. On a client with surnames (WoW Forever: RegionalUniqueNamesEnabled,
--- the same rule as AceDB-3.0 minor 40) the name is "Name Surname" and the surname is a fourth return.
--- The realm comes from the realm name first: there UnitFullName's second return is the surname.
+-- the same rule as AceDB-3.0 minor 40) the name is "Name Surname", the realm is the ruleset and the surname
+-- is a fourth return; UnitFullName's second return is the surname there, never the realm. Otherwise the
+-- realm comes from the realm name.
 function A.PlayerIdentity()
     local _, regional = try("RegionalUniqueNamesEnabled")
     local _, first, surname = try("UnitNameUnmodified", "player")
     if not (regional == true and str(first) and str(surname)) then surname = nil end
     local _, name, realm = try("UnitFullName", "player")
-    if surname then name, realm = first .. " " .. surname, nil end
+    if surname then name, realm = first .. " " .. surname, ruleset() end
     if not str(name) then
         _, name = try("UnitName", "player")
     end
     local _, normalized = try("GetNormalizedRealmName")
-    if str(normalized) then realm = normalized end
+    if str(normalized) and not (surname and str(realm)) then realm = normalized end
     if not str(realm) then
         local _, full = try("GetRealmName")
         realm = str(full) and full:gsub("[%s%-]", "") or nil

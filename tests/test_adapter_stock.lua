@@ -41,7 +41,27 @@ forever.GetNormalizedRealmName = nil
 forever.GetRealmName = function() return "Real Realm" end
 eq(select(2, A.PlayerIdentity()), "RealRealm", "Forever: realm name without spaces when not normalized")
 forever.GetRealmName = nil
-eq(A.PlayerIdentity(), nil, "Forever: no realm name: nil, never the surname")
+eq(A.PlayerIdentity(), nil, "Forever: no ruleset and no realm name: nil, never the surname")
+-- The player's Forever save (2026-11-20): no realm name at login, so 0.4.5 recorded nothing. The realm is the
+-- ruleset, as AceDB-3.0 minor 40 and Syndicator key it.
+local active = {}
+forever.Enum = { GameRule = { HardcoreRuleset = 1, RPRuleset = 2, PvPRuleset = 3 } }
+forever.C_GameRules = { IsGameRuleActive = function(rule) return active[rule] == true end }
+forever.GetNormalizedRealmName = function() return nil end
+forever.GetRealmName = function() return "" end
+n, r, f, s = A.PlayerIdentity()
+eq(n, "Me Smith", "Forever without a realm name: full name")
+eq(r, "PvE", "Forever without a realm name: the ruleset")
+eq(s, "Smith", "Forever without a realm name: surname")
+active = { [3] = true }; eq(select(2, A.PlayerIdentity()), "PvP", "PvP ruleset")
+active = { [2] = true }; eq(select(2, A.PlayerIdentity()), "RP", "RP ruleset")
+active = { [2] = true, [3] = true }; eq(select(2, A.PlayerIdentity()), "RP-PvP", "RP-PvP ruleset")
+active = { [1] = true, [3] = true }; eq(select(2, A.PlayerIdentity()), "Hardcore", "Hardcore ruleset first")
+active = {}
+forever.GetNormalizedRealmName = function() return "SomeRealm" end
+eq(select(2, A.PlayerIdentity()), "PvE", "Forever: the ruleset even when a realm name is given")
+forever.C_GameRules.IsGameRuleActive = function() error("x") end
+eq(select(2, A.PlayerIdentity()), "PvE", "a raising rule check counts as off")
 -- Surnames off (Classic Era): UnitNameUnmodified's second return is not a surname; identity as before.
 A.env = { UnitFullName = function() return "Ann", "Realm" end, RegionalUniqueNamesEnabled = function() return false end,
     UnitNameUnmodified = function() return "Ann", "Other" end, GetNormalizedRealmName = function() return "Realm" end,

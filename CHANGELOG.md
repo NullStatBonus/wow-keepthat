@@ -2,6 +2,7 @@
 
 ## 0.4.6
 
+- On WoW Forever, stock is recorded again (0.4.5 stopped recording it) and shared across your characters on the same ruleset.
 - Stock totals no longer count a stack twice when you close the bank or mailbox right after moving it, and Profession Journal materials are counted across your characters.
 
 ## 0.4.5

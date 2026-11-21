@@ -550,4 +550,24 @@ eq(meRec().bank.c[-1].items[PJONLY], 3, "Profession Journal material recorded")
 ns.Context.Get = getCtx
 ns.ProfessionJournal = nil
 
+-- The player's real WoW Forever save written by 0.4.4 (names replaced): three characters filed under their
+-- surnames. Each moves to the ruleset and its full name at its own login; one alt then counts another's bank.
+local SILK = 4306
+local save = dofile("tests/fixtures/forever_save_044.lua")
+newWorld()
+W.now = 1795230000
+W.identity = { "Ann Alpha", "PvE", "Alliance", "Alpha" }
+newSession({ global = { stock = save }, profile = { stockReminder = true } })
+login()
+eq(save.realms.Alpha, nil, "Ann's surname bucket is gone")
+local ann = Stock.Character(save, "PvE", "Alliance", "Ann Alpha", false)
+eq(ann and ann.bank.c[8].items[SILK], 101, "Ann's bank moved with its counts")
+eq(save.realms.Beta.Alliance.Bo ~= nil, true, "Bo has not logged in: still under its surname")
+W.identity = { "Cy Gamma", "PvE", "Alliance", "Gamma" }
+newSession()
+login()
+eq(save.realms.Gamma, nil, "Cy moved too")
+eq((R.Total(SILK)), 101 + 140 + 78, "Cy counts Ann's bank and its own")
+eq(R.Counted(), 2, "two characters on PvE")
+
 H.done()
