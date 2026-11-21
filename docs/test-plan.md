@@ -253,14 +253,11 @@ Setup, before you start:
 
 ## 13. Leveling numbers
 
-Both checks are read from the saved variables (`KeepThat.lua` in `WTF/Account/<account>/SavedVariables`): do the steps, then copy that file over. The game writes it on `/reload` or logout.
+Type `/kt debug on` first. Read each result from `global.log` in `WTF/Account/<account>/SavedVariables/KeepThat.lua`. The game writes that file on `/reload` or logout.
 
-1. **Classic Era: collapsed Skills header.** On a character with a crafting profession:
-   1. Type `/kt debug on`.
-   2. On the character window's **Skills** tab, collapse the **Professions** header. Type `/reload`.
-   3. With the header still collapsed, craft one item that raises the skill by 1. Type `/reload`.
-   4. **Pass** (read from `global.log`): `[skills]` lines show your real rank, then that rank + 1, each with `collapsed headers: Professions`. **Fail:** the profession is missing from the lines, or the rank never goes up, or the header is not listed as collapsed.
-2. **WoW Forever with DFL Profession Journal: turning it off.**
-   1. Type `/kt debug on`.
-   2. Turn off **DFL Profession Journal** on the Integrations page, then turn it back on. Type `/reload`.
-   3. **Pass** (read from `global.log`): `[professionjournal] off: 0 materials listed`, then `[professionjournal] on: N materials listed (leatherworking=...)` with N above 0. No reload between them.
+1. **Classic Era, collapsed Skills header.** On the Skills tab, collapse **Professions**, then type `/reload`.
+   Check: a `[skills]` line shows your real profession rank with `collapsed headers: Professions`.
+2. **Classic Era, rank-up under a collapsed header.** With **Professions** still collapsed, craft one item that raises the skill, then type `/reload`.
+   Check: a new `[skills]` line shows that rank + 1 with `collapsed headers: Professions`.
+3. **WoW Forever with DFL Profession Journal.** On the Integrations page, turn **DFL Profession Journal** off, then on again. Type `/reload`.
+   Check: `[professionjournal] off: 0 materials listed`, then `[professionjournal] on: N materials listed (leatherworking=...)` with N above 0.

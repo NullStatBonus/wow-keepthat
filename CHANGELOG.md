@@ -2,8 +2,10 @@
 
 ## 0.4.7
 
-- Leveling counts no longer say "You have enough" when a guide gives no count, and no longer start at skill 1 on Classic Era when the Skills tab's Professions header is collapsed.
-- Turning off Profession Journal removes its materials from Materials and `/kt find` at once, and the "Includes" shares for intermediates never add up to more than the count.
+- Fixed: **On Classic Era, leveling counts use your real skill rank.** Before, a collapsed Professions header on the Skills tab made the counts start at skill 1.
+- Fixed: A guide with no count for the steps ahead now shows no count. Before, the tooltip said "You have enough." The Auctionator list also left the item out.
+- Fixed: When you turn off Profession Journal, its materials go away from Materials, `/kt find`, the leveling counts and Auctionator. Before, they stayed until you reloaded.
+- Fixed: The "Includes" shares for intermediates are never more than the count. Before, the shares could add up to more than the count.
 
 ## 0.4.6
 
