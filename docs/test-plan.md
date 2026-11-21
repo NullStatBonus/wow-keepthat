@@ -253,11 +253,14 @@ Setup, before you start:
 
 ## 13. Leveling numbers
 
-Type `/kt debug on` first. Read each result from `global.log` in `WTF/Account/<account>/SavedVariables/KeepThat.lua`. The game writes that file on `/reload` or logout.
+Before the checks, type `/kt debug on`, then `/reload`. After them, copy `KeepThat.lua` from `WTF/Account/<account>/SavedVariables` and say where it is. The reviewer reads each result from its debug log, so there is nothing to look for on screen. The `Log:` line is for the reviewer.
 
-1. **Classic Era, collapsed Skills header.** On the Skills tab, collapse **Professions**, then type `/reload`.
-   Check: a `[skills]` line shows your real profession rank with `collapsed headers: Professions`.
-2. **Classic Era, rank-up under a collapsed header.** With **Professions** still collapsed, craft one item that raises the skill, then type `/reload`.
-   Check: a new `[skills]` line shows that rank + 1 with `collapsed headers: Professions`.
+1. **Classic Era, collapsed Skills header.** Use a character with any profession; Cooking or First Aid count. On the Skills tab, collapse the header the profession sits under (**Professions**, or **Secondary Skills** for Cooking and First Aid), then type `/reload`.
+   Check: KeepThat reads the real skill rank while the header is collapsed.
+   Log: `[skills] cooking=54; collapsed headers: Secondary Skills` (your profession and rank).
+2. **Classic Era, rank-up under a collapsed header.** With the header still collapsed, make one item that raises the skill, then type `/reload`.
+   Check: KeepThat sees the new rank.
+   Log: a new `[skills]` line with the rank one higher and the same collapsed header.
 3. **WoW Forever with DFL Profession Journal.** On the Integrations page, turn **DFL Profession Journal** off, then on again. Type `/reload`.
-   Check: `[professionjournal] off: 0 materials listed`, then `[professionjournal] on: N materials listed (leatherworking=...)` with N above 0.
+   Check: Profession Journal's materials leave KeepThat's lists when it is off and come back when it is on, with no reload.
+   Log: `[professionjournal] off: 0 materials listed`, then `[professionjournal] on: N materials listed (...)` with N above 0.
