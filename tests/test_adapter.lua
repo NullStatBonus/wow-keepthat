@@ -117,6 +117,26 @@ eq(tostring(rows[3].collapsed) .. tostring(rows[5].collapsed) .. tostring(rows[7
 local _, _, where = A.ProfessionSkills()
 eq(where.tailoring, "Professions", "the header each profession sits under")
 
+-- wow-api review: Forever's C_SkillInfo rows are tables with isCollapsed (no isExpanded), and expand and
+-- collapse live in C_SkillInfo. Reached when no profession is found by skill line ID.
+local era = skillTab(rows)
+local function asTable(i)
+    local name, header, isExpanded, rank = era.GetSkillLineInfo(i)
+    if not name then return nil end
+    return { name = name, isHeader = header, isCollapsed = header and not isExpanded or false, rank = rank }
+end
+rows[1].collapsed, rows[3].collapsed, rows[5].collapsed, rows[7].collapsed = false, true, true, true
+A.env = { C_SkillInfo = { GetNumSkillLines = era.GetNumSkillLines, GetSkillLineInfo = asTable,
+    ExpandSkillHeader = era.ExpandSkillHeader, CollapseSkillHeader = era.CollapseSkillHeader } }
+skills, hid = A.ProfessionSkills()
+eq(skills.tailoring, 150, "Forever: a profession under a collapsed header is read")
+eq(next(hid), nil, "Forever: every collapsed header was expanded, none left hidden")
+eq(tostring(rows[1].collapsed) .. tostring(rows[3].collapsed) .. tostring(rows[5].collapsed) .. tostring(rows[7].collapsed),
+    "falsetruetruetrue", "Forever: the same headers are collapsed afterwards")
+local _, hidVis = A.ProfessionSkills(true)
+eq(tostring(hidVis["Class Skills"]) .. tostring(hidVis.Professions), "niltrue",
+    "Forever visibleOnly: only collapsed headers are named")
+
 -- Nothing available: empty, no error.
 A.env = {}
 eq(next((A.ProfessionSkills())), nil, "no API: no skills")

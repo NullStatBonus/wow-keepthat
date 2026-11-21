@@ -74,7 +74,11 @@ function A.ProfessionSkills(visibleOnly)
     end
     local function header(i)
         local ok, name, isHeader, isExpanded = pcall(info, i)
-        if ok and type(name) == "table" then name, isHeader, isExpanded = name.skillLineName or name.name, name.isHeader, name.isExpanded end
+        if ok and type(name) == "table" then -- Forever's SkillLineAttributes has isCollapsed, not isExpanded
+            local t = name
+            name, isHeader = t.skillLineName or t.name, t.isHeader
+            if t.isExpanded ~= nil then isExpanded = t.isExpanded else isExpanded = t.isCollapsed == false end
+        end
         return ok and isHeader and name or nil, isExpanded
     end
     local n = count()
@@ -83,7 +87,8 @@ function A.ProfessionSkills(visibleOnly)
     -- ones bottom-up, read, then collapse each again, found by name (so one failed collapse cannot
     -- shift the others). This changes the Skills list, which fires SKILL_LINES_CHANGED; the skill
     -- event handler reads visibleOnly, which never changes it, so it cannot loop.
-    local expand, collapse = A.Resolve("ExpandSkillHeader"), A.Resolve("CollapseSkillHeader")
+    local expand = A.Resolve("C_SkillInfo.ExpandSkillHeader") or A.Resolve("ExpandSkillHeader")
+    local collapse = A.Resolve("C_SkillInfo.CollapseSkillHeader") or A.Resolve("CollapseSkillHeader")
     local collapsed, hidden, under = {}, {}, {}
     for i = n, 1, -1 do
         local name, isExpanded = header(i)
