@@ -4,6 +4,7 @@ local H = require("harness")
 local eq = H.eq
 
 local ns = H.locale({})
+H.load("Model/RecipeKnowledge.lua", ns)
 H.load("Model/Wording.lua", ns)
 local W = ns.Wording
 
@@ -68,19 +69,66 @@ local cat = {
     itemNames = { [ARC] = "Arcanite Bar", [BAR] = "Thorium Bar" },
     spellNames = { [1] = "Arcanite Reaper", [2] = "Lionheart Helm", [3] = "Low Thing", [4] = "Mid Thing" },
     recipes = {
-        [1] = { p = "blacksmithing", learn = 300, r = { ARC, 12 } },
-        [2] = { p = "blacksmithing", learn = 300, r = { ARC, 12, 1, 1 } },
-        [3] = { p = "blacksmithing", learn = 200, r = { ARC, 1 } },
-        [4] = { p = "blacksmithing", learn = 250, r = { ARC, 2 } },
+        [1] = { p = "blacksmithing", learn = 300, r = { ARC, 12 }, y = 300, gy = 320 },
+        [2] = { p = "blacksmithing", learn = 300, r = { ARC, 12, 1, 1 }, y = 300, gy = 320 },
+        [3] = { p = "blacksmithing", learn = 1, r = { ARC, 1 }, y = 200, gy = 220 },
+        [4] = { p = "blacksmithing", learn = 1, r = { ARC, 2 }, y = 250, gy = 270 },
     },
     endgame = { [BAR] = { blacksmithing = { "Used to make Arcanite Bar", "s", ARC } } },
 }
 d = W.Details({ endgame = { { profession = "blacksmithing", reason = "Best-in-slot crafted gear" } } }, { catalog = cat, itemID = ARC })
 eq(d[1].text, "  Endgame - Blacksmithing", "endgame heading")
 eq(d[2].text, "    Best-in-slot crafted gear", "the purpose")
-eq(d[3].text, "    Arcanite Reaper - 12 per craft", "highest-skill recipe first, per craft")
+eq(d[3].text, "    Arcanite Reaper - 12 per craft", "highest yellow rank first, per craft")
 eq(d[5].text, "    Mid Thing - 2 per craft", "three recipes at most")
 eq(d[6].text, "    and 1 more recipes", "the rest counted")
+eq(#d, 6, "no status and no hint without recipe knowledge")
+
+-- Recipe status (material-tooltip "Recipe status on endgame recipe lines"): grey text, the difficulty word colored.
+local YELLOW, GREEN, GRAY = "|cffffff00Yellow|r", "|cff40bf40Green|r", "|cff808080Gray|r"
+eq(W.RecipeStatus({ learned = true, difficulty = "yellow" }), "Learned · " .. YELLOW, "learned and still raising skill")
+eq(W.RecipeStatus({ learned = true, difficulty = "gray" }), "Learned · " .. GRAY, "learned but gray")
+eq(W.RecipeStatus({ learned = true }), "Learned", "learned, difficulty unknown")
+eq(W.RecipeStatus({ learned = false }), "Not learned", "not learned, below yellow: no difficulty word")
+eq(W.RecipeStatus({ learned = false, difficulty = "green" }), "Not learned · " .. GREEN, "not learned at or above yellow")
+eq(W.RecipeStatus({ difficulty = "yellow" }), YELLOW, "knowledge unknown: the difficulty alone")
+eq(W.RecipeStatus({}), nil, "both parts unknown: no status")
+eq(W.RecipeStatus(nil), nil, "a profession the character does not have: no status")
+
+local states = { [1] = false, [2] = false, [3] = true, [4] = nil }
+local function withStatus(order, hint, statusOf)
+    return W.Details({ endgame = { { profession = "blacksmithing", reason = "Best-in-slot crafted gear" } } }, {
+        catalog = cat, itemID = ARC, recipeOrder = order,
+        recipeStatus = statusOf or function(_, spell) return { learned = states[spell], difficulty = spell == 3 and "yellow" or nil } end,
+        needsHint = function() return hint end,
+    })
+end
+-- Learned first (the default): the one learned recipe leads, though its yellow rank is the lowest.
+d = withStatus(nil, false)
+eq(d[3].text, "    Low Thing - 1 per craft (Learned · " .. YELLOW .. ")", "learned recipe first, with its status")
+eq(d[3].kind, "note", "the status is on the grey recipe line")
+eq(d[4].text, "    Mid Thing - 2 per craft", "then unknown, with no status")
+eq(d[5].text, "    Arcanite Reaper - 12 per craft (Not learned)", "then not learned, highest yellow rank first")
+eq(d[6].text, "    and 1 more recipes", "the three-line limit stays")
+eq(#d, 6, "no hint when knowledge is recorded")
+-- Not learned first.
+d = withStatus("unlearned", false)
+eq(d[3].text, "    Arcanite Reaper - 12 per craft (Not learned)", "not learned first")
+eq(d[4].text, "    Lionheart Helm - 12 per craft (Not learned)", "both not-learned recipes before the rest")
+eq(d[5].text, "    Mid Thing - 2 per craft", "then unknown")
+-- Highest skill first ignores learned status.
+d = withStatus("skill", false)
+eq(d[3].text, "    Arcanite Reaper - 12 per craft (Not learned)", "highest yellow rank first")
+eq(d[5].text, "    Mid Thing - 2 per craft", "learned status ignored")
+-- Knowledge unknown: every order gives the yellow-rank order, and the hint ends the block.
+for _, order in ipairs({ "learned", "unlearned", "skill" }) do
+    d = withStatus(order, true, function() return {} end)
+    eq(d[3].text, "    Arcanite Reaper - 12 per craft", order .. ": unknown knowledge, yellow-rank order")
+    eq(d[5].text, "    Mid Thing - 2 per craft", order .. ": unknown knowledge, third line")
+    eq(#d, 7, order .. ": the hint adds one line")
+    eq(d[7].text, "    Open Blacksmithing to see which recipes you know", order .. ": hint after the 'and N more' line")
+    eq(d[7].kind, "note", "the hint is grey")
+end
 d = W.Details({ endgame = { { profession = "blacksmithing", via = BAR } } }, { catalog = cat, itemID = ORE })
 eq(d[2].text, "    Used to make Thorium Bar for Arcanite Bar", "two-level chain")
 d = W.Details({ endgame = { { profession = "blacksmithing", via = ARC } } }, { catalog = cat, itemID = CRYSTAL })

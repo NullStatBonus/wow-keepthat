@@ -9,6 +9,7 @@ H.locale(ns)
 H.load("Core/Adapter.lua", ns)
 ns.Adapter.env = { LOOT_ITEM_SELF = "You receive loot: %s.", LOOT_ITEM_SELF_MULTIPLE = "You receive loot: %sx%d." }
 H.load("Core/Adapter_Loot.lua", ns)
+H.load("Model/RecipeKnowledge.lua", ns)
 H.load("Model/Wording.lua", ns)
 local marked = { [12360] = true, [10620] = true, [1] = true, [2] = true, [3] = true, [4] = true, [5] = true }
 ns.Context = { Classify = function(id) return marked[id] and { endgame = { { profession = "alchemy" } } } or nil end }

@@ -32,6 +32,7 @@ Paste this into the description box (CurseForge and Wago both take Markdown or H
 KeepThat adds one short line to an item's tooltip when it is a material worth keeping, for endgame crafting or for leveling a profession. It works on WoW Forever and Classic Era, with no other addon needed.
 
 - **Endgame materials.** On by default. A tooltip reads `KeepThat: Endgame: Blacksmithing`, with "Endgame" in purple. Hold Shift to see which recipes use the item and how many each needs.
+- **Recipes you know.** Shift also shows whether you know each recipe and its color at your skill, such as `(Learned · Yellow)` (learned status on WoW Forever; Classic Era shows the color). Open a profession once and KeepThat remembers your recipes. Learned recipes come first; you can change the order.
 - **Leveling materials.** Off by default. Turn them on and the tooltip reads `KeepThat: Leveling: Tailoring`, with "Leveling" in green. Hold Shift to see how many to keep.
 - **Counts that fit you.** If you know the profession, the count runs from your current skill to 300. When the guides disagree, you see a range, such as `40-55`.
 - **Materials made from other materials.** If a bar is made from ore, the ore is marked too, and the tooltip says what it is used to make.

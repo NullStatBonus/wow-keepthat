@@ -27,6 +27,8 @@ An item used by several professions lists them in the same line: up to two by na
 Hold **Shift** to see the details below the line:
 
 - For an endgame material: the recipes that use it, with the quantity each needs (`Storm Gauntlets x2`). For a material that is marked because it makes another one, it says so (`Blacksmithing: used to make Thorium Bar for Arcanite Bar`).
+- For a profession you have, each recipe line also says whether you know the recipe and how hard it is at your current skill: `Transmute: Arcanite - 1 per craft (Learned · Yellow)`, `(Not learned · Gray)`, `(Not learned)`, or only the color when KeepThat does not yet know your recipes. The color word is drawn in the profession window's own color (Orange, Yellow, Green, Gray), and the word is always there too. Learned recipes come first. "Recipe order" on Home can list not-learned recipes first or ignore learned status.
+- If you have a profession but never opened its window on this character, its block ends with `Open Tailoring to see which recipes you know`. Open the profession window once and KeepThat remembers your recipes for this character. It updates when you learn a recipe or your skill rises.
 - For a leveling material: the skill range, how many you still need, and how many you carry in your bags (`Tailoring 260-280: 40 needed, 12 in bags`). When the leveling guides disagree, the count is a range (`40-55 needed`).
 
 Stock across characters: when any of your characters holds the item, the line ends with the total you own, such as `KeepThat: Leveling: Tailoring - 55 owned (Shift)`. The total covers every character on this realm and faction, counting bags, bank and mailbox, and never the guild bank or the account bank. Shift adds a short `Stock` block below the details: `This character: 20`, then one line per other character (`Bankmule: 30`), with `+3 more` after five lines.
@@ -34,6 +36,15 @@ Stock across characters: when any of your characters holds the item, the line en
 Release Shift and the tooltip goes back to the single line. The line shows on item tooltips everywhere the game shows them: bags, bank, merchant, auction house, loot, mail, trade, chat item links and recipe reagents, and only once per tooltip. The colors can be changed in the settings, and "Tooltip line" turns the line off (it is on by default). The change takes effect on the next tooltip, without a reload.
 
 Good to know: if something goes wrong while drawing the line (for example after a game patch), KeepThat turns the tooltip line off until the next reload instead of showing a Lua error, and `/kt log` names the failure.
+
+Good to know about recipe status:
+
+- Learned and Not learned show on WoW Forever only in this version. On Classic Era, recipe lines show their color only, and there is no "Open …" hint.
+- Open each profession window once per character. Until then a recipe shows only its color, never "Not learned".
+- The skill needed to learn a recipe is not in the game data. So below its yellow rank, a recipe you have not learned shows no color, because it could be orange or not learnable yet.
+- Green starts halfway between the yellow and gray ranks.
+- Dropping a profession forgets its recipes. Another player's linked profession window is never recorded as yours.
+- `/kt log` lists each profession under "Recipes:" with where its knowledge comes from, whether it is complete, and how many recipes are known.
 
 ### Loot toast (optional)
 
@@ -127,7 +138,7 @@ For the reusable layout and interaction decisions, see [DESIGN.md](DESIGN.md).
 
 Open the settings with `/kt`, or under Options > AddOns > KeepThat. In the game's Options window, Materials only has an **Open KeepThat** button, which closes Options and opens the KeepThat window on Materials; the full material list lives there. Changes apply on the next tooltip or bag refresh; no reload needed. Settings are saved for your whole account by default.
 
-- **Home**: choose what to mark and where to show it. Endgame and tooltips start on; leveling, loot toasts and icon tint start off. Choose bags, bank and merchant for icon tint. **Login reminder** (on by default) tells you at login when a character's bank or mailbox is not counted in your stock.
+- **Home**: choose what to mark and where to show it. Endgame and tooltips start on; leveling, loot toasts and icon tint start off. Choose bags, bank and merchant for icon tint. **Login reminder** (on by default) tells you at login when a character's bank or mailbox is not counted in your stock. **Recipe order**, under Tooltip line, sorts the recipe lines in the Shift details: **Learned first** (default), **Not learned first**, or **Highest skill first**. It is greyed out while the tooltip line is off.
 - **Materials**: profession, then material, following what you mark on Home. A small square in each tint color shows whether a material is for endgame, leveling or both. Each material page shows its icon and name (in the item's quality color), "Keep for endgame" / "Keep for leveling", what it is used for, how many you still need, every recipe that uses it, your stock ("Your stock": `55 owned - 20 on this character, 35 on your other characters`, then a line per character such as `Bankmule: 30 in the bank (3 days ago)`), and a button that copies its Wowhead link. Search by name at the top; Clear search works from any profession page. Each profession page can export its endgame or leveling list to Auctionator. Every profession starts collapsed each time the settings open. Materials an update adds start on; the ones you turned off stay off.
 - **Integrations**: Baganator, Bagnon, EllesmereUI Bags, Auctionator and DFL Profession Journal, each with whether it is detected and working, and a toggle. Integrations are not yet available on Classic Era.
 - **Appearance**: category colors, icon tint strength, independent Background opacity and Text and icon opacity (0–100), Scale (50–200), toast Sound and Sound channel, Preview, Move, Lock position and Reset position. Move saves only on Done (or right-click); Cancel or Escape restores the start. Reset affects only the anchor. Black surfaces and accents disappear at background opacity 0. Older whole-toast opacity migrates to both layers without changing brightness.

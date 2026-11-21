@@ -146,4 +146,19 @@ do
     ns4.Context.Invalidate(); ns4.Context.Get()
     eq(recorded[2], "skills: cooking=75 tailoring=151; collapsed headers: Professions", "a rank-up recorded")
 end
+-- A full read hands the skills and the collapsed headers to the recipe recorder, which drops gone professions.
+do
+    local dropped
+    ns.Recipes = { Drop = function(s, h) dropped = { skills = s, hidden = h } end }
+    ranks, hidden = { tailoring = 200 }, { ["Secondary Skills"] = true }
+    C.Invalidate()
+    C.Get()
+    eq(dropped.skills.tailoring, 200, "the recorder gets the full skills read")
+    eq(dropped.hidden["Secondary Skills"], true, "and the headers left collapsed")
+    ns.Recipes = { Drop = function() error("boom") end }
+    C.Invalidate()
+    eq(type(C.Get()), "table", "a failing recorder never breaks the context")
+    ns.Recipes = nil
+end
+
 H.done()

@@ -68,6 +68,14 @@ The walk stops after four levels.
 - **Endgame:** the inputs become endgame materials of the same profession, with `via` set to the item they make (Thorium Ore via Thorium Bar via Arcanite Bar).
 - **Leveling:** only the shortfall is added: what the route needs of an intermediate minus what its own steps craft. The low and high shortfalls are worked out separately, rounded to whole crafts once, and spread over the consuming steps' skill ranges so the totals stay exact. The expansion repeats until it is stable, and an input that is one of its own ancestors is skipped. So a route that crafts its own bolts is not counted twice, the Iron Bars inside Steel Bars still add Iron Ore, and a recipe cycle cannot make up demand.
 
+## Recipe difficulty
+
+Each recipe carries `y`, the rank where it turns yellow, and `gy`, the rank where it turns gray. They come from SkillLineAbility's `TrivialSkillLineRankLow` and `TrivialSkillLineRankHigh`. Both are left out when either is 0 or gray is below yellow. `Model/RecipeKnowledge.lua` works out the rest:
+
+- Green starts at `floor((y + gy) / 2)`.
+- Below yellow, a recipe is Orange only when the character has learned it.
+- `learn` (MinSkillLineRank) is 1 for many trainer recipes on Classic, so it is not the required skill. The required skill is not in the data.
+
 ## Output formats
 
 ### `Data/Catalog_<Client>.lua` (`ns.Data.Catalog_Era` / `_Forever`)
@@ -75,7 +83,7 @@ The walk stops after four levels.
 ```lua
 {
   client = "era", build = "1.15.9.70576",
-  recipes = { [spellID] = { p = "blacksmithing", learn = 300, make = itemID, n = 1, r = { itemID, qty, ... } } },
+  recipes = { [spellID] = { p = "blacksmithing", learn = 300, make = itemID, n = 1, r = { itemID, qty, ... }, y = 275, gy = 290 } },
   itemNames = { [itemID] = "English name" },    -- fallback until the client has the item cached
   spellNames = { [spellID] = "English name" },
   endgame = { [itemID] = { profession = { reason, source, via } } },   -- via 0 for listed items

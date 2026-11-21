@@ -8,11 +8,12 @@ ns.Context = Context
 local cached
 
 -- Professions the player knows: { [profession] = rank }, read through the adapter.
--- Also the header each profession sits under on the Skills list (Adapter.ProfessionSkills).
+-- Also the header each profession sits under on the Skills list, and the headers left collapsed
+-- (Adapter.ProfessionSkills).
 function Context.Skills()
-    if not ns.Adapter.ProfessionSkills then return {}, {} end
-    local skills, _, under = ns.Adapter.ProfessionSkills()
-    return skills or {}, under or {}
+    if not ns.Adapter.ProfessionSkills then return {}, {}, {} end
+    local skills, hidden, under = ns.Adapter.ProfessionSkills()
+    return skills or {}, under or {}, type(hidden) == "table" and hidden or {}
 end
 
 -- While debugging, record the profession ranks each time they change, with the Skills headers collapsed
@@ -40,8 +41,10 @@ end
 function Context.Get()
     if cached then return cached end
     local profile = ns.addon and ns.addon.db and ns.addon.db.profile or ns.defaults.profile
-    local skills, skillHeaders = Context.Skills()
+    local skills, skillHeaders, hidden = Context.Skills()
     Context.LogSkills(skills)
+    -- A profession the character no longer has forgets its recipes (spec recipe-knowledge).
+    if ns.Recipes and ns.Recipes.Drop then pcall(ns.Recipes.Drop, skills, hidden) end
     cached = {
         catalog = ns.Data and ns.Data.Catalog,
         routes = ns.Data and ns.Data.Routes,

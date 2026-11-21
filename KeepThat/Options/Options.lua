@@ -109,6 +109,17 @@ function Options.Home(order)
     add(g, "h_show", { type = "header", name = L["Where to show it"] })
     note(g, "displayHelp", grey(L["Hold Shift on a tooltip for details. Toasts show looted materials. Icon tint marks items in the selected locations."]))
     profileToggle(g, "tooltip", L["Tooltip line"], L["Add a short line to the tooltip of a material worth keeping."])
+    -- Recipe order (spec settings "Recipe order setting"; design D8): under the line it orders, disabled with it.
+    add(g, "recipeOrder", { type = "select", width = 1.5, name = L["Recipe order"],
+        desc = L["Choose which recipes appear first when you hold Shift over an endgame material."],
+        disabled = function() return not profile().tooltip end,
+        values = { learned = L["Learned first"], unlearned = L["Not learned first"], skill = L["Highest skill first"] },
+        sorting = { "learned", "unlearned", "skill" },
+        get = function()
+            local v = profile().recipeOrder
+            return (v == "unlearned" or v == "skill") and v or "learned"
+        end,
+        set = function(_, v) profile().recipeOrder = v; changed() end })
     profileToggle(g, "toast", L["Loot toast"], L["Show a small message when you loot a material worth keeping."])
     profileToggle(g, "stockReminder", L["Login reminder"], L["Remind you at login when a character's bank or mailbox is not counted."], "stock.reminder")
     profileToggle(g, "mask", L["Icon tint"], L["Tint the icon of a material worth keeping."])

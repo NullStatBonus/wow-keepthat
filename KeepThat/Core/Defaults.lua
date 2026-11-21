@@ -26,10 +26,12 @@ ns.defaults = {
         disabled = { endgame = {}, leveling = {} },       -- [itemID] = true for materials turned off
         integrations = { baganator = true, bagnon = true, ellesmereui = true, auctionator = true, professionjournal = true },
         stockReminder = true,    -- login reminder when a bank or mailbox is not counted
+        recipeOrder = "learned", -- Shift recipe lines: "learned", "unlearned" or "skill" first (Model/RecipeKnowledge.lua)
         debug = false,
     },
     global = {
         log = {},                -- debug log lines (Debug/Log.lua)
         -- stock: per-character stock (Model/Stock.lua), created by Core/Stock.lua at login, not here
+        -- recipes: [realm][name][profession] = { complete, known, at } (Core/Recipes.lua), created on first read
     },
 }

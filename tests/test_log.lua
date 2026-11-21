@@ -65,6 +65,19 @@ ns.StockRecorder = { State = function() error("boom") end }
 has(Log.Report(), "stock: unknown", "a failing State is reported as unknown")
 ns.StockRecorder = nil
 
+-- Recipe knowledge per profession, and the Recipe order setting.
+has(r, "recipeOrder = learned", "recipe order setting listed")
+has(r, "Recipes:\n  recipes: unknown", "no recipe recorder: unknown")
+ns.Context = { Get = function() return { skills = { tailoring = 280 } } end }
+ns.Recipes = { ReportLines = function(skills)
+    eq(skills.tailoring, 280, "report lines get the live skills")
+    return { "  tailoring: source=window complete=true known=12 recordable=true" }
+end }
+has(Log.Report(), "Recipes:\n  tailoring: source=window complete=true known=12 recordable=true", "a recorded profession")
+ns.Recipes = { ReportLines = function() error("boom") end }
+has(Log.Report(), "  recipes: unknown", "a failing recorder is reported as unknown")
+ns.Recipes, ns.Context = nil, nil
+
 -- A Status that errors does not break the report.
 ns.Integrations = { Status = function() error("boom") end }
 has(Log.Report(), "error:", "a failing Status is reported, not raised")

@@ -47,10 +47,21 @@ local function liveStock(itemID)
     return { total = total, rows = rows }
 end
 
-local function details(result, itemID, carried, stock)
+-- The live recipe status and hint (spec material-tooltip, recipe-knowledge), from Core/Recipes.lua.
+local function liveRecipes(skills)
+    local R = ns.Recipes
+    if not R then return nil end
+    return {
+        status = function(profession, spell) return R.Status(profession, spell, skills) end,
+        hint = function(profession) return R.NeedsHint(profession, skills) end,
+    }
+end
+
+local function details(result, itemID, carried, stock, recipes)
     local A = ns.Adapter
     local ctx = ns.Context.Get() or {}
     local catalog = ctx.catalog or {}
+    recipes = recipes or liveRecipes(ctx.skills) or {}
     return ns.Wording.Details(result, {
         catalog = catalog,
         routes = ctx.routes,
@@ -60,17 +71,21 @@ local function details(result, itemID, carried, stock)
         carried = carried or A.ItemCount,
         colors = profile() and profile().colors or {},
         stock = stock and stock.rows,
+        recipeStatus = recipes.status,
+        needsHint = recipes.hint,
+        recipeOrder = profile() and profile().recipeOrder,
     })
 end
 
 -- Both live tooltips and previews draw the same rows with the same semantic ink.
--- stock = { total, rows } for a preview; nil reads the recorder.
-function Tooltip.Draw(tooltip, itemID, result, shift, carried, stock)
+-- stock = { total, rows } for a preview; nil reads the recorder. recipes = { status, hint } for a preview;
+-- nil reads this character's recipe knowledge.
+function Tooltip.Draw(tooltip, itemID, result, shift, carried, stock, recipes)
     local colors = profile() and profile().colors or {}
     stock = stock or liveStock(itemID)
     add(tooltip, ns.Wording.ColoredLine(result, colors, { hint = not shift, owned = stock and stock.total }), "line")
     if shift then
-        for _, line in ipairs(details(result, itemID, carried, stock)) do add(tooltip, line.text, line.kind) end
+        for _, line in ipairs(details(result, itemID, carried, stock, recipes)) do add(tooltip, line.text, line.kind) end
     end
 end
 
@@ -149,7 +164,16 @@ function Tooltip.Sample(random)
     local result = ns.Classify.Item(id, { catalog = catalog, routes = routes, skills = skills,
         settings = { endgame = true, leveling = true } })
     local name = (ns.Adapter.ItemName and ns.Adapter.ItemName(id)) or (catalog.itemNames or {})[id] or ns.L["Item %d"]:format(id)
-    return { itemID = id, name = name, result = result, carried = 12, stock = {
+    -- Sample recipe knowledge, no hint: even spell IDs learned and Yellow, odd ones not learned, so the
+    -- "Recipe order" setting visibly changes the order (Codex review).
+    local recipes = {
+        status = function(_, spell)
+            if spell % 2 == 0 then return { learned = true, difficulty = "yellow" } end
+            return { learned = false }
+        end,
+        hint = function() return false end,
+    }
+    return { itemID = id, name = name, result = result, carried = 12, recipes = recipes, stock = {
         total = 55, rows = { { name = "", self = true, count = 20 }, { name = "Bankmule", count = 30 }, { name = "Hunter", count = 5 } } } }
 end
 
@@ -159,6 +183,6 @@ function Tooltip.Preview()
     local sample = Tooltip.Sample()
     if not sample then return false end
     return ns.Adapter.ShowSampleTooltip(sample.itemID, sample.name, function(tooltip, shift)
-        Tooltip.Draw(tooltip, sample.itemID, sample.result, shift, function() return sample.carried end, sample.stock)
+        Tooltip.Draw(tooltip, sample.itemID, sample.result, shift, function() return sample.carried end, sample.stock, sample.recipes)
     end)
 end

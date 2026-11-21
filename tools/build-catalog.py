@@ -67,6 +67,14 @@ def create_count(row):
     return max(1, num(row.get("EffectBasePointsF")))
 
 
+def thresholds(row):
+    """(yellow, gray) skill ranks from TrivialSkillLineRankLow/High, or None when zero or inverted (design D1)."""
+    low, high = num(row.get("TrivialSkillLineRankLow")), num(row.get("TrivialSkillLineRankHigh"))
+    if low <= 0 or high <= 0 or high < low:
+        return None
+    return low, high
+
+
 def build_recipes(tables):
     """tables: name -> iterable of CSV rows. Returns (recipes, item_names, spell_names)."""
     abilities = {}
@@ -74,7 +82,7 @@ def build_recipes(tables):
         prof = PROFESSIONS.get(num(r["SkillLine"]))
         rank = num(r["MinSkillLineRank"])
         if prof and 0 < rank <= MAX_SKILL:
-            abilities[num(r["Spell"])] = (prof, rank)
+            abilities[num(r["Spell"])] = (prof, rank, thresholds(r))
 
     reagents = {}
     for r in tables["SpellReagents"]:
@@ -96,9 +104,11 @@ def build_recipes(tables):
 
     recipes = {}
     for spell, pairs in reagents.items():
-        prof, rank = abilities[spell]
+        prof, rank, ranks = abilities[spell]
         make, count = makes.get(spell, (0, 0))
         recipes[spell] = {"p": prof, "learn": rank, "make": make, "n": count, "r": pairs}
+        if ranks:
+            recipes[spell]["y"], recipes[spell]["gy"] = ranks
 
     wanted = set()
     for rec in recipes.values():
@@ -189,14 +199,16 @@ def render(client, build, recipes, item_names, spell_names, endgame):
         "ns.Data = ns.Data or {}",
         "ns.Data.%s = {" % var,
         "  client = %s, build = %s," % (lua_str(client), lua_str(build)),
-        "  -- spellID = { p = profession, learn = skill, make = itemID, n = count made, r = { itemID, qty, ... } }",
+        "  -- spellID = { p = profession, learn = skill, make = itemID, n = count made, r = { itemID, qty, ... },",
+        "  --             y = rank it turns yellow, gy = rank it turns gray (both absent when unknown) }",
         "  recipes = {",
     ]
     for spell in sorted(recipes):
         rec = recipes[spell]
         flat = ", ".join("%d, %d" % pair for pair in rec["r"])
-        out.append("    [%d] = { p = %s, learn = %d, make = %d, n = %d, r = { %s } }," % (
-            spell, lua_str(rec["p"]), rec["learn"], rec["make"], rec["n"], flat))
+        ranks = ", y = %d, gy = %d" % (rec["y"], rec["gy"]) if "y" in rec else ""
+        out.append("    [%d] = { p = %s, learn = %d, make = %d, n = %d, r = { %s }%s }," % (
+            spell, lua_str(rec["p"]), rec["learn"], rec["make"], rec["n"], flat, ranks))
     out.append("  },")
     out.append("  -- English names, a fallback until the client has the item or spell cached.")
     out.append("  itemNames = {")

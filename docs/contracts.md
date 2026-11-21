@@ -252,3 +252,41 @@ KeepThat ships AceDB-3.0 minor 40 from 0.4.3 (Ace3 commit `ac3d122`; earlier rel
 - **Minor 40, WoW Forever** (`RegionalUniqueNamesEnabled()` true): `name .. " " .. surname` from `UnitNameUnmodified("player")`; `realmKey` becomes the ruleset ("PvE", "PvP", "RP", "RP-PvP", "Hardcore"). `initdb` writes `sv.profileKeys[charKey]` at once, and `SetProfile` raises an error for names that are empty, longer than 50 characters or only spaces.
 - **What KeepThat stores per character in AceDB:** only the profile choice (`profileKeys`). Settings live in `profile`, the log and stock in `global`; stock is keyed by `Adapter.PlayerIdentity()`, not by AceDB keys. `db.char`, `db.realm` and the other keyed sections are unused, so the new `realmKey` has no effect.
 - **Migration** (`Model/ProfileKey.lua`): at load, a choice saved under the minor-33 key (`Adapter.LegacyCharacterKey()`) is applied once when the character is on Default under the new key and the profile still exists, then the old entry is cleared. From 0.4.4, `ProfileKey.Rename` then moves a profile named after the old key to the new key (switch, `CopyProfile`, `DeleteProfile` when active; a plain table move when not), only when no profile exists under the new key and no other character's choice still names the old profile (from 0.4.5: two Forever characters with one first name on one realm share the old key).
+
+## Recipe knowledge and difficulty (wow-api source review, 2026-11-21; unverified until the task 1.3 probe)
+
+Classic Era recording is off in 0.5.0 (`Adapter.WINDOW_ROWS_VERIFIED = false`) because no Era test character has Tailoring or Enchanting. The Era entries below come from source review only.
+
+
+From the generated API docs and Blizzard UI source on wow-api: classic_era 1.15.9.70576 and forever 1.60.1.71037.
+
+- **Classic Era trade skills** (Blizzard_TradeSkillUI/Vanilla):
+  - `GetTradeSkillLine()` returns name, rank and max rank.
+  - `GetNumTradeSkills()`.
+  - `GetTradeSkillInfo(i)` returns name, skillType (`header`, `optimal`, `medium`, `easy`, `trivial`), numAvailable and isExpanded.
+  - `GetTradeSkillRecipeLink(i)`.
+  - Filters: `GetTradeSkillSubClassFilter(i)` and `GetTradeSkillInvSlotFilter(i)` return 1 when on, and index 0 is "all".
+  - No name filter or "Have materials" function was found in the Vanilla source. KeepThat still checks `TradeSkillFrameAvailableFilterCheckButton` if that frame exists.
+- **Classic Era Enchanting** uses the craft window (Blizzard_CraftUI/Vanilla):
+  - `GetCraftDisplaySkillLine()`, `GetNumCrafts()`.
+  - `GetCraftInfo(i)` returns name, subSpellName, craftType, numAvailable and isExpanded.
+  - `GetCraftItemLink(i)`. Vanilla has **no `GetCraftRecipeLink`**; only the TBC folder uses it.
+  - Open question: does `GetCraftItemLink` carry `enchant:<spellID>`?
+- **WoW Forever:**
+  - `C_TradeSkillUI.GetBaseProfessionInfo()` returns `ProfessionInfo`.
+  - `C_TradeSkillUI.GetRecipeInfo(spellID)` returns `TradeSkillRecipeInfo` with `learned`, `relativeDifficulty` (0 optimal to 3 trivial), `maxTrivialLevel` and `skillLineAbilityID`.
+  - Blizzard's own list uses the undocumented `C_TradeSkillUI.GetFilteredRecipeIDs()`. KeepThat asks `GetRecipeInfo` for each catalog recipe of the open profession instead, so the window's filters do not matter.
+  - Open question: does `GetRecipeInfo` answer with the window closed?
+- **Learn events:** `NEW_RECIPE_LEARNED(recipeID, recipeLevel, baseRecipeID)` exists on both clients. No "You have learned how to create" global string was found in the Classic Era source.
+- **`IsPlayerSpell`** is not in the generated docs. Whether it reports recipes is what the probe measures.
+- **SkillLineAbility thresholds** (cached CSVs; both clients agree unless noted):
+
+  | Recipe | Yellow (TrivialLow) | Gray (TrivialHigh) | Note |
+  | --- | --- | --- | --- |
+  | Linen Bandage | 30 | 60 | Wowhead: 1 / 30 / 45 / 60 |
+  | Transmute: Arcanite | 275 | 290 | |
+  | Mooncloth | 290 / 270 | 320 / 300 | Era / Forever |
+
+  - `MinSkillLineRank` is 1 for many trainer recipes (Silk Bandage, Mooncloth), so the required skill is not in the data.
+  - 59 of 1631 profession rows have zero or inverted thresholds.
+  - The green start (`floor((yellow + gray) / 2)`) is checked by the `recipe probe` log line: `mismatches=` counts recipes whose computed color differs from the client's.

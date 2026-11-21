@@ -38,6 +38,7 @@ local function setup(kind)
     H.load("Core/Defaults.lua", ns)
     H.load("Core/Adapter.lua", ns)
     H.load("Core/Adapter_Tooltip.lua", ns)
+    H.load("Model/RecipeKnowledge.lua", ns)
     H.load("Model/Wording.lua", ns)
 
     local env = { shift = false }
@@ -184,6 +185,25 @@ for _, kind in ipairs({ "postcall", "settitem" }) do
     s.events.MODIFIER_STATE_CHANGED("MODIFIER_STATE_CHANGED", "LCTRL", 1)
     eq(#tip.lines, 1, kind .. ": other modifiers do not redraw")
 
+    -- Recipe status and hint from this character's recipe knowledge (Core/Recipes.lua), with the live ranks.
+    local realGet = s.ns.Context.Get
+    s.ns.Context.Get = function() local c = realGet(); c.skills = { blacksmithing = 300 }; return c end
+    s.ns.Recipes = {
+        Status = function(p, spell, skills)
+            eq(p .. spell .. skills.blacksmithing, "blacksmithing16661300", kind .. ": status asked with the live rank")
+            return { learned = true, difficulty = "gray" }
+        end,
+        NeedsHint = function(p, skills) return p == "blacksmithing" and skills.blacksmithing == 300 end,
+    }
+    s.show(tip, ARCANITE)
+    s.env.shift = true
+    s.events.MODIFIER_STATE_CHANGED("MODIFIER_STATE_CHANGED", "LSHIFT", 1)
+    eq(tip.lines[4].text, "    Storm Gauntlets - 2 per craft (Learned · |cff808080Gray|r)", kind .. ": the recipe status")
+    eq(tip.lines[5].text, "    Open Blacksmithing to see which recipes you know", kind .. ": the hint")
+    s.env.shift = false
+    s.events.MODIFIER_STATE_CHANGED("MODIFIER_STATE_CHANGED", "RSHIFT", 0)
+    s.ns.Recipes, s.ns.Context.Get = nil, realGet
+
     -- Shift on a leveling item shows the count and how many are in bags.
     s.env.shift = true
     lines = s.show(tip, LINEN)
@@ -247,6 +267,7 @@ do
     H.load("Core/Defaults.lua", ns)
     H.load("Core/Adapter.lua", ns)
     H.load("Core/Adapter_Tooltip.lua", ns)
+    H.load("Model/RecipeKnowledge.lua", ns)
     H.load("Model/Wording.lua", ns)
     ns.Adapter.env = {}
     local failures, events, starters = {}, {}, {}
