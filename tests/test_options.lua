@@ -207,7 +207,11 @@ eq(plainName(linen.args.stockRows):find("Zed", 1, true), nil, "removed holder di
 rec.total = 30; rec.rows = { { name = "Bankmule", bank = 30, count = 30, age = 60 } }
 eq(plainName(linen.args.stock), "30 owned, all on your other characters", "all elsewhere")
 rec.total = 0; rec.rows = {}
+rec.complete = true
 eq(plainName(linen.args.stock), "None on any of your characters.", "none anywhere")
+rec.complete = false
+eq(plainName(linen.args.stock), "None counted yet.", "none counted while incomplete")
+rec.complete = true
 eq(linen.args.stockRows.hidden(), true, "no rows when nobody holds it")
 -- incomplete range clamp: Still to get 0-15 style
 rec.total = 25; rec.rows = { { name = "Me", self = true, bags = 25, count = 25 } }

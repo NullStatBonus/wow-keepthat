@@ -16,7 +16,12 @@ local pending = { bags = {}, bank = {}, mail = false }
 local scheduled = false
 local loginRead = false   -- the login bags read is queued; the reminder (once per session) follows it
 local logged = {}         -- failure keys already logged this session
-local tracked
+local tracked, trackedCtx
+-- Changes the game reported for the bank or inbox that are not read yet, and when each window closed: a
+-- change still unread at close, or reported up to LATE seconds after, leaves that record unknown.
+local dirty = { bank = {}, mail = false }
+local closedAt = {}
+local LATE = 10
 
 local function A() return ns.Adapter end
 
@@ -33,11 +38,12 @@ local function store()
     return nil
 end
 
--- Every endgame and leveling catalog item plus every route material, whatever the settings mark.
+-- Every endgame and leveling catalog item plus every route material (Profession Journal's too while it
+-- works), whatever the settings mark. Rebuilt when the context changes.
 function R.Tracked()
-    if tracked then return tracked end
-    local t = {}
     local ctx = ns.Context and ns.Context.Get() or {}
+    if tracked and ctx == trackedCtx then return tracked end
+    local t = {}
     local catalog, routes = ctx.catalog or {}, ctx.routes or {}
     for _, key in ipairs({ "endgame", "leveling" }) do
         for id in pairs(type(catalog[key]) == "table" and catalog[key] or {}) do t[id] = true end
@@ -45,7 +51,14 @@ function R.Tracked()
     for _, items in pairs(type(routes.materials) == "table" and routes.materials or {}) do
         for id in pairs(items) do t[id] = true end
     end
-    tracked = t
+    local PJ = ns.ProfessionJournal
+    if ctx.extra and PJ and type(PJ.Items) == "function" and type(PJ.PROFESSIONS) == "table" then
+        for _, profession in ipairs(PJ.PROFESSIONS) do
+            local ok, ids = pcall(PJ.Items, profession)
+            for _, id in ipairs(ok and type(ids) == "table" and ids or {}) do t[id] = true end
+        end
+    end
+    tracked, trackedCtx = t, ctx
     return t
 end
 
@@ -57,6 +70,30 @@ end
 
 local function notify()
     if ns.Options and ns.Options.NotifyChange then pcall(ns.Options.NotifyChange) end
+end
+
+-- The game reported a change to a bank container (id) or the inbox (kind "mail") that cannot be read any
+-- more: that record is no longer known, so it counts as not counted until the window opens again.
+local function forget(kind, id)
+    local character = me(false)
+    if not character then return end
+    local src = character[kind]
+    if type(src) ~= "table" or src.unavailable then return end
+    if kind == "bank" then
+        if type(src.c) ~= "table" or src.c[id] == nil then return end
+        src.c[id] = nil
+    else
+        character.mail = nil
+    end
+    if ns.Log and ns.Log.Record then
+        pcall(ns.Log.Record, "stock", ("%s changed as it closed; not counted until it is opened again"):format(kind))
+    end
+    notify()
+end
+
+local function late(kind)
+    local t, now = closedAt[kind], A().Clock()
+    return t ~= nil and now ~= nil and now - t <= LATE
 end
 
 local function asSet(list)
@@ -88,6 +125,7 @@ local function process()
         local function read(src, kind, set)
             if type(src) ~= "table" or type(src.c) ~= "table" then return end
             for id in pairs(set) do
+                if kind == "bank" then dirty.bank[id] = nil end
                 local got = A().ReadContainer(id, items)
                 if got == nil then
                     logOnce(kind .. id, ("%s container %s could not be read; its last record is kept"):format(kind, tostring(id)))
@@ -103,6 +141,7 @@ local function process()
         read(character.bags, "bag", work.bags)
         if bankOpen then read(character.bank, "bank", work.bank) end
         if work.mail and mailOpen then
+            dirty.mail = false
             local got = A().ReadInbox(items)
             if got == nil then
                 logOnce("inbox", "inbox could not be read; its last record is kept")
@@ -186,6 +225,9 @@ function on.PLAYER_LOGIN()
         ns.Stock.Prune(s, now)
         local character = me(true)
         character.seen = now
+        -- A source this client cannot read is unavailable from the start, not missing (no reminder for it).
+        if not A().BankAvailable() then character.bank = { unavailable = true } end
+        if not A().MailAvailable() then character.mail = { unavailable = true } end
     end)
     if not ok then
         active, identity = false, nil
@@ -203,14 +245,19 @@ function on.BAG_UPDATE(_, bagID)
     if isIn(bags, bagID) then
         pending.bags[bagID] = true
         schedule()
-    elseif bankOpen and type(character.bank) == "table" and isIn(character.bank.expected, bagID) then
-        pending.bank[bagID] = true
-        schedule()
+    elseif type(character.bank) == "table" and isIn(character.bank.expected, bagID) then
+        if bankOpen then
+            pending.bank[bagID] = true
+            dirty.bank[bagID] = true
+            schedule()
+        elseif late("bank") then
+            forget("bank", bagID)
+        end
     end
 end
 
 function on.PLAYERBANKSLOTS_CHANGED(_, slot)
-    local character = bankOpen and me(false)
+    local character = (bankOpen or late("bank")) and me(false)
     if not character then return end
     if type(character.bank) ~= "table" or character.bank.unavailable then return end
     local id
@@ -220,7 +267,9 @@ function on.PLAYERBANKSLOTS_CHANGED(_, slot)
         id = type(character.bank.expected) == "table" and character.bank.expected[1] or -1
     end
     if id == nil then return end
+    if not bankOpen then forget("bank", id) return end
     pending.bank[id] = true
+    dirty.bank[id] = true
     schedule()
 end
 
@@ -235,21 +284,25 @@ on.BANK_TABS_CHANGED = reenumerate
 on.BANK_TAB_SETTINGS_UPDATED = reenumerate
 
 function on.BANKFRAME_OPENED()
-    bankOpen = true
+    bankOpen, closedAt.bank = true, nil
     queueBank()
 end
 
 function on.BANKFRAME_CLOSED()
     bankOpen = false
     pending.bank = {}
+    for id in pairs(dirty.bank) do forget("bank", id) end
+    dirty.bank = {}
+    closedAt.bank = A().Clock()
 end
 
 function on.MAIL_SHOW()
-    mailOpen = true
+    mailOpen, closedAt.mail = true, nil
 end
 
 local mailShowKnown = true
 function on.MAIL_INBOX_UPDATE()
+    if not mailOpen and late("mail") then forget("mail") return end
     if not mailShowKnown then mailOpen = true end
     if not mailOpen then return end
     local character = me(true)
@@ -260,12 +313,16 @@ function on.MAIL_INBOX_UPDATE()
         return
     end
     pending.mail = true
+    dirty.mail = true
     schedule()
 end
 
 function on.MAIL_CLOSED()
     mailOpen = false
     pending.mail = false
+    if dirty.mail then forget("mail") end
+    dirty.mail = false
+    closedAt.mail = A().Clock()
 end
 
 -- Surfaces --------------------------------------------------------------------------------------
@@ -340,7 +397,8 @@ end
 function R.Reset()
     addon, identity, active, bankOpen, mailOpen = nil, nil, false, false, false
     pending = { bags = {}, bank = {}, mail = false }
-    scheduled, loginRead, logged, tracked = false, false, {}, nil
+    scheduled, loginRead, logged, tracked, trackedCtx = false, false, {}, nil, nil
+    dirty, closedAt = { bank = {}, mail = false }, {}
     mailShowKnown = true
 end
 

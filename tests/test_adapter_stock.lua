@@ -41,7 +41,27 @@ forever.GetNormalizedRealmName = nil
 forever.GetRealmName = function() return "Real Realm" end
 eq(select(2, A.PlayerIdentity()), "RealRealm", "Forever: realm name without spaces when not normalized")
 forever.GetRealmName = nil
-eq(A.PlayerIdentity(), nil, "Forever: no realm name: nil, never the surname")
+eq(A.PlayerIdentity(), nil, "Forever: no ruleset and no realm name: nil, never the surname")
+-- The player's Forever save (2026-11-20): no realm name at login, so 0.4.5 recorded nothing. The realm is the
+-- ruleset, as AceDB-3.0 minor 40 and Syndicator key it.
+local active = {}
+forever.Enum = { GameRule = { HardcoreRuleset = 1, RPRuleset = 2, PvPRuleset = 3 } }
+forever.C_GameRules = { IsGameRuleActive = function(rule) return active[rule] == true end }
+forever.GetNormalizedRealmName = function() return nil end
+forever.GetRealmName = function() return "" end
+n, r, f, s = A.PlayerIdentity()
+eq(n, "Me Smith", "Forever without a realm name: full name")
+eq(r, "PvE", "Forever without a realm name: the ruleset")
+eq(s, "Smith", "Forever without a realm name: surname")
+active = { [3] = true }; eq(select(2, A.PlayerIdentity()), "PvP", "PvP ruleset")
+active = { [2] = true }; eq(select(2, A.PlayerIdentity()), "RP", "RP ruleset")
+active = { [2] = true, [3] = true }; eq(select(2, A.PlayerIdentity()), "RP-PvP", "RP-PvP ruleset")
+active = { [1] = true, [3] = true }; eq(select(2, A.PlayerIdentity()), "Hardcore", "Hardcore ruleset first")
+active = {}
+forever.GetNormalizedRealmName = function() return "SomeRealm" end
+eq(select(2, A.PlayerIdentity()), "PvE", "Forever: the ruleset even when a realm name is given")
+forever.C_GameRules.IsGameRuleActive = function() error("x") end
+eq(select(2, A.PlayerIdentity()), "PvE", "a raising rule check counts as off")
 -- Surnames off (Classic Era): UnitNameUnmodified's second return is not a surname; identity as before.
 A.env = { UnitFullName = function() return "Ann", "Realm" end, RegionalUniqueNamesEnabled = function() return false end,
     UnitNameUnmodified = function() return "Ann", "Other" end, GetNormalizedRealmName = function() return "Realm" end,
@@ -100,6 +120,13 @@ eq(list(A.BankIDs()), "6,9", "tab IDs from purchased data")
 eq(A.BankTabBagID(2), 9, "tab 2 from purchased data")
 eq(A.BankTabBagID(1), 6, "tab 1")
 eq(A.BankTabBagID(3), nil, "unknown tab")
+-- Review #3: a tab without an ID takes the tab enum; with neither, the list is unknown, never shortened.
+local fetch = A.env.C_Bank.FetchPurchasedBankTabData
+A.env.C_Bank.FetchPurchasedBankTabData = function() return { { ID = 6 }, {} } end
+eq(list(A.BankIDs()), "6,7", "tab without an ID: from the enum")
+A.env.C_Bank.FetchPurchasedBankTabData = function() return { { ID = 6 }, {}, { ID = "x" } } end
+eq(A.BankIDs(), nil, "tab with neither: list unknown")
+A.env.C_Bank.FetchPurchasedBankTabData = fetch
 A.env = tabsEnv()
 A.env.C_Bank.FetchPurchasedBankTabData = function() return {} end
 eq(A.BankTabBagID(2), 7, "tab falls back to the enum")

@@ -189,23 +189,25 @@ fire("BANKFRAME_OPENED"); frame()
 eq(#failures, 1, "failure logged once per session")
 W.fail[6] = nil
 
--- Open -> queue -> close before the next frame: nothing overwritten.
-local bankT = me.bank.c[-1].t
+-- Open -> a change queued -> close before the next frame: that container is no longer known, never stale.
 W.now = W.now + 60
 W.c[-1] = { [RUNE] = 99 }
 fire("BAG_UPDATE", -1)
 fire("BANKFRAME_CLOSED")
 frame()
 me = meRec()
-eq(me.bank.c[-1].items[RUNE], 18, "closed bank: record kept")
-eq(me.bank.c[-1].t, bankT, "closed bank: age kept")
--- And when the close lands after scheduling but the reopen does not happen: processing rechecks.
+eq(me.bank.c[-1], nil, "changed but unread at close: container not counted")
+eq(me.bank.c[7].items[RUNE], 2, "other containers keep their counts")
+W.c[6] = nil -- keep the earlier failed container empty for the totals below
+fire("BANKFRAME_OPENED"); frame()
+eq(meRec().bank.c[-1].items[RUNE], 99, "read again on the next visit")
+W.c[-1] = { [RUNE] = 18 }; fire("BAG_UPDATE", -1); frame()
+-- Opened and closed before the first read, no change reported: processing rechecks, nothing forgotten.
 fire("BANKFRAME_OPENED")
 local f = W.frames; W.frames = {}
 fire("BANKFRAME_CLOSED")
 for _, fn in ipairs(f) do fn() end
-eq(meRec().bank.c[-1].items[RUNE], 18, "closed at run time: bank not read")
-W.c[-1] = { [RUNE] = 18 }
+eq(meRec().bank.c[-1].items[RUNE], 18, "closed at run time: bank not read, record kept")
 
 ---------------------------------------------------------------------------------------------------
 -- Mail: taking mail moves a count from the mailbox to the bags.
@@ -231,17 +233,22 @@ W.inboxFail = true
 fire("MAIL_INBOX_UPDATE"); frame()
 eq(meRec().mail.t, mailT, "failed inbox keeps its age")
 W.inboxFail = false
--- Close before the next frame: nothing overwritten.
+-- A change reported but unread when the mailbox closes: the mailbox is no longer known, never stale.
+eq(mailT ~= nil, true, "mailbox counted before")
 W.inbox = { [RUNE] = 50 }
 fire("MAIL_INBOX_UPDATE")
 fire("MAIL_CLOSED")
 frame()
-eq(meRec().mail.t, mailT, "closed mailbox: record kept")
-eq(meRec().mail.items[RUNE], nil, "closed mailbox: items kept")
-fire("MAIL_INBOX_UPDATE"); frame()
-eq(meRec().mail.t, mailT, "inbox update with the mailbox closed is ignored")
+eq(meRec().mail, nil, "changed but unread at close: mailbox not counted")
 eq(notified > 0, true, "options told of changes")
 W.inbox = {}
+fire("MAIL_SHOW"); fire("MAIL_INBOX_UPDATE"); frame()
+eq(meRec().mail ~= nil, true, "read again on the next visit")
+fire("MAIL_CLOSED")
+eq(meRec().mail ~= nil, true, "a normal close keeps the mailbox counted")
+W.now = W.now + 11
+fire("MAIL_INBOX_UPDATE"); frame()
+eq(meRec().mail ~= nil, true, "an inbox update 11 s after closing changes nothing")
 
 ---------------------------------------------------------------------------------------------------
 -- Modern bank tabs: a tab slot change updates that tab; a purchase adds the tab to expected.
@@ -388,7 +395,9 @@ W.mailAvailable = false
 db = freshDB()
 newSession(db)
 login()
-eq(#printed, 1, "fresh character: own bank and mail missing")
+eq(#printed, 0, "fresh character on a client without bank or mail: no reminder")
+eq(meRec().bank.unavailable, true, "bank unavailable from login")
+eq(meRec().mail.unavailable, true, "mail unavailable from login")
 fire("BANKFRAME_OPENED"); frame()
 fire("MAIL_SHOW"); fire("MAIL_INBOX_UPDATE"); frame()
 eq(meRec().bank.unavailable, true, "bank unavailable")
@@ -483,5 +492,82 @@ addon.db.global.stock.realms.Smith = { Alliance = { Me = { seen = W.now } } }
 newSession()
 login()
 eq(addon.db.global.stock.realms.Smith.Alliance.Me.seen, W.now, "Era: nothing moved")
+
+-- Review #6: withdraw and close at once. 18 taken from the bank into bags holding 2; the bank report comes
+-- after the bank closed. The total is 20 (incomplete), never 38.
+newWorld()
+W.c[0] = { [RUNE] = 2 }; W.c[-1] = { [RUNE] = 18 }
+newSession(freshDB())
+login()
+fire("BANKFRAME_OPENED"); frame()
+eq((R.Total(RUNE)), 20, "before: 2 in bags, 18 in the bank")
+W.c[0] = { [RUNE] = 20 }; W.c[-1] = {}
+fire("BAG_UPDATE", 0)
+fire("BANKFRAME_CLOSED")
+frame()
+fire("PLAYERBANKSLOTS_CHANGED", 1)
+local tw, cw = R.Total(RUNE)
+eq(tw, 20, "withdraw and close: 20, not 38")
+eq(cw, false, "the bank container is not counted")
+eq(meRec().bank.c[5] ~= nil, true, "other bank containers keep their counts")
+-- A bank report 11 s after closing changes nothing.
+fire("BANKFRAME_OPENED"); frame(); fire("BANKFRAME_CLOSED")
+W.now = W.now + 11
+fire("PLAYERBANKSLOTS_CHANGED", 1); fire("BAG_UPDATE", 5)
+eq(meRec().bank.c[-1] ~= nil and meRec().bank.c[5] ~= nil, true, "late by 11 s: records kept")
+-- A normal open and close keeps the bank counted.
+fire("BANKFRAME_OPENED"); frame(); fire("BANKFRAME_CLOSED")
+eq(R.Missing()[1].bank, false, "normal close: the bank stays counted (only the mailbox is missing)")
+
+-- Review #6: take mail and close at once; the inbox report comes after the mailbox closed.
+newWorld()
+W.inbox = { [RUNE] = 5 }
+newSession(freshDB())
+login()
+fire("MAIL_SHOW"); fire("MAIL_INBOX_UPDATE"); frame()
+W.inbox = {}; W.c[0] = { [RUNE] = 5 }
+fire("BAG_UPDATE", 0)
+fire("MAIL_CLOSED")
+frame()
+fire("MAIL_INBOX_UPDATE")
+eq((R.Total(RUNE)), 5, "take mail and close: counted once")
+eq(meRec().mail, nil, "the mailbox is not counted")
+
+-- Review #7: a material only Profession Journal's route uses is recorded while the integration works.
+local PJONLY = 4242
+newWorld()
+W.c[-1] = { [PJONLY] = 3 }
+local getCtx = ns.Context.Get
+ns.ProfessionJournal = { PROFESSIONS = { "tailoring" }, Items = function() return { PJONLY } end }
+newSession(freshDB())
+login()
+fire("BANKFRAME_OPENED"); frame()
+eq(meRec().bank.c[-1].items[PJONLY], nil, "integration not working: not recorded")
+fire("BANKFRAME_CLOSED")
+ns.Context.Get = function() local c = getCtx(); c.extra = function() end; return c end
+fire("BANKFRAME_OPENED"); frame()
+eq(meRec().bank.c[-1].items[PJONLY], 3, "Profession Journal material recorded")
+ns.Context.Get = getCtx
+ns.ProfessionJournal = nil
+
+-- The player's real WoW Forever save written by 0.4.4 (names replaced): three characters filed under their
+-- surnames. Each moves to the ruleset and its full name at its own login; one alt then counts another's bank.
+local SILK = 4306
+local save = dofile("tests/fixtures/forever_save_044.lua")
+newWorld()
+W.now = 1795230000
+W.identity = { "Ann Alpha", "PvE", "Alliance", "Alpha" }
+newSession({ global = { stock = save }, profile = { stockReminder = true } })
+login()
+eq(save.realms.Alpha, nil, "Ann's surname bucket is gone")
+local ann = Stock.Character(save, "PvE", "Alliance", "Ann Alpha", false)
+eq(ann and ann.bank.c[8].items[SILK], 101, "Ann's bank moved with its counts")
+eq(save.realms.Beta.Alliance.Bo ~= nil, true, "Bo has not logged in: still under its surname")
+W.identity = { "Cy Gamma", "PvE", "Alliance", "Gamma" }
+newSession()
+login()
+eq(save.realms.Gamma, nil, "Cy moved too")
+eq((R.Total(SILK)), 101 + 140 + 78, "Cy counts Ann's bank and its own")
+eq(R.Counted(), 2, "two characters on PvE")
 
 H.done()

@@ -6,7 +6,7 @@ Records each character's stock of catalog and route materials (bags, bank and ma
 ## Requirements
 
 ### Requirement: Stock recorded per character
-KeepThat SHALL record, per character, how many of each catalog and route material that character holds in each of three sources: bags, bank and mailbox. It SHALL record these materials whatever the settings mark. It SHALL never record the guild bank. It SHALL save the records for the whole account. A source that has never been read SHALL be recorded as not counted, which is distinct from a count of 0.
+KeepThat SHALL record, per character, how many of each catalog and route material that character holds in each of three sources: bags, bank and mailbox. Route materials SHALL include those of Profession Journal's route while it is installed and readable. It SHALL record these materials whatever the settings mark. It SHALL never record the guild bank. It SHALL save the records for the whole account. A source that has never been read SHALL be recorded as not counted, which is distinct from a count of 0.
 
 #### Scenario: Bags at login
 - **WHEN** a character logs in carrying 12 Runecloth
@@ -15,6 +15,10 @@ KeepThat SHALL record, per character, how many of each catalog and route materia
 #### Scenario: Material not marked by the settings
 - **WHEN** leveling marks are off and a character's bank holds Runecloth, a route material
 - **THEN** that character's bank record still shows the Runecloth
+
+#### Scenario: Material only Profession Journal's route uses
+- **WHEN** Profession Journal is installed and a character's bank holds a material only its route uses
+- **THEN** that character's bank record shows the material once the bank is read
 
 #### Scenario: Guild bank
 - **WHEN** the player opens the guild bank, which holds Runecloth
@@ -25,11 +29,19 @@ KeepThat SHALL record, per character, how many of each catalog and route materia
 - **THEN** that character's bank is recorded as not counted, not as 0
 
 ### Requirement: Sources read while open
-The bank SHALL be read when the bank window opens and re-read while it stays open. The mailbox SHALL be read when its inbox loads and re-read while it stays open. When a window closes, the last reading SHALL be kept. A source the client cannot read SHALL be recorded as unavailable, which is distinct from not counted.
+The bank SHALL be read when the bank window opens and re-read while it stays open. The mailbox SHALL be read when its inbox loads and re-read while it stays open. When a window closes, the last reading SHALL be kept. A change to a bank container or the inbox that the game reported but KeepThat had not yet read when its window closed, or that the game reports within 10 seconds after it closed, SHALL make that container, or the mailbox, not counted until it is read again, so a stale reading is never counted. A source the client cannot read SHALL be recorded as unavailable, which is distinct from not counted.
 
 #### Scenario: Bank closed
 - **WHEN** the player closes the bank after it was read
 - **THEN** the bank record keeps that reading
+
+#### Scenario: Withdraw and close at once
+- **WHEN** the player takes 18 Runecloth from the bank into bags holding 2 and closes the bank before the game reports the bank change
+- **THEN** the total is never 38: the bags count 20 and that bank container is not counted until the bank is opened again
+
+#### Scenario: Take mail and close at once
+- **WHEN** the player takes 5 Runecloth from a mail and closes the mailbox before the game reports the inbox change
+- **THEN** the 5 are counted once, in bags, and the mailbox is not counted until it is opened again
 
 ### Requirement: Readings replace whole containers
 Each reading of a bag, bank container or the inbox SHALL replace that container's whole record, never add or subtract, so a stack moved between sources is counted once. A failed or incomplete reading of a container SHALL keep that container's previous record and age. A source SHALL count as counted only when every container it expects has a record.
@@ -95,14 +107,18 @@ While the login reminder setting is on (the default), KeepThat SHALL print one c
 - **THEN** no reminder is printed
 
 ### Requirement: Character names and realms on WoW Forever
-A character's stock SHALL be filed under its realm's name, never its surname. When the client uses surnames, a character SHALL be named by its first name and surname, so two characters sharing a first name are counted separately. Where the client does not use surnames, characters SHALL be named and filed exactly as before.
+A character's stock SHALL be filed under its realm, never its surname. When the client uses surnames, a character SHALL be named by its first name and surname, so two characters sharing a first name are counted separately, and its realm SHALL be its ruleset (PvE, PvP, RP, RP-PvP or Hardcore), the same realm the settings library uses, because that client has no realm names. Where the client does not use surnames, characters SHALL be named and filed exactly as before.
 
 #### Scenario: Alts with different surnames share a total
-- **WHEN** two WoW Forever characters on the same realm and faction have different surnames and both have logged in
-- **THEN** each one's total includes the other's counted sources, and `/kt status stock` names the realm
+- **WHEN** two WoW Forever characters on the same ruleset and faction have different surnames and both have logged in
+- **THEN** each one's total includes the other's counted sources, and `/kt status stock` names the ruleset, such as `Stock: 2 characters on PvE (Alliance).`
+
+#### Scenario: No realm name at login
+- **WHEN** a WoW Forever character logs in and the client gives no realm name
+- **THEN** its stock is still recorded, under its ruleset
 
 #### Scenario: Same first name, different surnames
-- **WHEN** two WoW Forever characters on the same realm and faction share a first name
+- **WHEN** two WoW Forever characters on the same ruleset and faction share a first name
 - **THEN** each has its own stock record and its own line in the stock details
 
 #### Scenario: Classic Era unchanged

@@ -24,7 +24,15 @@ function Slash.StockStatus()
         elseif m.bank then out[#out + 1] = L["%s: bank not counted."]:format(m.name)
         elseif m.mail then out[#out + 1] = L["%s: mailbox not counted."]:format(m.name) end
     end
-    if #out == 1 then out[2] = L["Every bank and mailbox is counted."] end
+    if #out == 1 then
+        local okS, st = pcall(function() return R.State and R.State() end)
+        local un = okS and type(st) == "table" and st.unavailable
+        if type(un) == "table" and (un.bank or un.mail) then
+            out[2] = L["Every bank and mailbox this client can read is counted."]
+        else
+            out[2] = L["Every bank and mailbox is counted."]
+        end
+    end
     return out
 end
 
