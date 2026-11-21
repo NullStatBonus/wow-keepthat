@@ -86,8 +86,13 @@ function A.BankIDs()
     if A.BankUsesTabs() then
         local tabs = purchasedTabs()
         if not tabs then return nil end
-        for _, tab in ipairs(tabs) do
-            if type(tab) == "table" and type(tab.ID) == "number" then out[#out + 1] = tab.ID end
+        for i, tab in ipairs(tabs) do
+            -- A tab without an ID takes the tab enum; if that is missing too the list is unknown (nil), never
+            -- shortened: a shortened list would delete that tab's saved count.
+            local id = type(tab) == "table" and tab.ID
+            if type(id) ~= "number" then id = A.Resolve("Enum.BagIndex.CharacterBankTab_" .. i) end
+            if type(id) ~= "number" then return nil end
+            out[#out + 1] = id
         end
         return out
     end

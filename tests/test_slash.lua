@@ -106,6 +106,9 @@ local o = ns.Slash.Run("STATUS Stock", deps)
 eq(o[1], "Stock: 3 characters on Realm (Alliance).", "scope line")
 eq(o[2], "Every bank and mailbox is counted.", "nothing missing")
 eq(#o, 2, "and no more lines")
+ns.StockRecorder.State = function() return { unavailable = { bank = true, mail = false } } end
+eq(ns.Slash.Run("status stock", deps)[2], "Every bank and mailbox this client can read is counted.", "unreadable source named in the summary")
+ns.StockRecorder.State = nil
 counted = 1
 eq(ns.Slash.Run("status stock", deps)[1], "Stock: 1 character on Realm (Alliance).", "singular scope line")
 counted = 3

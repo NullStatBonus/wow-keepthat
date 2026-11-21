@@ -100,6 +100,13 @@ eq(list(A.BankIDs()), "6,9", "tab IDs from purchased data")
 eq(A.BankTabBagID(2), 9, "tab 2 from purchased data")
 eq(A.BankTabBagID(1), 6, "tab 1")
 eq(A.BankTabBagID(3), nil, "unknown tab")
+-- Review #3: a tab without an ID takes the tab enum; with neither, the list is unknown, never shortened.
+local fetch = A.env.C_Bank.FetchPurchasedBankTabData
+A.env.C_Bank.FetchPurchasedBankTabData = function() return { { ID = 6 }, {} } end
+eq(list(A.BankIDs()), "6,7", "tab without an ID: from the enum")
+A.env.C_Bank.FetchPurchasedBankTabData = function() return { { ID = 6 }, {}, { ID = "x" } } end
+eq(A.BankIDs(), nil, "tab with neither: list unknown")
+A.env.C_Bank.FetchPurchasedBankTabData = fetch
 A.env = tabsEnv()
 A.env.C_Bank.FetchPurchasedBankTabData = function() return {} end
 eq(A.BankTabBagID(2), 7, "tab falls back to the enum")

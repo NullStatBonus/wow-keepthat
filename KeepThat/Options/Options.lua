@@ -392,13 +392,13 @@ local function holderParts(row)
 end
 
 local function stockLine(id)
-    local total, _, rows = stockTotals(id)
+    local total, complete, rows = stockTotals(id)
     if not total then
         local count = ns.Adapter.ItemCount and ns.Adapter.ItemCount(id)
         if count then return L["%d in bags"]:format(count) end
         return L["Your stock is not known yet."]
     end
-    if total == 0 then return L["None on any of your characters."] end
+    if total == 0 then return complete and L["None on any of your characters."] or L["None counted yet."] end
     local here = 0
     for _, row in ipairs(rows) do if row.self then here = here + (row.count or 0) end end
     if here == total then return L["%d owned, all on this character"]:format(total) end

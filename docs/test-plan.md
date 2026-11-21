@@ -221,3 +221,12 @@ On WoW Forever, with a save used by KeepThat 0.4.4 or earlier: two characters, A
 1. Log in on A: `/kt status stock` names the realm, not A's surname.
 2. Log in on B: hold Shift over Runecloth; the `Stock` block lists A by first name and surname with its bank count.
 3. On A, turn on Advanced > "This character", set Scale to 150, `/reload`: Scale is still 150.
+
+## 12. Stock counts
+
+Classic Era or WoW Forever, KeepThat 0.4.6, with two characters on one realm and faction.
+
+1. Open the bank, take a stack of Runecloth into your bags and press Escape at once. The tooltip total is never more than you own, and `/kt status stock` either counts the bank or lists it as not counted. Open and close the bank again without moving anything: `/kt status stock` counts it.
+2. Open the mailbox, take a Runecloth attachment and close it at once. Same check. Then open and close the mailbox without taking anything: it stays counted.
+3. While some bank or mailbox is not counted, open the Materials page of an item no character holds: it says "None counted yet."
+4. WoW Forever with DFL Profession Journal: put a material only its route uses in the bank and open the bank. The tooltip total includes it.

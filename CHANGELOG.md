@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.4.6
+
+- Stock totals no longer count a stack twice when you close the bank or mailbox right after moving it, and Profession Journal materials are counted across your characters.
+
 ## 0.4.5
 
 - On WoW Forever, your characters on a realm share their stock again, and a character with the same first name as another no longer takes its settings.
