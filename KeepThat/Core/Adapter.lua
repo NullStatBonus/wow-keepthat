@@ -50,8 +50,10 @@ A.SKILL_LINES = {
 
 -- Known professions and their ranks: { [profession] = rank }. Forever has C_SkillInfo (with skill line
 -- IDs); Classic Era has the GetSkillLineInfo globals, which give only localized names, so those are
--- matched against the localized names of the same skill lines.
-function A.ProfessionSkills()
+-- matched against the localized names of the same skill lines. Also returns the names of the headers
+-- still collapsed while reading (their rows were not read: with visibleOnly, or without ExpandSkillHeader)
+-- and the header each profession sits under: { [profession] = header name }.
+function A.ProfessionSkills(visibleOnly)
     local out = {}
     local byID = A.Resolve("C_SkillInfo.GetSkillLineInfoByID")
     if type(byID) == "function" then
@@ -60,23 +62,70 @@ function A.ProfessionSkills()
             local rank = ok and type(info) == "table" and (info.skillLineRank or info.rank) or nil
             if type(rank) == "number" and rank > 0 then out[key] = rank end
         end
-        if next(out) then return out end
+        if next(out) then return out, {}, {} end
     end
     local num = A.Resolve("C_SkillInfo.GetNumSkillLines") or A.Resolve("GetNumSkillLines")
     local info = A.Resolve("C_SkillInfo.GetSkillLineInfo") or A.Resolve("GetSkillLineInfo")
-    if type(num) ~= "function" or type(info) ~= "function" then return out end
+    if type(num) ~= "function" or type(info) ~= "function" then return out, {}, {} end
     local names = A.SkillLineNames()
-    local ok, n = pcall(num)
-    if not ok or type(n) ~= "number" then return out end
+    local function count()
+        local ok, n = pcall(num)
+        return ok and type(n) == "number" and n or nil
+    end
+    local function header(i)
+        local ok, name, isHeader, isExpanded = pcall(info, i)
+        if ok and type(name) == "table" then -- Forever's SkillLineAttributes has isCollapsed, not isExpanded
+            local t = name
+            name, isHeader = t.skillLineName or t.name, t.isHeader
+            if t.isExpanded ~= nil then isExpanded = t.isExpanded else isExpanded = t.isCollapsed == false end
+        end
+        return ok and isHeader and name or nil, isExpanded
+    end
+    local n = count()
+    if not n then return out, {}, {} end
+    -- Classic Era lists only the rows under expanded headers. Unless visibleOnly, expand the collapsed
+    -- ones bottom-up, read, then collapse each again, found by name (so one failed collapse cannot
+    -- shift the others). This changes the Skills list, which fires SKILL_LINES_CHANGED; the skill
+    -- event handler reads visibleOnly, which never changes it, so it cannot loop.
+    local expand = A.Resolve("C_SkillInfo.ExpandSkillHeader") or A.Resolve("ExpandSkillHeader")
+    local collapse = A.Resolve("C_SkillInfo.CollapseSkillHeader") or A.Resolve("CollapseSkillHeader")
+    local collapsed, hidden, under = {}, {}, {}
+    for i = n, 1, -1 do
+        local name, isExpanded = header(i)
+        if name and not isExpanded then
+            if not visibleOnly and type(expand) == "function" and type(collapse) == "function" and pcall(expand, i) then
+                collapsed[name] = true
+            else
+                hidden[name] = true
+            end
+        end
+    end
+    if next(collapsed) then n = count() or n end
+    local current
     for i = 1, n do
         local okLine, name, isHeader, _, rank = pcall(info, i)
         if okLine and type(name) == "table" then -- C_SkillInfo returns a table
             name, isHeader, rank = name.skillLineName or name.name, name.isHeader, name.skillLineRank or name.rank
         end
+        if okLine and isHeader then current = name end
         local key = okLine and not isHeader and names[name]
-        if key and type(rank) == "number" then out[key] = rank end
+        if key and type(rank) == "number" then out[key] = rank; under[key] = current end
     end
-    return out
+    for _ = 1, 20 do
+        if not next(collapsed) then break end
+        local found
+        for i = 1, count() or n do
+            local name, isExpanded = header(i)
+            if name and collapsed[name] then
+                collapsed[name] = nil
+                if isExpanded then pcall(collapse, i) end
+                found = true
+                break
+            end
+        end
+        if not found then break end
+    end
+    return out, hidden, under
 end
 
 -- The apprentice spell of each profession; its spell name is the profession's localized name on both

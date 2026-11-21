@@ -4,7 +4,10 @@
 -- A segment the player has passed adds nothing; one they are partway through counts in proportion.
 -- Each source (guide) adds up its own segments; the count to keep runs from the smallest to the
 -- largest source total. Segments with 0, 0 come from steps the guide gives no count for: they still
--- mark the material but take no part in the count.
+-- mark the material but take no part in the count. A source counts when it has a counted step still
+-- ahead, or, next to such a source, when all its steps are passed and some had a count (0: a lower
+-- bound, never the whole count). A source left only with uncounted
+-- steps has no count: never 0 for steps still ahead (review #4).
 local _, ns = ...
 
 local Leveling = {}
@@ -33,22 +36,26 @@ end
 --     sources = { name, ... } still using it, in route order,
 --     via = { [itemID] = count for that item, the largest over the sources } }
 -- A source with counts whose steps are all passed takes part in the range as 0: the guides disagree
--- about whether more is needed, and the range shows it.
+-- about whether more is needed, and the range shows it. via comes from the source that gives high, each
+-- share rounded down, so the shares never add up to more than high.
 function Leveling.Need(routes, profession, itemID, skill, extra)
     local order, bySource = {}, {}
     local from, to
     local function add(name, low, high, f, t, v)
         local e = bySource[name]
         if not e then
-            e = { low = 0, high = 0, counted = false, active = false, via = {} }
+            e = { low = 0, high = 0, counted = false, passed = false, active = false, via = {} }
             bySource[name] = e
             order[#order + 1] = name
         end
-        if high > 0 then e.counted = true end
         local share = remaining(f, t, skill)
-        if share <= 0 then return end
+        if share <= 0 then
+            if high > 0 then e.passed = true end
+            return
+        end
         e.active = true
         if high > 0 then
+            e.counted = true
             e.low = e.low + low * share
             e.high = e.high + high * share
             if v and v ~= 0 then e.via[v] = (e.via[v] or 0) + high * share end
@@ -73,15 +80,25 @@ function Leveling.Need(routes, profession, itemID, skill, extra)
         for i = 1, #s, 5 do add(source.name, s[i + 2], s[i + 3], s[i], s[i + 1], s[i + 4]) end
     end
 
-    local sources, low, high, via = {}, nil, nil, {}
+    -- A finished guide's 0 is only a lower bound: it takes part only next to a source still counting.
+    local sources, low, high, via, ahead = {}, nil, nil, {}, false
+    for _, name in ipairs(order) do
+        if bySource[name].counted then ahead = true end
+    end
     for _, name in ipairs(order) do
         local e = bySource[name]
         if e.active then sources[#sources + 1] = name end
-        if e.counted then
+        if ahead and (e.counted or (e.passed and not e.active)) then
             local l, h = count(e.low), count(e.high)
             low = low and math.min(low, l) or l
-            high = high and math.max(high, h) or h
-            for k, n in pairs(e.via) do via[k] = math.max(via[k] or 0, count(n)) end
+            if not high or h > high then
+                high = h
+                via = {}
+                for k, n in pairs(e.via) do
+                    local share = math.floor(n + 1e-9)
+                    if share > 0 then via[k] = share end
+                end
+            end
         end
     end
     if #sources == 0 then return nil end

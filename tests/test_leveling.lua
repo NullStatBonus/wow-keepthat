@@ -76,6 +76,50 @@ local twoGuides = { guides = routes.guides, materials = { t = { [6] = { 1, 1, 50
 n = Need(twoGuides, "t", 6, nil)
 eq(n.via[BOLT], 55, "breakdown is the largest guide's share")
 
+-- Review #4: a source active only through uncounted steps has no count (not 0), even when its passed
+-- steps had one.
+local later = { guides = routes.guides, materials = { t = { [7] = { 1, 1, 50, 10, 10, 0, 1, 75, 100, 0, 0, 0 } } } }
+n = Need(later, "t", 7, 75)
+eq(n ~= nil, true, "uncounted steps ahead: still a leveling material")
+eq(n.low, nil, "no count low (was 0: You have enough)")
+eq(n.high, nil, "no count high")
+eq(n.sources[1], "Guide A", "the source is named")
+later.materials.t[7] = { 1, 1, 50, 10, 10, 0, 1, 75, 100, 0, 0, 0, 2, 75, 100, 40, 40, 0 }
+n = Need(later, "t", 7, 75)
+eq(n.low .. "-" .. n.high, "40-40", "another source still needs 40: only it counts")
+n = Need(later, "t", 7, 75, { { name = "PJ", segments = { 1, 50, 10, 10, 0, 75, 100, 0, 0, 0 } } })
+eq(n.low .. "-" .. n.high, "40-40", "an extra source with only uncounted steps ahead does not lower the range to 0")
+
+-- Codex re-review: a finished guide's 0 is only a lower bound. With no other source counting steps
+-- ahead, it must not become the whole count.
+n = Need({ guides = routes.guides, materials = { t = { [10] = { 1, 1, 50, 10, 10, 0 } } } }, "t", 10, 75,
+    { { name = "PJ", segments = { 75, 100, 0, 0, 0 } } })
+eq(n ~= nil, true, "PJ uncounted step ahead: still marked")
+eq(n.low, nil, "a finished guide alone does not make the count 0")
+eq(n.high, nil, "no count")
+
+-- Review #21: the intermediate shares come from the source that gives the top, rounded down, so they
+-- never add up to more than it.
+local frac = { guides = routes.guides, materials = { t = { [8] = { 1, 1, 3, 3, 3, BOLT, 1, 1, 3, 3, 3, BELT } } } }
+n = Need(frac, "t", 8, 2)
+eq(n.high, 3, "half of 3 + 3 ahead")
+eq((n.via[BOLT] or 0) + (n.via[BELT] or 0) <= n.high, true, "rounded-down shares fit the count")
+local mixedTop = { guides = routes.guides, materials = { t = { [9] = { 1, 1, 50, 40, 40, BOLT, 1, 1, 50, 20, 20, BELT,
+    2, 1, 50, 62, 62, BOLT } } } }
+n = Need(mixedTop, "t", 9, nil)
+eq(n.high, 62, "top source needs 62")
+eq(n.via[BOLT], 62, "its share")
+eq(n.via[BELT], nil, "a share only another source has is not added on top")
+
+-- The shipped Forever data (review #21 repro): Engineering 106, Copper Bar.
+local fns = {}
+H.load("Data/Routes_Forever.lua", fns)
+n = Need(fns.Data.Routes_Forever, "engineering", 2840, 106)
+local sum = 0
+for _, v in pairs(n.via) do sum = sum + v end
+eq(n.low .. "-" .. n.high, "59-62", "Copper Bar at 106")
+eq(sum <= n.high, true, "Copper Bar shares add up to at most 62 (were 59 + 13 + 2)")
+
 -- Professions using an item.
 eq(table.concat(ns.Leveling.Professions(routes, RUNE), ","), "tailoring", "professions using Runecloth")
 

@@ -11,7 +11,7 @@ Measured 2026-11-15, with EllesmereUI 9.8.6 (Bags module), Auctionator 347 and D
 - **Tooltips:** `TooltipDataProcessor.AddTooltipPostCall` and `Enum.TooltipDataType.Item` exist; `GameTooltip` has no `OnTooltipSetItem` script. Use the post-call path (design D5).
 - **Items:** the old globals `GetItemInfo`, `GetItemInfoInstant` and `GetItemCount` are **missing**; use `C_Item.*`.
 - **Containers:** only `C_Container.*` (47 functions). `ContainerFrame_Update`, `ContainerFrame_UpdateItems` and `BankFrameItemButton_Update` are missing; `ContainerFrameCombinedBags` and `BankFrame` exist. The Blizzard bag integration has to hook the item button mixins or the combined bag frame, not the old update functions.
-- **Skills:** `GetNumSkillLines` and `GetSkillLineInfo` are missing; `C_SkillInfo` has `GetNumSkillLines`, `GetSkillLineInfo` and `GetSkillLineInfoByID`. `C_TradeSkillUI` exists (147 functions).
+- **Skills:** `GetNumSkillLines` and `GetSkillLineInfo` are missing; `C_SkillInfo` has `GetNumSkillLines`, `GetSkillLineInfo`, `GetSkillLineInfoByID`, `ExpandSkillHeader` and `CollapseSkillHeader`. Its rows are `SkillLineAttributes` tables with `name`, `isHeader`, `isCollapsed` (no `isExpanded`) and `rank` (wow-api, build 1.60.1.71037, 2026-11-21). `C_TradeSkillUI` exists (147 functions).
 - **Frames:** `GetMouseFocus` is missing and `GetMouseFoci` exists. `Settings.RegisterCanvasLayoutCategory` exists and `InterfaceOptions_AddCategory` is missing, so AceConfigDialog's Settings path is the one used.
 - **Addons:** only `C_AddOns.*`; the old globals (`GetNumAddOns`, `IsAddOnLoaded`) are missing.
 - **Loot strings** (no full stop at the end):
@@ -168,6 +168,8 @@ Forever's probe showed `BankFrame` but not which of these exists, so check the b
 ## Classic Era
 
 Not yet probed.
+
+- **Skills (from Armory-Classic's source, 2026-11-21):** `GetNumSkillLines` and `GetSkillLineInfo(i)` list only the rows under expanded headers; `GetSkillLineInfo` returns `name, isHeader, isExpanded, rank`. A collapsed "Professions" or "Secondary Skills" header hides those ranks. `ExpandSkillHeader(i)` and `CollapseSkillHeader(i)` change the list at once. KeepThat expands the collapsed headers from the bottom up, reads the ranks, and collapses the same headers from the top down, as Armory-Classic's `SetExpandableListValues` does. Headers are collapsed again by name, so one failed collapse cannot shift the others. This fires `SKILL_LINES_CHANGED`, so on that event KeepThat reads only the visible rows (no expanding) and refreshes only when a visible rank changed; a rank-up under a collapsed header is picked up from `CHAT_MSG_SKILL`, which triggers a full read and refreshes only when a profession rank changed. Unverified in game: test plan check 13.1.
 
 ## Baganator, Bagnon
 

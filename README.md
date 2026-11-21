@@ -97,6 +97,8 @@ When DFL Profession Journal is installed, its leveling route counts as one more 
 
 - The Auctionator list buys only what your realm-and-faction total does not cover: what you own across your characters' bags, bank and mailbox is subtracted from the quantity.
 - Profession Journal's live plan (which changes with your bags and prices) is not used; KeepThat uses its fixed route for your faction, so the counts stay steady.
+- Turning Profession Journal off on the Integrations page removes the materials only its route uses from Materials, `/kt find`, the leveling counts and the Auctionator lists at once; turning it on brings them back. No reload needed. Stock keeps counting them either way.
+- Where Profession Journal gives no count for the steps still ahead, KeepThat shows no count rather than claiming you have enough.
 
 ### Stock across characters
 

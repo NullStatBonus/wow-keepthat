@@ -39,10 +39,15 @@ local function store()
 end
 
 -- Every endgame and leveling catalog item plus every route material (Profession Journal's too while it
--- works), whatever the settings mark. Rebuilt when the context changes.
+-- can be read, even turned off), whatever the settings mark. Rebuilt when the context changes, and when
+-- Profession Journal loads late or fails (PJ.StockReadable).
+local trackedPJ
 function R.Tracked()
     local ctx = ns.Context and ns.Context.Get() or {}
-    if tracked and ctx == trackedCtx then return tracked end
+    local PJr = ns.ProfessionJournal
+    local pj = PJr and type(PJr.StockReadable) == "function" and PJr.StockReadable() or false
+    if tracked and ctx == trackedCtx and pj == trackedPJ then return tracked end
+    trackedPJ = pj
     local t = {}
     local catalog, routes = ctx.catalog or {}, ctx.routes or {}
     for _, key in ipairs({ "endgame", "leveling" }) do
@@ -52,9 +57,11 @@ function R.Tracked()
         for id in pairs(items) do t[id] = true end
     end
     local PJ = ns.ProfessionJournal
-    if ctx.extra and PJ and type(PJ.Items) == "function" and type(PJ.PROFESSIONS) == "table" then
+    -- Whether or not the integration started or is turned on: stock records materials whatever the
+    -- settings mark (PJ.Items reads nothing when Profession Journal is missing).
+    if PJ and type(PJ.Items) == "function" and type(PJ.PROFESSIONS) == "table" then
         for _, profession in ipairs(PJ.PROFESSIONS) do
-            local ok, ids = pcall(PJ.Items, profession)
+            local ok, ids = pcall(PJ.Items, profession, true)
             for _, id in ipairs(ok and type(ids) == "table" and ids or {}) do t[id] = true end
         end
     end

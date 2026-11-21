@@ -1,45 +1,9 @@
-# KeepThat
+@AGENTS.md
 
-## Delegation
-- Use subagents for self-contained work that would clutter the main context: broad codebase searches, independent research threads, parallel edits across unrelated files, and reviews.
-- Pick the subagent model by difficulty: haiku for search and lookup, sonnet for routine implementation, opus (or inherit) for design, debugging, and anything requiring judgment.
-- When delegating UI work, tell the subagent to check the Blizzard UI source and popular addons for the standard control first (see Conventions).
-- Do small or tightly coupled work inline. Don't delegate just to delegate.
+## Claude Code
 
-## Releases
+Do small or tightly coupled work inline. Delegate a bounded search, research question, independent edit, or review when it saves substantial context or time.
 
-Bump the addon's semantic version every time a change's specs are applied to `openspec/specs/` (at `/opsx:sync` or `/opsx:archive`).
+Use Haiku for lookups and Sonnet for routine implementation. Reserve Opus or the inherited model for difficult design or debugging questions that remain unresolved.
 
-- Set `## Version:` in **both** `KeepThat/KeepThat_Vanilla.toc` and `KeepThat/KeepThat_Camelot.toc` to the same value. Do not hard-code the version anywhere else.
-- Below 1.0.0: a change that adds a capability or user-visible feature raises the minor number (0.2.0 -> 0.3.0); a change that only modifies or fixes existing behavior raises the patch number (0.2.0 -> 0.2.1). From 1.0.0, use the usual major.minor.patch meaning, and a change that breaks saved settings or data is a major bump.
-- Make the bump part of the same commit as the archive, name the new version in the commit message, and add a `## X.Y.Z` section to `CHANGELOG.md` in that commit (`tools/check-version.sh` fails without it). Keep each entry to one short plain-English line about what the player sees; leave out settings pages, the debug report and implementation detail (the README has those).
-- To publish, tag the archive commit `vX.Y.Z` (the version without the `v` must equal the TOC version) and push the tag; see `docs/publishing.md`.
-
-## Git and PRs
-
-- **Archive before git.** Before any commit, push or PR for a change, run `/opsx:archive` first (sync specs, bump the version, write the CHANGELOG section), so the archive and the code ship in the same commit/PR. Commit nothing for a change that is still active in `openspec/changes/`.
-
-## Documentation
-
-Update the supporting docs in the same change as any user-visible addon behavior, setting or command:
-
-- `README.md`: features, settings pages, command list (`tests/test_readme.lua` checks the commands), and "Good to know" limits.
-- `docs/listing.md`: the CurseForge/Wago listing text, including the summary line if the headline behavior changes.
-- `docs/test-plan.md`: manual in-game checks for the new behavior; keep section numbers unique and in order.
-- `docs/data.md`: the data formats and generators, when they change.
-- `docs/contracts.md`: what a client or another addon provides, whenever a probe or source review measures it.
-- The debug report (`/kt log`) lists any new setting.
-- `CHANGELOG.md` is written at archive (see Releases), not before.
-
-## Conventions
-
-- **Game calls live in `Core/Adapter*.lua` only** (`Core/Adapter.lua` plus one `Core/Adapter_<Area>.lua` per feature area, each adding functions to `ns.Adapter`). Every function the game provides is read there, guarded and in `pcall`, returning nil when missing; feature modules never call `C_*`, container, unit, item or tooltip functions directly. Unknown data is nil, never 0 or false. Pick a code path by checking that an API exists, never by the client's name.
-- **Logic is plain Lua.** `Model/` and `Data/` have no game globals, so they run under `luajit tests/run.lua`. UI and integration modules take the adapter as input so tests can pass a fake.
-- **Integrations are optional and contained.** Each one lives in its own file under `Integrations/`, detects its addon, runs inside `pcall`, and on any failure turns itself off for the session and records why in the debug report. A missing or changed addon never raises a Lua error.
-- **Every player-facing sentence is `L["The whole English sentence"]`.** No concatenation, no variable keys. `tests/test_locale.lua` enforces this. See `docs/localization.md`.
-- **New files go in both TOC files in the same order** (`make check` fails otherwise). The `Locales` files load first; `Libs/` is loaded by `embeds.xml`.
-- **Generated data is never edited by hand.** Files in `Data/` come from `tools/`; change the inputs or the generator and regenerate. Credit every data source in `THIRD_PARTY.md`.
-- **Tests:** `make test`. Each module has a `tests/test_<module>.lua`; new behavior needs a test, and a test is only trusted once breaking the code makes it fail.
-- **Chat text** never contains a raw `|`; double it.
-- **Persistent visuals are OLED-safe.** Anything that stays on screen defaults to a pure black background (never grey; the user may pick another color), draws nothing (no fill, border or texture) when its opacity is 0, keeps text and icons dimmable, and avoids bright fixed-position fills, so static elements do not burn in.
-- **Use the game's own UI patterns before inventing one.** For any new control or screen (settings rows, color pickers, buttons, frames), find how the Blizzard UI or popular addons already do it and use that. Build a custom control only when no standard one exists, and then keep the standard control as the fallback where the custom one is unavailable.
+When delegating UI work, ask the subagent to check Blizzard UI source and popular addons for an established control.

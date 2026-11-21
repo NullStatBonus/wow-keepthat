@@ -223,6 +223,43 @@ eq(plainName(linen.args.stock), "10 in bags", "unknown recorder falls back to li
 eq(linen.args.toGet.hidden(), true, "to-get hidden when unknown")
 ns.Adapter.ItemCount = nil
 eq(plainName(linen.args.stock), "Your stock is not known yet.", "no count API")
+-- Review #4: a guide whose only steps left give no count: no count line, never "You have enough."
+do
+    local u = fresh({ skills = { tailoring = 75 } })
+    u.Data.Routes.materials.tailoring[LINEN] = { 1, 1, 50, 40, 40, 0, 1, 75, 100, 0, 0, 0 }
+    u.Context.Invalidate()
+    local l = u.Options.Materials(2).args.tailoring.args["i" .. LINEN]
+    u.StockRecorder = { Total = function() return 60, true, { { name = "Me", self = true, bags = 60, count = 60 } } end }
+    eq(plainName(l.args.many), "No count in the guides for these steps.", "uncounted steps ahead: no count")
+    eq(l.args.toGet.hidden(), true, "no to-get line")
+    eq(plainName(l.args.toGet):find("enough", 1, true), nil, "never You have enough")
+end
+-- Review #12: a material only Profession Journal uses leaves the tree and /kt find when it is turned off,
+-- and comes back when it is turned on, without a reload.
+do
+    local p = fresh()
+    local DYE = 2325
+    p.Data.Catalog.itemNames[DYE] = "Black Dye"
+    local on = true
+    p.ProfessionJournal = { PROFESSIONS = { "leatherworking" }, On = function() return on end,
+        Items = function() return on and { DYE } or {} end }
+    p.Context.extra = function() return nil end
+    p.Context.Invalidate()
+    local function inTree() local lw = p.Options.Tree().args.materials
+        lw = lw and lw.args and lw.args.leatherworking
+        return lw ~= nil and lw.args["i" .. DYE] ~= nil end
+    eq(#p.Options.Find("black dye"), 1, "on: /kt find finds it")
+    local first = p.Options.Tree()
+    eq(p.Options.Tree(), first, "unchanged: the tree is not rebuilt")
+    eq(inTree(), true, "on: in the Materials tree")
+    on = false
+    eq(#p.Options.Find("black dye"), 0, "off: /kt find does not")
+    eq(p.Options.Tree() ~= first, true, "off: the tree is rebuilt")
+    eq(inTree(), false, "off: not in the Materials tree")
+    on = true
+    eq(#p.Options.Find("black dye"), 1, "back on: found again")
+    eq(inTree(), true, "back on: in the tree again")
+end
 local function scan(node, seen)
     if type(node) ~= "table" then return end
     for k, v in pairs(node) do

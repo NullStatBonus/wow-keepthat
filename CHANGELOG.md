@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.4.7
+
+- Fixed: **On Classic Era, leveling counts use your real skill rank.** Before, a collapsed Professions header on the Skills tab made the counts start at skill 1.
+- Fixed: A guide with no count for the steps ahead now shows no count. Before, the tooltip said "You have enough." The Auctionator list also left the item out.
+- Fixed: When you turn off Profession Journal, its materials go away from Materials, `/kt find`, the leveling counts and Auctionator. Before, they stayed until you reloaded.
+- Fixed: The "Includes" shares for intermediates are never more than the count. Before, the shares could add up to more than the count.
+
 ## 0.4.6
 
 - On WoW Forever, stock is recorded again (0.4.5 stopped recording it) and shared across your characters on the same ruleset.

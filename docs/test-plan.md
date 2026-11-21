@@ -250,3 +250,14 @@ Setup, before you start:
    1. Buy 1 Black Dye from a tailoring or leatherworking supply vendor. Only Profession Journal's Leatherworking route uses it, so KeepThat 0.4.5 never counted it.
    2. Put it in the bank and close the bank. Log out, and log in on another character on the same realm and faction.
    3. Type `/kt find black dye` and open Black Dye. **Pass:** "Your stock" shows `1 owned, all on your other characters`, with A listed.
+
+## 13. Leveling numbers
+
+Before the checks, type `/kt debug on`, then `/reload`. After them, copy `KeepThat.lua` from `WTF/Account/<account>/SavedVariables` and say where it is. The reviewer reads each result from its debug log, so there is nothing to look for on screen. The `Log:` line is for the reviewer.
+
+1. **Classic Era, collapsed Skills header.** Use a character with any profession; Cooking or First Aid count. On the Skills tab, collapse the header the profession sits under (**Professions**, or **Secondary Skills** for Cooking and First Aid), then type `/reload`.
+   Check: KeepThat reads the real skill rank while the header is collapsed.
+   Log: `[skills] cooking=54; collapsed headers: Secondary Skills` (your profession and rank).
+2. **WoW Forever with DFL Profession Journal.** On the Integrations page, turn **DFL Profession Journal** off, then on again. Type `/reload`.
+   Check: Profession Journal's materials leave KeepThat's lists when it is off and come back when it is on, with no reload.
+   Log: `[professionjournal] off: 0 materials listed`, then `[professionjournal] on: N materials listed (...)` with N above 0.

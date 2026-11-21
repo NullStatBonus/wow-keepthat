@@ -28,11 +28,15 @@ function ns.Listen(target, event, fn)
     return (pcall(target.RegisterEvent, target, event, fn))
 end
 
--- A profession rank changed: counts and leveling marks depend on it. Newer clients renamed
--- LEARNED_SPELL_IN_TAB to LEARNED_SPELL_IN_SKILL_LINE.
+-- A profession rank changed: counts and leveling marks depend on it. SKILL_LINES_CHANGED checks the
+-- visible ranks and a skill chat message ("Your skill in Tailoring has increased") every rank
+-- (Context.SkillsChanged); a learned spell always refreshes. Newer clients renamed LEARNED_SPELL_IN_TAB to
+-- LEARNED_SPELL_IN_SKILL_LINE.
 function addon:OnEnable()
+    ns.Listen(self, "SKILL_LINES_CHANGED", function() ns.Context.SkillsChanged() end)
+    ns.Listen(self, "CHAT_MSG_SKILL", function() ns.Context.SkillsChanged(true) end)
     local invalidate = function() ns.Context.Invalidate() end
-    for _, event in ipairs({ "SKILL_LINES_CHANGED", "LEARNED_SPELL_IN_TAB", "LEARNED_SPELL_IN_SKILL_LINE" }) do
+    for _, event in ipairs({ "LEARNED_SPELL_IN_TAB", "LEARNED_SPELL_IN_SKILL_LINE" }) do
         ns.Listen(self, event, invalidate)
     end
 end

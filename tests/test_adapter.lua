@@ -37,9 +37,109 @@ eq(names.blacksmithing, "Schmiedekunst", "trade skill display name")
 eq(names.tailoring, "Schneiderei", "profession spell name")
 eq(names.alchemy, nil, "unknown left out")
 
+-- Review #5: Classic Era lists only rows under expanded headers. Collapsed headers are expanded to read
+-- the ranks, then collapsed again; the same headers end collapsed.
+local function skillTab(rows)
+    local t = {}
+    local function visible()
+        local v, hide = {}, false
+        for _, r in ipairs(rows) do
+            if r.header then hide = r.collapsed; v[#v + 1] = r elseif not hide then v[#v + 1] = r end
+        end
+        return v
+    end
+    t.GetNumSkillLines = function() return #visible() end
+    t.GetSkillLineInfo = function(i) local r = visible()[i]; if not r then return nil end
+        return r.name, r.header or false, r.header and not r.collapsed or false, r.rank end
+    t.ExpandSkillHeader = function(i) local r = visible()[i]; assert(r and r.header, "expand a header"); r.collapsed = false end
+    t.CollapseSkillHeader = function(i) local r = visible()[i]; assert(r and r.header, "collapse a header"); r.collapsed = true end
+    return t
+end
+local rows = { { name = "Class Skills", header = true }, { name = "Defense", rank = 50 },
+    { name = "Professions", header = true, collapsed = true }, { name = "Tailoring", rank = 150 },
+    { name = "Secondary Skills", header = true, collapsed = true }, { name = "Cooking", rank = 75 },
+    { name = "Weapon Skills", header = true, collapsed = true }, { name = "Swords", rank = 300 } }
+A.env = skillTab(rows)
+skills = A.ProfessionSkills()
+eq(skills.tailoring, 150, "Tailoring under a collapsed header is read")
+eq(skills.cooking, 75, "Cooking under another collapsed header too")
+eq(tostring(rows[1].collapsed or false) .. tostring(rows[3].collapsed) .. tostring(rows[5].collapsed) .. tostring(rows[7].collapsed),
+    "falsetruetruetrue", "exactly the same headers are collapsed afterwards")
+rows[3].collapsed = false
+A.ProfessionSkills()
+eq(tostring(rows[3].collapsed) .. tostring(rows[5].collapsed), "falsetrue", "an expanded header stays expanded")
+local noExpand = skillTab(rows)
+noExpand.ExpandSkillHeader = nil
+rows[3].collapsed = true
+A.env = noExpand
+eq(A.ProfessionSkills().tailoring, nil, "without ExpandSkillHeader: only the visible rows, as before")
+local failing = skillTab(rows)
+failing.ExpandSkillHeader = function() error("blocked") end
+A.env = failing
+eq(next((A.ProfessionSkills())), nil, "an expand error: nothing read, no error")
+eq(rows[3].collapsed, true, "and nothing changed")
+-- Codex re-review: one failed collapse leaves only that header open (headers are found by name).
+local flaky = skillTab(rows)
+local realCollapse, failedOnce = flaky.CollapseSkillHeader, false
+flaky.CollapseSkillHeader = function(i)
+    if not failedOnce then failedOnce = true; error("blocked") end
+    return realCollapse(i)
+end
+rows[3].collapsed, rows[5].collapsed, rows[7].collapsed = true, true, true
+A.env = flaky
+eq(A.ProfessionSkills().tailoring, 150, "read with a failing collapse")
+eq(tostring(rows[3].collapsed) .. tostring(rows[5].collapsed) .. tostring(rows[7].collapsed), "falsetruetrue",
+    "only the header whose collapse failed stays open")
+-- visibleOnly: never expands, and says rows were hidden.
+rows[3].collapsed = true
+local expanded = 0
+local watch = skillTab(rows)
+local realExpand = watch.ExpandSkillHeader
+watch.ExpandSkillHeader = function(i) expanded = expanded + 1; return realExpand(i) end
+A.env = watch
+local vis, hid = A.ProfessionSkills(true)
+eq(vis.tailoring, nil, "visibleOnly: a collapsed profession is not read")
+eq(hid.Professions, true, "and the read names the collapsed header that hid rows")
+eq(expanded, 0, "and nothing was expanded")
+-- Codex re-review: a failed count during the restore still collapses the headers again.
+local shaky = skillTab(rows)
+local realNum, calls = shaky.GetNumSkillLines, 0
+shaky.GetNumSkillLines = function()
+    calls = calls + 1
+    if calls == 3 then error("busy") end   -- 1: first count, 2: after expanding, 3: first restore scan
+    return realNum()
+end
+rows[3].collapsed, rows[5].collapsed, rows[7].collapsed = true, true, true
+A.env = shaky
+eq(A.ProfessionSkills().tailoring, 150, "read with a failing count")
+eq(tostring(rows[3].collapsed) .. tostring(rows[5].collapsed) .. tostring(rows[7].collapsed), "truetruetrue",
+    "every header collapsed again")
+local _, _, where = A.ProfessionSkills()
+eq(where.tailoring, "Professions", "the header each profession sits under")
+
+-- wow-api review: Forever's C_SkillInfo rows are tables with isCollapsed (no isExpanded), and expand and
+-- collapse live in C_SkillInfo. Reached when no profession is found by skill line ID.
+local era = skillTab(rows)
+local function asTable(i)
+    local name, header, isExpanded, rank = era.GetSkillLineInfo(i)
+    if not name then return nil end
+    return { name = name, isHeader = header, isCollapsed = header and not isExpanded or false, rank = rank }
+end
+rows[1].collapsed, rows[3].collapsed, rows[5].collapsed, rows[7].collapsed = false, true, true, true
+A.env = { C_SkillInfo = { GetNumSkillLines = era.GetNumSkillLines, GetSkillLineInfo = asTable,
+    ExpandSkillHeader = era.ExpandSkillHeader, CollapseSkillHeader = era.CollapseSkillHeader } }
+skills, hid = A.ProfessionSkills()
+eq(skills.tailoring, 150, "Forever: a profession under a collapsed header is read")
+eq(next(hid), nil, "Forever: every collapsed header was expanded, none left hidden")
+eq(tostring(rows[1].collapsed) .. tostring(rows[3].collapsed) .. tostring(rows[5].collapsed) .. tostring(rows[7].collapsed),
+    "falsetruetruetrue", "Forever: the same headers are collapsed afterwards")
+local _, hidVis = A.ProfessionSkills(true)
+eq(tostring(hidVis["Class Skills"]) .. tostring(hidVis.Professions), "niltrue",
+    "Forever visibleOnly: only collapsed headers are named")
+
 -- Nothing available: empty, no error.
 A.env = {}
-eq(next(A.ProfessionSkills()), nil, "no API: no skills")
+eq(next((A.ProfessionSkills())), nil, "no API: no skills")
 
 -- Footer "Clear search" button in an AceGUI window: shown while wanted, cleaned up on AceGUI's
 -- OnRelease callback (fired by AceGUI:Release, the path Close and Escape take), on a window change,

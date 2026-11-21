@@ -142,6 +142,19 @@ AH.Export("tailoring", "leveling")
 eq(find(lists["KeepThat: Tailoring Leveling"], names[BOLT]).quantity, 1, "a failing recorder falls back to bags")
 ns.StockRecorder = nil
 
+-- Review #4: a material whose only steps left have no count is exported without a quantity.
+do
+    local saved = ns.Data.Routes.materials.tailoring[BOLT]
+    ns.Data.Routes.materials.tailoring[BOLT] = { 1, 1, 50, 40, 40, 0, 1, SKILL, 300, 0, 0, 0 }
+    ns.Context.Invalidate()
+    carry = 0
+    AH.Export("tailoring", "leveling")
+    local row = find(lists["KeepThat: Tailoring Leveling"], names[BOLT])
+    eq(row ~= nil, true, "uncounted steps ahead: still exported")
+    eq(row and row.quantity, nil, "without a quantity")
+    ns.Data.Routes.materials.tailoring[BOLT] = saved
+    ns.Context.Invalidate()
+end
 -- A disabled leveling material is left out.
 carry = 0
 ns.defaults.profile.disabled.leveling[BOLT] = true
