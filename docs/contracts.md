@@ -169,6 +169,8 @@ Forever's probe showed `BankFrame` but not which of these exists, so check the b
 
 Not yet probed.
 
+- **Skills (from Armory-Classic's source, 2026-11-21):** `GetNumSkillLines` and `GetSkillLineInfo(i)` list only the rows under expanded headers; `GetSkillLineInfo` returns `name, isHeader, isExpanded, rank`. A collapsed "Professions" or "Secondary Skills" header hides those ranks. `ExpandSkillHeader(i)` and `CollapseSkillHeader(i)` change the list at once. KeepThat expands the collapsed headers from the bottom up, reads the ranks, and collapses the same headers from the top down, as Armory-Classic's `SetExpandableListValues` does. Headers are collapsed again by name, so one failed collapse cannot shift the others. This fires `SKILL_LINES_CHANGED`, so on that event KeepThat reads only the visible rows (no expanding) and refreshes only when a visible rank changed; a rank-up under a collapsed header is picked up from `CHAT_MSG_SKILL`, which triggers a full read and refreshes only when a profession rank changed. Unverified in game: test plan check 13.1.
+
 ## Baganator, Bagnon
 
 Not yet probed. Only one bag addon can be enabled at a time.

@@ -1019,17 +1019,20 @@ function Options.Open(pageName)
     pcall(Options.UpdateFooter)
 end
 
-ns.Start(function(addon)
-    -- Built once, and again when an extra source starts or stops (its materials join the tree).
-    local built, builtWith
-    local function options()
-        local with = ns.Context.extra
-        if not built or with ~= builtWith then
-            built, builtWith = Options.Build(), with
-        end
-        return built
+-- The options table: built once, and again when an extra source starts or is turned on or off on the
+-- Integrations page (its materials join or leave the tree, without a reload).
+local built, builtWith
+function Options.Tree()
+    local PJ = ns.ProfessionJournal
+    local with = ns.Context.extra and PJ and PJ.On and PJ.On() and ns.Context.extra or false
+    if not built or with ~= builtWith then
+        built, builtWith = Options.Build(), with
     end
-    LibStub("AceConfigRegistry-3.0"):RegisterOptionsTable(APP, options)
+    return built
+end
+
+ns.Start(function(addon)
+    LibStub("AceConfigRegistry-3.0"):RegisterOptionsTable(APP, Options.Tree)
     LibStub("AceConfigRegistry-3.0"):RegisterOptionsTable(Options.LAUNCHER, Options.MaterialsLauncher())
     local dialog = LibStub("AceConfigDialog-3.0")
     dialog:SetDefaultSize(APP, 600, 460)

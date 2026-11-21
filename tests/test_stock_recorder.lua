@@ -538,16 +538,34 @@ local PJONLY = 4242
 newWorld()
 W.c[-1] = { [PJONLY] = 3 }
 local getCtx = ns.Context.Get
-ns.ProfessionJournal = { PROFESSIONS = { "tailoring" }, Items = function() return { PJONLY } end }
+-- Stock asks for its materials whatever the toggle says (Codex re-review: a bank read while it is off
+-- must keep them, or totals are wrong once it is back on).
+ns.ProfessionJournal = { PROFESSIONS = { "tailoring" }, Items = function(_, anyToggle) return anyToggle and { PJONLY } or {} end }
 newSession(freshDB())
 login()
 fire("BANKFRAME_OPENED"); frame()
-eq(meRec().bank.c[-1].items[PJONLY], nil, "integration not working: not recorded")
+eq(meRec().bank.c[-1].items[PJONLY], 3, "recorded even when the integration has not started this session (turned off at login)")
 fire("BANKFRAME_CLOSED")
 ns.Context.Get = function() local c = getCtx(); c.extra = function() end; return c end
 fire("BANKFRAME_OPENED"); frame()
 eq(meRec().bank.c[-1].items[PJONLY], 3, "Profession Journal material recorded")
 ns.Context.Get = getCtx
+-- Codex fourth review: the tracked list follows PJ.StockReadable with no context change (a late load,
+-- or a failure).
+do
+    local fixed = getCtx()
+    ns.Context.Get = function() return fixed end   -- the same context throughout: no invalidation
+    local readable = false
+    ns.ProfessionJournal.StockReadable = function() return readable end
+    local items = { }
+    ns.ProfessionJournal.Items = function() return items end
+    eq(ns.StockRecorder.Tracked()[PJONLY], nil, "not readable yet: not tracked")
+    readable, items = true, { PJONLY }
+    eq(ns.StockRecorder.Tracked()[PJONLY], true, "loads late: tracked at once")
+    readable, items = false, {}
+    eq(ns.StockRecorder.Tracked()[PJONLY], nil, "fails: dropped at once")
+    ns.Context.Get = getCtx
+end
 ns.ProfessionJournal = nil
 
 -- The player's real WoW Forever save written by 0.4.4 (names replaced): three characters filed under their

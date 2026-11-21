@@ -150,6 +150,80 @@ ns.Context.Invalidate()
 eq(levelingNeed(BOLT).high, builtIn.high, "missing after start: built-in count")
 eq(levelingNeed(MADE_UP), nil, "missing after start: its own material is gone")
 
+-- Review #12: turned off on the Integrations page, its materials leave every list at once; back on, they
+-- return. No restart: the integration stays started.
+ns.Adapter.env = fakePJ(40)
+PJ.ClearFailures()
+ns.Context.Invalidate()
+local active = true
+ns.Integrations = { Active = function(key) return key == "professionjournal" and active end }
+local function has(list, id) for _, v in ipairs(list) do if v == id then return true end end return false end
+eq(has(PJ.Items("tailoring"), MADE_UP), true, "on: its materials are listed")
+eq(PJ.On(), true, "on")
+active = false
+eq(#PJ.Items("tailoring"), 0, "off: no materials")
+eq(has(PJ.Items("tailoring", true), MADE_UP), true, "off, for stock: still listed")
+eq(PJ.On(), false, "off")
+eq(PJ.Extra("tailoring", BOLT), nil, "off: no counts")
+active = true
+eq(has(PJ.Items("tailoring"), MADE_UP), true, "back on: listed again")
+ns.Integrations = nil
+
+-- Codex third review: stock reads it while turned off, even when it loaded after a first read; not on a
+-- client the integration does not run on, nor after it failed.
+do
+    ns.Adapter.env = {}
+    PJ.ClearFailures()
+    local why = "off"
+    ns.Integrations = { Active = function() return false end, Status = function() return { reason = why } end }
+    eq(#PJ.Items("tailoring", true), 0, "missing: nothing")
+    ns.Adapter.env = fakePJ(40)   -- loads later
+    ns.Context.Invalidate()
+    eq(has(PJ.Items("tailoring", true), MADE_UP), true, "loaded later, turned off: stock still gets its materials")
+    why = "not on Classic Era"
+    eq(#PJ.Items("tailoring", true), 0, "not on this client: nothing")
+    why = "failed: boom"
+    eq(#PJ.Items("tailoring", true), 0, "failed this session: nothing")
+    ns.Integrations = nil
+end
+
+-- A fresh session that never starts the integration (turned off at login): the cache still resets on
+-- context changes, so a Profession Journal that loads after the first read is seen.
+do
+    local fresh = {}
+    H.locale(fresh)
+    H.load("Core/Adapter.lua", fresh)
+    H.load("Core/Context.lua", fresh)
+    H.load("Debug/Log.lua", fresh)
+    H.load("Integrations/ProfessionJournal.lua", fresh)
+    local P2 = fresh.ProfessionJournal
+    fresh.Adapter.env = {}
+    eq(#P2.Items("tailoring", true), 0, "never started, missing: nothing")
+    fresh.Adapter.env = fakePJ(40)
+    eq(has(P2.Items("tailoring", true), MADE_UP), true, "never started, loaded later: read with no context change (absence is not cached)")
+    eq(P2.StockReadable(), true, "and stock can read it")
+end
+
+-- While debugging, each turn on or off is recorded with the materials it lists (test plan 13.2).
+do
+    ns.Adapter.env = fakePJ(40)
+    PJ.ClearFailures()
+    local active, recorded = true, {}
+    ns.Integrations = { Active = function() return active end, Status = function() return {} end }
+    local realLog = ns.Log
+    ns.Log = { Enabled = function() return true end, Record = function(a, m) recorded[#recorded + 1] = a .. ": " .. m end,
+        Failure = function() end }
+    ns.Context.Invalidate()
+    eq(recorded[#recorded], "professionjournal: on: 3 materials listed (tailoring=3)", "on recorded with its materials")
+    local n = #recorded
+    ns.Context.Invalidate()
+    eq(#recorded, n, "unchanged: not recorded again")
+    active = false
+    ns.Context.Invalidate()
+    eq(recorded[#recorded], "professionjournal: off: 0 materials listed", "off recorded")
+    ns.Log, ns.Integrations = realLog, nil
+end
+
 -- Link to a recipe in its window.
 env = fakePJ(40)
 ns.Adapter.env = env

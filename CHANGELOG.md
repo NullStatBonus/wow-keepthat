@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.4.7
+
+- Leveling counts no longer say "You have enough" when a guide gives no count, and no longer start at skill 1 on Classic Era when the Skills tab's Professions header is collapsed.
+- Turning off Profession Journal removes its materials from Materials and `/kt find` at once, and the "Includes" shares for intermediates never add up to more than the count.
+
 ## 0.4.6
 
 - On WoW Forever, stock is recorded again (0.4.5 stopped recording it) and shared across your characters on the same ruleset.

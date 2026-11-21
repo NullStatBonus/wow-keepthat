@@ -250,3 +250,17 @@ Setup, before you start:
    1. Buy 1 Black Dye from a tailoring or leatherworking supply vendor. Only Profession Journal's Leatherworking route uses it, so KeepThat 0.4.5 never counted it.
    2. Put it in the bank and close the bank. Log out, and log in on another character on the same realm and faction.
    3. Type `/kt find black dye` and open Black Dye. **Pass:** "Your stock" shows `1 owned, all on your other characters`, with A listed.
+
+## 13. Leveling numbers
+
+Both checks are read from the saved variables (`KeepThat.lua` in `WTF/Account/<account>/SavedVariables`): do the steps, then copy that file over. The game writes it on `/reload` or logout.
+
+1. **Classic Era: collapsed Skills header.** On a character with a crafting profession:
+   1. Type `/kt debug on`.
+   2. On the character window's **Skills** tab, collapse the **Professions** header. Type `/reload`.
+   3. With the header still collapsed, craft one item that raises the skill by 1. Type `/reload`.
+   4. **Pass** (read from `global.log`): `[skills]` lines show your real rank, then that rank + 1, each with `collapsed headers: Professions`. **Fail:** the profession is missing from the lines, or the rank never goes up, or the header is not listed as collapsed.
+2. **WoW Forever with DFL Profession Journal: turning it off.**
+   1. Type `/kt debug on`.
+   2. Turn off **DFL Profession Journal** on the Integrations page, then turn it back on. Type `/reload`.
+   3. **Pass** (read from `global.log`): `[professionjournal] off: 0 materials listed`, then `[professionjournal] on: N materials listed (leatherworking=...)` with N above 0. No reload between them.

@@ -130,6 +130,7 @@ local function segmentsFor(profession)
     if failed[profession] then return nil end
     local c = cache[profession]
     if c == nil then
+        if not PJ.Detect() then return nil end   -- not loaded (yet): cache nothing, it may load later
         local ok, res = pcall(PJ.Read, profession)
         if not ok then fail(profession, res); res = nil end
         c = res or false
@@ -144,6 +145,9 @@ local function on()
     local I = ns.Integrations
     return not I or not I.Active or I.Active("professionjournal")
 end
+
+-- True while the integration is on (the Options tree rebuilds when this changes).
+PJ.On = on
 
 function PJ.Extra(profession, itemID)
     if not on() then return nil end
@@ -164,9 +168,31 @@ function PJ.Professions(itemID)
     return out
 end
 
--- Item IDs Profession Journal's route for profession uses (for the Auctionator export).
-function PJ.Items(profession)
+-- Item IDs Profession Journal's route for profession uses (the Materials tree, /kt find, the Auctionator
+-- export): none while it is turned off. anyToggle: also while turned off (stock records materials
+-- whatever the settings mark, so a bank read while it is off keeps them and totals stay right).
+-- Stock reads Profession Journal while it is turned off, but not on a client the integration does not
+-- run on, nor after it failed this session (Integrations/Gate.lua).
+local function usable()
+    local I = ns.Integrations
+    if not I or not I.Status then return true end
+    local why = I.Status("professionjournal").reason
+    return why == nil or why == "off" or why == "not started"
+end
+
+-- True while stock can read it (loaded, on a client it runs on, not failed); Core/Stock.lua rebuilds its
+-- tracked list when this changes, e.g. when it loads late or fails.
+function PJ.StockReadable()
+    return usable() and PJ.Detect() and true or false
+end
+
+function PJ.Items(profession, anyToggle)
     local out = {}
+    if anyToggle then
+        if not usable() then return out end
+    elseif not on() then
+        return out
+    end
     for itemID in pairs(segmentsFor(profession) or {}) do out[#out + 1] = itemID end
     return out
 end
@@ -209,6 +235,31 @@ end
 function PJ.Available()
     if not PJ.Detect() then return false, L["DFL Profession Journal is not installed."] end
     return true
+end
+
+-- Drop the cached reads on every context change from load, not only once started: stock reads them
+-- while the integration is off, and Profession Journal may load after the first read.
+-- While debugging, record each turn on or off with the materials it lists, so an in-game check reads it
+-- from the saved variables (test plan section 13).
+local lastOn
+function PJ.LogToggle()
+    local Log = ns.Log
+    if not (Log and Log.Enabled and Log.Enabled()) or not PJ.Detect() then return end
+    local now = on() and true or false
+    if now == lastOn then return end
+    lastOn = now
+    local parts, total = {}, 0
+    for _, profession in ipairs(PJ.PROFESSIONS) do
+        local n = #PJ.Items(profession)
+        if n > 0 then parts[#parts + 1] = profession .. "=" .. n; total = total + n end
+    end
+    Log.Record("professionjournal", ("%s: %d materials listed%s"):format(now and "on" or "off", total,
+        #parts > 0 and (" (" .. table.concat(parts, " ") .. ")") or ""))
+end
+
+if ns.Context and ns.Context.OnChange then
+    PJ.listening = true
+    ns.Context.OnChange(function() PJ.Reset(); PJ.LogToggle() end)
 end
 
 if ns.Integrations and ns.Integrations.Register then
