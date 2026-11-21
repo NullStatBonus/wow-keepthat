@@ -19,6 +19,13 @@ Bump the addon's semantic version every time a change's specs are applied to `op
 
 - **Archive before git.** Before any commit, push or PR for a change, run `/opsx:archive` first (sync specs, bump the version, write the CHANGELOG section), so the archive and the code ship in the same commit/PR. Commit nothing for a change that is still active in `openspec/changes/`.
 
+## In-game testing
+
+- Keep in-game checks to the bare minimum: only what unit tests cannot prove. Each check is a few plain steps (setup, action, pass/fail).
+- Validate through the debug report (`/kt log`) and the saved variables wherever possible: the player performs the steps, then copies the log or saved variables over, and you read the result from them. Ask the player to read something off the screen only when neither can show it.
+- When a check needs a fact that neither records, add it to the debug report in the same change.
+- Never commit saved variables or debug output; anonymize anything taken from them into a fixture.
+
 ## Documentation
 
 Update the supporting docs in the same change as any user-visible addon behavior, setting or command:
