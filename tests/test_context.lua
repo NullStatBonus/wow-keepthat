@@ -130,7 +130,7 @@ do
     eq(C3.Get().skills.tailoring, 151, "and the new rank is read")
     eq(rows[1].collapsed, true, "and the header is collapsed again")
 end
--- While debugging, the ranks and collapsed headers are recorded when they change (test plan 13.1).
+-- While debugging, the ranks and collapsed headers are recorded when they change (test plan 9.1).
 do
     local ns4 = { defaults = { profile = {} } }
     local recorded = {}
