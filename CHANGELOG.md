@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.4.8
+
+- Changed: **Nothing changes in game.** This release updates the developer files and the test plan only.
+
 ## 0.4.7
 
 - Fixed: **On Classic Era, leveling counts use your real skill rank.** Before, a collapsed Professions header on the Skills tab made the counts start at skill 1.

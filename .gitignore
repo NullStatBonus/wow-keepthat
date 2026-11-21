@@ -6,8 +6,10 @@
 tools/data/
 tools/.cache/
 
-# Local notes and assistant files
-.claude/
+# Local notes and assistant files; the shared OpenSpec skills and commands are tracked
+.claude/*
+!.claude/skills/
+!.claude/commands/
 
 # Python
 __pycache__/

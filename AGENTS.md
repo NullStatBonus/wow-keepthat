@@ -21,7 +21,7 @@ When player-visible behavior, a setting, or a command changes, update the suppor
 - Give only essential setup before the action, but name everything the check depends on: a profession, an installed addon, and turning on debug logging followed by `/reload`. Avoid old versions, disabled addons, and staged characters or items.
 - Verify the result from debug logs or saved variables wherever possible. Add missing evidence in the same change.
 - Keep raw saved variables and debug output out of Git. Anonymize any fixture derived from them.
-- Each module has a `tests/test_<module>.lua` file.
+- Each module's tests live in `tests/test_<module>.lua`, or in the file of the feature the module serves. The area files are: `test_core` (`Core/Init`, `Core/Addon`, `Core/Defaults`), `test_integrations` (`Integrations/Gate`, `Blizzard`, `Baganator`, `Bagnon`, `EllesmereUI`), `test_merchant` (`Integrations/Merchant`, `Core/Adapter_Merchant`), `test_stock_recorder` (`Core/Stock`), and the feature file for each other `Core/Adapter_<Area>` (`test_tooltip`, `test_toast`, `test_adapter_stock`; `Adapter_Bags` with the bag integrations, `Adapter_Sound` in `test_adapter`). Generated `Data/` files are one module: `test_data` checks the catalogs, and `test_classify`, `test_leveling` and `test_auctionator` run on the shipped routes. A new module gets its own file unless it joins one of these areas.
 - Reserve in-game checks for what unit tests cannot prove. Read the copied `/kt log` report or saved variables yourself. Ask for an on-screen observation only when neither captures the result.
 
 ## Conventions
