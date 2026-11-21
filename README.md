@@ -109,6 +109,7 @@ KeepThat remembers what each of your characters has in bags, bank and mailbox an
 Good to know about stock:
 
 - Only characters on the same realm and faction are counted.
+- WoW Forever, updating from 0.4.4 or earlier: each character's stock is shared with its alts again once that character logs in.
 - A character counts after it logs in once with KeepThat. Its bags count right away; its bank and mailbox count once you open them.
 - Mail on its way to another character is not counted until it arrives.
 - Only the mail the game shows is counted, so a mailbox with more than 50 mails can be short.

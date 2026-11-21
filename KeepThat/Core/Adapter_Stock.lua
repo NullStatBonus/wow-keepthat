@@ -15,17 +15,26 @@ local function str(v)
     return type(v) == "string" and v ~= "" and v or nil
 end
 
--- name, realm, faction (strings) or nil.
+-- name, realm, faction (strings) or nil. On a client with surnames (WoW Forever: RegionalUniqueNamesEnabled,
+-- the same rule as AceDB-3.0 minor 40) the name is "Name Surname" and the surname is a fourth return.
+-- The realm comes from the realm name first: there UnitFullName's second return is the surname.
 function A.PlayerIdentity()
+    local _, regional = try("RegionalUniqueNamesEnabled")
+    local _, first, surname = try("UnitNameUnmodified", "player")
+    if not (regional == true and str(first) and str(surname)) then surname = nil end
     local _, name, realm = try("UnitFullName", "player")
+    if surname then name, realm = first .. " " .. surname, nil end
     if not str(name) then
         _, name = try("UnitName", "player")
     end
+    local _, normalized = try("GetNormalizedRealmName")
+    if str(normalized) then realm = normalized end
     if not str(realm) then
-        _, realm = try("GetNormalizedRealmName")
+        local _, full = try("GetRealmName")
+        realm = str(full) and full:gsub("[%s%-]", "") or nil
     end
     local _, faction = try("UnitFactionGroup", "player")
-    if str(name) and str(realm) and str(faction) then return name, realm, faction end
+    if str(name) and str(realm) and str(faction) then return name, realm, faction, surname end
     return nil
 end
 

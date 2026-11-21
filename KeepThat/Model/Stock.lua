@@ -47,6 +47,30 @@ function Stock.Scope(store, realm, faction)
     return type(f) == "table" and f or {}
 end
 
+-- Moves one character's record to another realm and name, keeping every source and time, only into an
+-- empty slot; emptied buckets are removed. True when moved. Used for records saved under a WoW Forever
+-- surname as the realm (spec character-stock, "Earlier Forever stock records are moved once").
+function Stock.Move(store, fromRealm, faction, fromName, toRealm, toName)
+    if not Stock.Usable(store) then return false end
+    local r = store.realms[fromRealm]
+    local f = type(r) == "table" and r[faction]
+    local c = type(f) == "table" and f[fromName]
+    if type(c) ~= "table" then return false end
+    local tr = store.realms[toRealm]
+    if tr ~= nil and type(tr) ~= "table" then return false end
+    local tf = tr and tr[faction]
+    if tf ~= nil and type(tf) ~= "table" then return false end
+    if tf and tf[toName] ~= nil then return false end
+    f[fromName] = nil
+    if next(f) == nil then r[faction] = nil end
+    if next(r) == nil then store.realms[fromRealm] = nil end
+    tr = store.realms[toRealm] or {}
+    store.realms[toRealm] = tr
+    tr[faction] = tr[faction] or {}
+    tr[faction][toName] = c
+    return true
+end
+
 -- A malformed saved entry (not a table, or no numeric seen) counts as expired, so Prune drops it.
 local function expired(character, now)
     if type(character) ~= "table" or type(character.seen) ~= "number" then return true end

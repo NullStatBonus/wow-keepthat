@@ -30,7 +30,7 @@ end
 newWorld()
 
 local A = {}
-function A.PlayerIdentity() if W.identity then return W.identity[1], W.identity[2], W.identity[3] end end
+function A.PlayerIdentity() if W.identity then return W.identity[1], W.identity[2], W.identity[3], W.identity[4] end end
 function A.Clock() return W.now end
 function A.After(_, fn) W.frames[#W.frames + 1] = fn; return true end
 function A.BagIDs() local o = {}; for i, v in ipairs(W.bagIDs) do o[i] = v end; return o end
@@ -456,5 +456,32 @@ login()
 eq(type(meRec()), "table", "current character recorded despite a malformed save")
 eq(meRec("Ghost"), nil, "malformed character dropped")
 eq(R.Total(RUNE) ~= nil, true, "stock known after a malformed save")
+
+-- WoW Forever before 0.4.5 filed a character under its surname as the realm and its first name. Its next
+-- login moves the record to the realm and full name; an alt with another surname then counts it.
+newWorld()
+W.identity = { "Me", "Smith", "Alliance" }
+W.c[-1] = { [RUNE] = 7 }
+newSession(freshDB())
+login()
+fire("BANKFRAME_OPENED"); frame(); fire("BANKFRAME_CLOSED")
+local old = Stock.Character(addon.db.global.stock, "Smith", "Alliance", "Me", false)
+eq(old and old.bank ~= nil, true, "old-style record with a counted bank")
+W.identity = { "Me Smith", "Realm", "Alliance", "Smith" }
+newSession()
+login()
+eq(Stock.Character(addon.db.global.stock, "Smith", "Alliance", "Me", false), nil, "the surname record is gone")
+eq(meRec("Me Smith"), old, "moved to the realm and full name")
+eq(R.Identity(), "Me Smith", "full name")
+W.identity = { "Bo Jones", "Realm", "Alliance", "Jones" }
+newSession()
+login()
+eq((R.Total(RUNE)), 7, "an alt with another surname counts Me Smith's bank")
+-- Classic Era (no surname): a record under another realm is never moved.
+W.identity = { "Me", "Realm", "Alliance" }
+addon.db.global.stock.realms.Smith = { Alliance = { Me = { seen = W.now } } }
+newSession()
+login()
+eq(addon.db.global.stock.realms.Smith.Alliance.Me.seen, W.now, "Era: nothing moved")
 
 H.done()
