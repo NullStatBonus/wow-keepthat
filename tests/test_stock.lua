@@ -250,4 +250,29 @@ eq(next(bad.realms), nil, "malformed entries pruned")
 local bad2 = S.New(); bad2.realms.R = { A = "bad" }
 eq(next(S.Scope(bad2, "R", "A")), nil, "malformed faction gives an empty scope")
 
+-- Move: a WoW Forever record filed under the surname moves to the realm and full name, once.
+local mv = S.New()
+local rec = char(NOW, src(NOW, { [RC] = 4 }), src(NOW - DAY, { [RC] = 6 }), mail(NOW, {}))
+mv.realms.Smith = { Alliance = { Me = rec } }
+eq(S.Move(mv, "Smith", "Alliance", "Me", "Realm", "Me Smith"), true, "moved")
+eq(mv.realms.Realm.Alliance["Me Smith"], rec, "the same record under the realm and full name")
+eq(mv.realms.Realm.Alliance["Me Smith"].bank.c[0].t, NOW - DAY, "times kept")
+eq(mv.realms.Smith, nil, "emptied surname bucket removed")
+eq(S.Move(mv, "Smith", "Alliance", "Me", "Realm", "Me Smith"), false, "second run: nothing to move")
+local both = S.New()
+local newer = char(NOW, src(NOW, { [RC] = 1 }))
+both.realms.Smith = { Alliance = { Me = rec, Bo = char(NOW) } }
+both.realms.Realm = { Alliance = { ["Me Smith"] = newer } }
+eq(S.Move(both, "Smith", "Alliance", "Me", "Realm", "Me Smith"), false, "target exists: not moved")
+eq(both.realms.Realm.Alliance["Me Smith"], newer, "the record under the realm kept")
+eq(both.realms.Smith.Alliance.Me, rec, "the surname record left")
+both.realms.Smith.Alliance.Me = "bad"
+eq(S.Move(both, "Smith", "Alliance", "Me", "Realm", "Other"), false, "malformed source ignored")
+both.realms.Smith.Alliance.Me = rec
+both.realms.X = 7
+eq(S.Move(both, "Smith", "Alliance", "Me", "X", "Me Smith"), false, "malformed target realm left alone")
+eq(S.Move(both, "Smith", "Alliance", "Me", "Realm2", "Me Smith"), true, "into a new realm")
+eq(both.realms.Smith.Alliance.Bo ~= nil, true, "other surname-bucket entries stay")
+eq(S.Move(nil, "a", "b", "c", "d", "e"), false, "unusable store")
+
 H.done()

@@ -165,7 +165,7 @@ R.events = on
 
 function on.PLAYER_LOGIN()
     if active then return end
-    local name, realm, faction = A().PlayerIdentity()
+    local name, realm, faction, surname = A().PlayerIdentity()
     local now = A().Clock()
     local global = addon and addon.db and addon.db.global
     if not name then logOnce("identity", "no player identity; stock is not recorded this session") return end
@@ -179,6 +179,10 @@ function on.PLAYER_LOGIN()
     active = true
     -- Active only once the current character is set up; a malformed save must not stop recording.
     local ok, err = pcall(function()
+        -- WoW Forever before 0.4.5 filed this character under its surname and first name: move it once.
+        if surname then
+            ns.Stock.Move(s, surname, faction, name:sub(1, #name - #surname - 1), realm, name)
+        end
         ns.Stock.Prune(s, now)
         local character = me(true)
         character.seen = now

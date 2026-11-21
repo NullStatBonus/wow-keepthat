@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.4.5
+
+- On WoW Forever, your characters on a realm share their stock again, and a character with the same first name as another no longer takes its settings.
+
 ## 0.4.4
 
 - On WoW Forever, turning "This character" off and on again brings back your own settings instead of starting fresh.

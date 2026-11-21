@@ -162,6 +162,20 @@ db = load(saved, { forever = true })
 eq(Rename(db, OLD), false, "second run: nothing to do")
 eq(same(saved.profiles, once.profiles), true, "profiles unchanged by later loads")
 
+-- (h) Two Forever characters share a first name on one realm, so they shared the old key. Smith restored
+-- the old-named profile under 0.4.3; Jones logs in to 0.4.4+ first: the profile is Smith's and stays.
+saved = { profileKeys = { [OLD] = OLD }, profiles = { [OLD] = { toastScale = 1.5 } } }
+db = stubs.loadAceDB(saved, ns.defaults, { forever = true })
+Migrate(db, OLD)
+eq(db:GetCurrentProfile(), OLD, "Smith on the old-named profile (0.4.3)")
+db = load(saved, { forever = true, surname = "Jones" })
+eq(db.keys.char, "Me Jones", "Jones")
+eq(db:GetCurrentProfile(), "Default", "Jones stays on the shared settings")
+eq(saved.profiles["Me Jones"], nil, "Smith's profile not handed to Jones")
+db = load(saved, { forever = true })
+eq(db:GetCurrentProfile(), NEW, "Smith: renamed at its own login")
+eq(db.profile.toastScale, 1.5, "Smith keeps its settings")
+
 -- (g) CopyProfile fails: back on the old profile, no half-made new one, failure recorded.
 failures = {}
 local current = OLD

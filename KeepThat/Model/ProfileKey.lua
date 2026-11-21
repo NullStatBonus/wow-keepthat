@@ -40,6 +40,11 @@ function ProfileKey.Rename(db, oldKey)
     -- Equal names (Classic Era, older AceDB) need no guard: the profile then exists under the new name.
     local profiles = sv.profiles
     if type(profiles) ~= "table" or type(profiles[oldKey]) ~= "table" or profiles[new] ~= nil then return false end
+    -- Another character still choosing the old-named profile owns it (two Forever characters sharing a
+    -- first name on one realm shared the old key): leave it.
+    for key, chosen in pairs(type(sv.profileKeys) == "table" and sv.profileKeys or {}) do
+        if chosen == oldKey and key ~= new then return false end
+    end
     local okCur, current = pcall(db.GetCurrentProfile, db)
     if not okCur then return false end
     if current ~= oldKey then

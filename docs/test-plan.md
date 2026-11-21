@@ -213,3 +213,11 @@ Use three characters on the same realm and faction (call them Main, Bankmule and
 4. Turn "This character" on again after step 3: the same settings come back (Scale still 150), not defaults.
 5. Classic Era: a character with "This character" on keeps its profile and values after the update.
 6. Forever, a character that already toggled "This character" off and on under 0.4.3 (so it has both an old-named and a new-named profile): after 0.4.4 it keeps the profile it was using; nothing is overwritten.
+
+## 11. Forever character names
+
+On WoW Forever, with a save used by KeepThat 0.4.4 or earlier: two characters, A and B, on the same realm and faction with different surnames, and A's bank opened once before the update with Runecloth in it.
+
+1. Log in on A: `/kt status stock` names the realm, not A's surname.
+2. Log in on B: hold Shift over Runecloth; the `Stock` block lists A by first name and surname with its bank count.
+3. On A, turn on Advanced > "This character", set Scale to 150, `/reload`: Scale is still 150.

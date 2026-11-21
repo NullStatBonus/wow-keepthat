@@ -25,6 +25,30 @@ A.env = { UnitFullName = function() return "Ann", "Realm" end }
 eq(A.PlayerIdentity(), nil, "no faction: nil")
 A.env = {}
 eq(A.PlayerIdentity(), nil, "no API: nil")
+-- WoW Forever: UnitFullName gives the surname where the realm was; the realm comes from the realm name and
+-- the name is "Name Surname" (AceDB-3.0 minor 40's rule), with the surname as a fourth return.
+local forever = { UnitFullName = function() return "Me", "Smith" end, RegionalUniqueNamesEnabled = function() return true end,
+    UnitNameUnmodified = function() return "Me", "Smith" end, GetNormalizedRealmName = function() return "Realm" end,
+    UnitFactionGroup = function() return "Alliance" end }
+A.env = forever
+local s
+n, r, f, s = A.PlayerIdentity()
+eq(n, "Me Smith", "Forever: full name")
+eq(r, "Realm", "Forever: the realm, not the surname")
+eq(f, "Alliance", "Forever: faction")
+eq(s, "Smith", "Forever: surname returned")
+forever.GetNormalizedRealmName = nil
+forever.GetRealmName = function() return "Real Realm" end
+eq(select(2, A.PlayerIdentity()), "RealRealm", "Forever: realm name without spaces when not normalized")
+forever.GetRealmName = nil
+eq(A.PlayerIdentity(), nil, "Forever: no realm name: nil, never the surname")
+-- Surnames off (Classic Era): UnitNameUnmodified's second return is not a surname; identity as before.
+A.env = { UnitFullName = function() return "Ann", "Realm" end, RegionalUniqueNamesEnabled = function() return false end,
+    UnitNameUnmodified = function() return "Ann", "Other" end, GetNormalizedRealmName = function() return "Realm" end,
+    UnitFactionGroup = function() return "Horde" end }
+n, r, f, s = A.PlayerIdentity()
+eq(n .. r .. f, "AnnRealmHorde", "Era: identity unchanged")
+eq(s, nil, "Era: no surname")
 
 -- Clock and After
 A.env = { time = function() return 1234 end }
