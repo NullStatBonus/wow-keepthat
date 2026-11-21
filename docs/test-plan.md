@@ -224,9 +224,28 @@ On WoW Forever, with a save used by KeepThat 0.4.4 or earlier: two characters, A
 
 ## 12. Stock counts
 
-Classic Era or WoW Forever, KeepThat 0.4.6, with two characters on one realm and faction.
+Setup, before you start:
+- KeepThat 0.4.6 on one character (call it A), standing in a capital city with a bank and a mailbox.
+- A has exactly 20 Linen Cloth: 2 in its bags and a stack of 18 in its bank. Linen Cloth is always counted, whatever your settings.
+- Someone (an alt, or a friend) has mailed A a letter with 5 Linen Cloth attached. Leave it unopened.
+- To see A's stock at any point, type `/kt find linen cloth` and click **Linen Cloth** in the list. The "Your stock" lines show the total, for example `20 owned, all on this character` and `This character: 2 in bags, 18 in the bank`.
 
-1. Open the bank, take a stack of Runecloth into your bags and press Escape at once. The tooltip total is never more than you own, and `/kt status stock` either counts the bank or lists it as not counted. Open and close the bank again without moving anything: `/kt status stock` counts it.
-2. Open the mailbox, take a Runecloth attachment and close it at once. Same check. Then open and close the mailbox without taking anything: it stays counted.
-3. While some bank or mailbox is not counted, open the Materials page of an item no character holds: it says "None counted yet."
-4. WoW Forever with DFL Profession Journal: put a material only its route uses in the bank and open the bank. The tooltip total includes it.
+1. **Bank: take and close at once.**
+   1. Open the bank, then check the stock: `20 owned`, with `2 in bags, 18 in the bank`.
+   2. Right-click the 18 Linen Cloth in the bank and press Escape straight away, so the bank closes the same moment.
+   3. Check the stock again. **Pass:** `20 owned` (or 20 or fewer). **Fail:** `38 owned`, or any total above 20.
+   4. Type `/kt status stock`. Either A has no line, or it shows `A: bank not counted.` Both are fine.
+   5. Open the bank, move nothing, close it. Type `/kt status stock` again. **Pass:** no `bank not counted` line for A. **Fail:** it still says the bank is not counted.
+2. **Mailbox: take and close at once.**
+   1. Open the mailbox and open the letter with the 5 Linen Cloth.
+   2. Click the attachment and press Escape straight away.
+   3. Check the stock. **Pass:** `25 owned` (20 + 5). **Fail:** `30 owned`.
+   4. Open the mailbox, take nothing, close it. Type `/kt status stock`. **Pass:** no `mailbox not counted` line for A.
+3. **"None counted yet."**
+   1. Log in on a character that has not opened its mailbox (or bank) since KeepThat was installed. `/kt status stock` must list at least one `not counted` line; if it doesn't, make a new character.
+   2. Type `/kt find arcanite bar` and open Arcanite Bar (no character should hold one). **Pass:** "Your stock" says `None counted yet.`
+   3. Open that character's bank and mailbox, then look again. **Pass:** `None on any of your characters.`
+4. **WoW Forever with DFL Profession Journal only.**
+   1. Buy 1 Black Dye from a tailoring or leatherworking supply vendor. Only Profession Journal's Leatherworking route uses it, so KeepThat 0.4.5 never counted it.
+   2. Put it in the bank and close the bank. Log out, and log in on another character on the same realm and faction.
+   3. Type `/kt find black dye` and open Black Dye. **Pass:** "Your stock" shows `1 owned, all on your other characters`, with A listed.
