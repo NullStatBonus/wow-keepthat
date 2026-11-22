@@ -41,6 +41,13 @@ Measured 2026-11-15, with EllesmereUI 9.8.6 (Bags module), Auctionator 347 and D
   - `ConvertToSearchString(callerID, term)` takes `{ searchString, isExact, quantity, ... }`, so the quantity still needed goes in `term.quantity`.
   - Use `callerID = "KeepThat"`.
 
+- **Prices.** Probe 2026-11-22, Auctionator 351 on WoW Forever 1.60.1 (build 71037): `Auctionator.API.v1` has 21 functions, among them `GetAuctionPriceByItemID`, `GetAuctionAgeByItemID`, `IsAuctionDataExactByItemID` and their `ByItemLink` forms. Sampled for Runecloth (item 14047): `GetAuctionPriceByItemID` = 507 (copper), `GetAuctionAgeByItemID` = 1 (day), `IsAuctionDataExactByItemID` = true. The semantics below come from a source review of a public fork (`etkr/Auctionator`, last pushed 2025-05), and the samples agree with it:
+  - `GetAuctionPriceByItemID(callerID, itemID)` returns the last scanned price in copper, or nil when none is known or `Auctionator.Database` is not ready. Its README calls this API stable.
+  - `GetAuctionAgeByItemID(callerID, itemID)` returns the days since the item was last seen in the auction house, and nil when it was never seen or more than 21 days ago.
+  - `IsAuctionDataExactByItemID(callerID, itemID)` is true when a stored price exists.
+  - A call with a bad `callerID` or a non-number itemID raises an error, so every call stays in `pcall`.
+  - KeepThat counts a price only when the age is also a number.
+
 ### DFL Profession Journal (3.16.76)
 
 - Folder `DFLProfessionJournal`, plus a load-on-demand data addon for each profession: `DFLProfessionJournal_Data_<Profession>`. On login only Alchemy, Cooking, Engineering, FirstAid, Fishing, Herbalism and Skinning were loaded; the others probably load when that profession is opened.

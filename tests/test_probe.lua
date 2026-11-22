@@ -74,6 +74,21 @@ has(ns.Probe.Path("NS.API.version", pathEnv), "  number: 2", "a value that is no
 
 -- Hover: the frame under the mouse, its parents, fields and bag/slot.
 local parent = { GetName = function() return "EllesmereBagsFrame" end, GetObjectType = function() return "Frame" end }
+-- Auctionator price functions: missing API, present functions with a sample value, and one that errors.
+has(text, "Auctionator.API.v1 missing", "no Auctionator: reported, no error")
+do
+    local calls = {}
+    local priced = ns.Probe.Run({ Auctionator = { API = { v1 = {
+        GetAuctionPriceByItemID = function(caller, id) calls[#calls + 1] = caller .. id; return 12345 end,
+        GetAuctionAgeByItemID = function() error("boom") end,
+    } } } })
+    has(priced, "== Auctionator prices ==", "price section")
+    has(priced, "present  GetAuctionPriceByItemID(14047) = 12345", "price sample read")
+    has(priced, "present  GetAuctionAgeByItemID(14047) = error: ", "an erroring function is reported")
+    has(priced, "missing  IsAuctionDataExactByItemID", "a missing function is reported")
+    eq(calls[1], "KeepThat14047", "the sample uses the KeepThat callerID")
+end
+
 local button = setmetatable({ bagID = 0,
     GetName = function() return nil end, GetObjectType = function() return "ItemButton" end,
     GetParent = function() return parent end, GetBagID = function() return 0 end,

@@ -57,6 +57,11 @@ On WoW Forever only, with Tailoring known and leveling marks on.
    Check: Auctionator's Shopping tab has a list "KeepThat: Tailoring Leveling" that includes that material.
 2. **Profession Journal sources.** With DFL Profession Journal loaded, pick a material from a step of its Tailoring route still ahead of your skill (shown in its own window). Hover that material and hold Shift.
    Check: the details list "DFL Profession Journal" among the sources.
+3. **Leveling cost estimate.** With Auctionator loaded and a recent scan, turn on "Estimate leveling cost" on the Integrations page. Open Materials, then Tailoring.
+   Check: above the "Shopping list" section, a gold amount from Auctionator's last scan shows, or "At least" an amount if some prices are missing.
+   Log: `[auctionator] estimate tailoring: <copper> copper, <n> priced, <n> unknown`, and `/kt probe` shows "present  GetAuctionPriceByItemID(14047) = <a number>" under "Auctionator prices".
+4. **Cost in the tooltip.** With the estimate on, hold Shift over a Tailoring leveling material that you still need.
+   Check: the leveling details show "Estimated cost for" a number and an amount below the count, or say no recent price is known.
 
 ## 6. Settings window
 

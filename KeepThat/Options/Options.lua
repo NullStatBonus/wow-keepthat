@@ -633,6 +633,8 @@ local function professionNode(profession, items, catalog, order)
         name = neutral(ns.Wording.Display(profession)) }
     g.args.context = { type = "description", fontSize = "medium", width = "full", order = 0.12,
         name = neutral(L["Review %s materials. Select an item for uses, counts and stock. Export a shopping list below."]:format(ns.Wording.Display(profession))) }
+    -- A blank line between the introduction and the material count.
+    g.args.countGap = { type = "description", fontSize = "small", width = "full", order = 0.15, name = " " }
     g.args.count = { type = "description", fontSize = "small", width = "full", order = 0.2,
         name = function()
             local total, hits = 0, 0
@@ -652,6 +654,18 @@ local function professionNode(profession, items, catalog, order)
     g.args.clearSearch = { type = "execute", width = 1.5, order = 0.26, name = L["Clear search"],
         hidden = function() return not searching() end, func = clearSearch }
     g.args.gap = { type = "description", fontSize = "small", width = "full", order = 0.4, name = " " }
+    -- The leveling cost estimate (spec auctionator-export), above the Shopping list section, only with its
+    -- setting on and something to price. A blank line after it keeps it apart from the section header.
+    local function estimateLines()
+        local A = ns.AuctionatorExport
+        return A and A.EstimateLines and A.EstimateLines(profession) or nil
+    end
+    local function noEstimate() return count.leveling == 0 or estimateLines() == nil end
+    g.args.exportEstimate = { type = "description", fontSize = "small", width = "full", order = 0.42,
+        hidden = noEstimate,
+        name = function() return neutral(table.concat(estimateLines() or {}, " ")) end }
+    g.args.exportEstimateGap = { type = "description", fontSize = "small", width = "full", order = 0.45,
+        name = " ", hidden = noEstimate }
     -- Auctionator shopping lists for this profession, one per category (spec auctionator-export).
     local function exportState()
         local A = ns.AuctionatorExport
@@ -900,6 +914,32 @@ function Options.Integrations(order)
         if ns.client ~= "era" then
             add(g, "status_" .. key, { type = "description", fontSize = "small", width = "full",
                 name = function() return Options.StatusLine(key) end })
+        end
+        if key == "auctionator" then
+            -- Spec settings, "Estimate leveling cost setting": off by default; one setting for the page and the tooltip.
+            -- It sits in an inline box under the Auctionator row so it reads as part of that integration.
+            local function reason()
+                local A = ns.AuctionatorExport
+                if not (A and A.EstimateReason) then return L["Auctionator is needed."] end
+                return A.EstimateReason()
+            end
+            local box = { type = "group", inline = true, name = L["Auctionator options"], args = {} }
+            add(g, "options_auctionator", box)
+            add(box, "estimateLevelingCost", {
+                type = "toggle", width = "full", name = L["Estimate leveling cost"],
+                disabled = function() return reason() ~= nil end,
+                get = function() return profile().estimateLevelingCost == true end,
+                set = function(_, value) profile().estimateLevelingCost = value and true or false; changed() end,
+            })
+            add(box, "help_estimate", { type = "description", fontSize = "small", width = "full",
+                hidden = function() return reason() ~= nil end,
+                name = function()
+                    return grey(L["The profession page shows the estimated cost of the leveling list."] .. " "
+                        .. L["Hold Shift over a material to see the estimated cost of the amount you still need."])
+                end })
+            add(box, "why_estimate", { type = "description", fontSize = "small", width = "full",
+                hidden = function() return reason() == nil end,
+                name = function() return grey(reason() or "") end })
         end
         if i < #Options.INTEGRATIONS then gap(g, "g" .. i) end
     end

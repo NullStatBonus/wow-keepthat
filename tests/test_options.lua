@@ -334,6 +334,11 @@ eq(plain(bs.args.count.name()), "2 materials", "material count")
 eq(bs.args.exportEndgame.name, "Export endgame list", "endgame export button")
 eq(bs.args.exportLeveling.hidden(), true, "no leveling export without leveling materials")
 eq(mats.args.tailoring.args.exportLeveling.hidden(), false, "leveling export where there are leveling materials")
+do
+    local args = mats.args.tailoring.args
+    eq(args.countGap.order > args.context.order and args.countGap.order < args.count.order, true, "a blank line separates the introduction from the material count")
+    eq(args.countGap.name, " ", "the separator is a blank line")
+end
 
 -- Toggles survive a catalog update that adds a material.
 P.disabled.endgame[THORIUM] = true
@@ -410,6 +415,48 @@ eq(ns.invalidated, before + 1, "integration toggle invalidates")
 local names = {}
 for _, row in ipairs(ns.Options.INTEGRATIONS) do names[#names + 1] = row.name end
 eq(table.concat(names, "|"), "Baganator|Bagnon|EllesmereUI Bags|Auctionator|DFL Profession Journal", "the five integrations")
+
+-- Estimate leveling cost (spec settings): a toggle under the Auctionator row, off by default, disabled with a reason.
+do
+    local box = integ.args.options_auctionator
+    eq(box.type, "group", "the estimate controls sit in a box under the Auctionator row")
+    eq(box.inline, true, "the box is inline, part of the page")
+    eq(box.name, "Auctionator options", "the box is named after the addon")
+    eq(box.order > integ.args.status_auctionator.order and box.order < integ.args.use_professionjournal.order, true, "the box sits between the Auctionator row and the next integration")
+    local est = integ.args.options_auctionator.args.estimateLevelingCost
+    eq(est.name, "Estimate leveling cost", "the estimate toggle is named")
+    eq(est.get(), false, "the estimate is off by default")
+    ns.AuctionatorExport = { EstimateReason = function() return "Auctionator is needed." end }
+    eq(est.disabled(), true, "disabled while the estimate cannot be used")
+    eq(integ.args.options_auctionator.args.why_estimate.hidden(), false, "the reason shows")
+    eq(plain(name(integ.args.options_auctionator.args.why_estimate)), "Auctionator is needed.", "and says why")
+    eq(integ.args.options_auctionator.args.help_estimate.hidden(), true, "no action help while the control is disabled")
+    ns.AuctionatorExport = { EstimateReason = function() return nil end }
+    eq(est.disabled(), false, "enabled while the estimate can be used")
+    eq(integ.args.options_auctionator.args.why_estimate.hidden(), true, "no reason when enabled")
+    eq(integ.args.options_auctionator.args.help_estimate.hidden(), false, "the action help shows when enabled")
+    eq(plain(name(integ.args.options_auctionator.args.help_estimate)), "The profession page shows the estimated cost of the leveling list. Hold Shift over a material to see the estimated cost of the amount you still need.", "the help says both places")
+    ns.AuctionatorExport = nil
+    eq(est.disabled(), true, "no export module: disabled")
+    before = ns.invalidated
+    est.set(nil, true)
+    eq(ns.addon.db.profile.estimateLevelingCost, true, "the toggle writes the profile")
+    eq(ns.invalidated, before + 1, "the toggle refreshes the presentation")
+    est.set(nil, false)
+    eq(ns.addon.db.profile.estimateLevelingCost, false, "and turns off again")
+    -- The estimate line on a profession page: hidden until there is something to show.
+    local page = ns.Options.Materials(2).args.tailoring
+    ns.AuctionatorExport = { Available = function() return true end, EstimateLines = function() return nil end }
+    eq(page.args.exportEstimate.hidden(), true, "no estimate: the line is hidden")
+    eq(page.args.exportEstimateGap.hidden(), true, "no estimate: no blank line either")
+    eq(page.args.exportEstimate.order < page.args.h_shop.order, true, "the estimate is above the Shopping list section")
+    eq(page.args.exportEstimateGap.order > page.args.exportEstimate.order and page.args.exportEstimateGap.order < page.args.h_shop.order, true, "a blank line separates the estimate from the Shopping list header")
+    ns.AuctionatorExport.EstimateLines = function() return { "At least 10g from Auctionator's last scan.", "One material could not be priced." } end
+    eq(page.args.exportEstimate.hidden(), false, "an estimate shows the line")
+    eq(page.args.exportEstimateGap.hidden(), false, "and the blank line above it")
+    eq(plain(name(page.args.exportEstimate)), "At least 10g from Auctionator's last scan. One material could not be priced.", "the sentences read together")
+    ns.AuctionatorExport = nil
+end
 
 -- Integrations on Classic Era.
 local era = fresh({ client = "era" })

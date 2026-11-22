@@ -26,6 +26,7 @@ ns.defaults = {
         disabled = { endgame = {}, leveling = {} },       -- [itemID] = true for materials turned off
         integrations = { baganator = true, bagnon = true, ellesmereui = true, auctionator = true, professionjournal = true },
         stockReminder = true,    -- login reminder when a bank or mailbox is not counted
+        estimateLevelingCost = false, -- Auctionator: leveling cost estimate on profession pages and in the Shift tooltip
         recipeOrder = "learned", -- Shift recipe lines: "learned", "unlearned" or "skill" first (Model/RecipeKnowledge.lua)
         debug = false,
     },
