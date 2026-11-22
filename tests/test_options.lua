@@ -334,6 +334,11 @@ eq(plain(bs.args.count.name()), "2 materials", "material count")
 eq(bs.args.exportEndgame.name, "Export endgame list", "endgame export button")
 eq(bs.args.exportLeveling.hidden(), true, "no leveling export without leveling materials")
 eq(mats.args.tailoring.args.exportLeveling.hidden(), false, "leveling export where there are leveling materials")
+do
+    local args = mats.args.tailoring.args
+    eq(args.countGap.order > args.context.order and args.countGap.order < args.count.order, true, "a blank line separates the introduction from the material count")
+    eq(args.countGap.name, " ", "the separator is a blank line")
+end
 
 -- Toggles survive a catalog update that adds a material.
 P.disabled.endgame[THORIUM] = true

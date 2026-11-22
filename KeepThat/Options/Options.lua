@@ -633,6 +633,8 @@ local function professionNode(profession, items, catalog, order)
         name = neutral(ns.Wording.Display(profession)) }
     g.args.context = { type = "description", fontSize = "medium", width = "full", order = 0.12,
         name = neutral(L["Review %s materials. Select an item for uses, counts and stock. Export a shopping list below."]:format(ns.Wording.Display(profession))) }
+    -- A blank line between the introduction and the material count.
+    g.args.countGap = { type = "description", fontSize = "small", width = "full", order = 0.15, name = " " }
     g.args.count = { type = "description", fontSize = "small", width = "full", order = 0.2,
         name = function()
             local total, hits = 0, 0
