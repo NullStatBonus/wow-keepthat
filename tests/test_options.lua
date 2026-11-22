@@ -413,19 +413,24 @@ eq(table.concat(names, "|"), "Baganator|Bagnon|EllesmereUI Bags|Auctionator|DFL 
 
 -- Estimate leveling cost (spec settings): a toggle under the Auctionator row, off by default, disabled with a reason.
 do
-    local est = integ.args.estimateLevelingCost
+    local box = integ.args.options_auctionator
+    eq(box.type, "group", "the estimate controls sit in a box under the Auctionator row")
+    eq(box.inline, true, "the box is inline, part of the page")
+    eq(box.name, "Auctionator options", "the box is named after the addon")
+    eq(box.order > integ.args.status_auctionator.order and box.order < integ.args.use_professionjournal.order, true, "the box sits between the Auctionator row and the next integration")
+    local est = integ.args.options_auctionator.args.estimateLevelingCost
     eq(est.name, "Estimate leveling cost", "the estimate toggle is named")
     eq(est.get(), false, "the estimate is off by default")
     ns.AuctionatorExport = { EstimateReason = function() return "Auctionator is needed." end }
     eq(est.disabled(), true, "disabled while the estimate cannot be used")
-    eq(integ.args.why_estimate.hidden(), false, "the reason shows")
-    eq(plain(name(integ.args.why_estimate)), "Auctionator is needed.", "and says why")
-    eq(integ.args.help_estimate.hidden(), true, "no action help while the control is disabled")
+    eq(integ.args.options_auctionator.args.why_estimate.hidden(), false, "the reason shows")
+    eq(plain(name(integ.args.options_auctionator.args.why_estimate)), "Auctionator is needed.", "and says why")
+    eq(integ.args.options_auctionator.args.help_estimate.hidden(), true, "no action help while the control is disabled")
     ns.AuctionatorExport = { EstimateReason = function() return nil end }
     eq(est.disabled(), false, "enabled while the estimate can be used")
-    eq(integ.args.why_estimate.hidden(), true, "no reason when enabled")
-    eq(integ.args.help_estimate.hidden(), false, "the action help shows when enabled")
-    eq(plain(name(integ.args.help_estimate)), "Select Estimate leveling cost to see the total on the profession page. Hold Shift over a leveling material to see the cost of the quantity still needed.", "the help says both places")
+    eq(integ.args.options_auctionator.args.why_estimate.hidden(), true, "no reason when enabled")
+    eq(integ.args.options_auctionator.args.help_estimate.hidden(), false, "the action help shows when enabled")
+    eq(plain(name(integ.args.options_auctionator.args.help_estimate)), "The profession page shows the estimated cost of the leveling list. Hold Shift over a material to see the estimated cost of the amount you still need.", "the help says both places")
     ns.AuctionatorExport = nil
     eq(est.disabled(), true, "no export module: disabled")
     before = ns.invalidated

@@ -267,6 +267,20 @@ do
     local c = ns.Auctionator.ItemCost(BOLT, "tailoring")
     eq(c and c.quantity, 28, "item cost: the export quantity")
     eq(c and c.cost, "14g", "item cost: 28 x 50s")
+    -- Stock in the bank, the mail and on other characters lowers the quantity, and so the cost, like the export.
+    carry = 0
+    ns.StockRecorder = { Total = function(id) if id == BOLT then return need.high - 10, true, {} end end }
+    c = ns.Auctionator.ItemCost(BOLT, "tailoring")
+    eq(c and c.quantity, 10, "item cost: the realm-and-faction total is subtracted, not only the bags")
+    eq(c and c.cost, "5g", "item cost: 10 x 50s")
+    local e = ns.Auctionator.Estimate("tailoring")
+    eq(e and e.copper, 50000, "page estimate: only the 10 still needed are priced")
+    ns.StockRecorder.Total = function(id) if id == BOLT then return need.high, true, {} end end
+    eq(ns.Auctionator.ItemCost(BOLT, "tailoring"), nil, "item cost: nothing when other characters hold enough")
+    e = ns.Auctionator.Estimate("tailoring")
+    eq(e and e.copper, 0, "page estimate: nothing to price when other characters hold enough")
+    ns.StockRecorder = nil
+    carry = need.high - 28
     ages[BOLT] = nil
     c = ns.Auctionator.ItemCost(BOLT, "tailoring")
     eq(c and c.quantity, 28, "item cost, stale price: the quantity")

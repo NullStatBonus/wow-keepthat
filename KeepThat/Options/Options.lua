@@ -911,24 +911,27 @@ function Options.Integrations(order)
         end
         if key == "auctionator" then
             -- Spec settings, "Estimate leveling cost setting": off by default; one setting for the page and the tooltip.
+            -- It sits in an inline box under the Auctionator row so it reads as part of that integration.
             local function reason()
                 local A = ns.AuctionatorExport
                 if not (A and A.EstimateReason) then return L["Auctionator is needed."] end
                 return A.EstimateReason()
             end
-            add(g, "estimateLevelingCost", {
+            local box = { type = "group", inline = true, name = L["Auctionator options"], args = {} }
+            add(g, "options_auctionator", box)
+            add(box, "estimateLevelingCost", {
                 type = "toggle", width = "full", name = L["Estimate leveling cost"],
                 disabled = function() return reason() ~= nil end,
                 get = function() return profile().estimateLevelingCost == true end,
                 set = function(_, value) profile().estimateLevelingCost = value and true or false; changed() end,
             })
-            add(g, "help_estimate", { type = "description", fontSize = "small", width = "full",
+            add(box, "help_estimate", { type = "description", fontSize = "small", width = "full",
                 hidden = function() return reason() ~= nil end,
                 name = function()
-                    return grey(L["Select Estimate leveling cost to see the total on the profession page."] .. " "
-                        .. L["Hold Shift over a leveling material to see the cost of the quantity still needed."])
+                    return grey(L["The profession page shows the estimated cost of the leveling list."] .. " "
+                        .. L["Hold Shift over a material to see the estimated cost of the amount you still need."])
                 end })
-            add(g, "why_estimate", { type = "description", fontSize = "small", width = "full",
+            add(box, "why_estimate", { type = "description", fontSize = "small", width = "full",
                 hidden = function() return reason() == nil end,
                 name = function() return grey(reason() or "") end })
         end

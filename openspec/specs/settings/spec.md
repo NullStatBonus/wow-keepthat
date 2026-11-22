@@ -305,7 +305,7 @@ Home SHALL show a "Recipe order" choice under "Tooltip line", with Learned first
 - **THEN** "Recipe order" is shown but disabled, and its value stays the same
 
 ### Requirement: Estimate leveling cost setting
-The Integrations page SHALL give the Auctionator row a toggle, "Estimate leveling cost", off by default. It SHALL turn on both the profession-page estimate and the Shift tooltip cost line, and its help text, shown only while it is enabled, SHALL say so. It SHALL be disabled with a short reason when the estimate cannot work (Classic Era, integration off, Auctionator missing or without prices, or an earlier error). A change SHALL take effect without a reload. The debug report SHALL list its value.
+The Integrations page SHALL give the Auctionator row a toggle, "Estimate leveling cost", in an inline "Auctionator options" box directly below it, off by default. It SHALL turn on both the profession-page estimate and the Shift tooltip cost line, and its help text, shown only while it is enabled, SHALL say so. It SHALL be disabled with a short reason when the estimate cannot work (Classic Era, integration off, Auctionator missing or without prices, or an earlier error). A change SHALL take effect without a reload. The debug report SHALL list its value.
 
 #### Scenario: Default off
 - **WHEN** a player installs the addon or updates from a version without this setting
