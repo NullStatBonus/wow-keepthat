@@ -63,6 +63,25 @@ eq(d[2].text, "    40 needed", "no bag count")
 d = W.Details({ leveling = { { profession = "tailoring", need = { from = 1, to = 50, sources = { "A" } } } } }, ctx)
 eq(#d, 2, "no count: the heading and the guides only")
 
+-- Shortfall cost (ctx.cost): a line at the end of the leveling block; no line when the input gives nothing.
+do
+    local result = { leveling = { { profession = "tailoring", need = { low = 40, high = 40, from = 260, to = 300, sources = { "A" } } } } }
+    local function with(cost)
+        return W.Details(result, { itemID = RUNE, catalog = ctx.catalog, routes = ctx.routes, carried = ctx.carried,
+            cost = function(id, profession) eq(id, RUNE, "cost is asked for the hovered item"); eq(profession, "tailoring", "and the profession"); return cost end })
+    end
+    local lines = with({ quantity = 28, cost = "14g" })
+    eq(lines[2].text, "    40 needed, 12 in bags", "the count comes first")
+    eq(lines[3].text, "    Estimated cost for 28: 14g, from Auctionator's last scan.", "the cost line is directly below the count")
+    eq(lines[3].kind, "body", "cost line is neutral")
+    eq(lines[#lines].text, "    Guides: A", "the guides stay last")
+    lines = with({ quantity = 28 })
+    eq(lines[3].text, "    No recent Auctionator price for this item.", "no price: says so, no amount")
+    eq(#with(nil), 3, "no cost input result: no cost line")
+    eq(#with({ quantity = 0, cost = "0s" }), 3, "nothing still needed: no cost line")
+    eq(#W.Details(result, { itemID = RUNE, catalog = ctx.catalog, routes = ctx.routes, carried = ctx.carried }), 3, "no cost input: no cost line")
+end
+
 -- Endgame block: purpose, recipes, and chains.
 local ARC, CRYSTAL, ORE, BAR = 12360, 12363, 10620, 12359
 local cat = {

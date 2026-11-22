@@ -411,6 +411,39 @@ local names = {}
 for _, row in ipairs(ns.Options.INTEGRATIONS) do names[#names + 1] = row.name end
 eq(table.concat(names, "|"), "Baganator|Bagnon|EllesmereUI Bags|Auctionator|DFL Profession Journal", "the five integrations")
 
+-- Estimate leveling cost (spec settings): a toggle under the Auctionator row, off by default, disabled with a reason.
+do
+    local est = integ.args.estimateLevelingCost
+    eq(est.name, "Estimate leveling cost", "the estimate toggle is named")
+    eq(est.get(), false, "the estimate is off by default")
+    ns.AuctionatorExport = { EstimateReason = function() return "Auctionator is needed." end }
+    eq(est.disabled(), true, "disabled while the estimate cannot be used")
+    eq(integ.args.why_estimate.hidden(), false, "the reason shows")
+    eq(plain(name(integ.args.why_estimate)), "Auctionator is needed.", "and says why")
+    eq(integ.args.help_estimate.hidden(), true, "no action help while the control is disabled")
+    ns.AuctionatorExport = { EstimateReason = function() return nil end }
+    eq(est.disabled(), false, "enabled while the estimate can be used")
+    eq(integ.args.why_estimate.hidden(), true, "no reason when enabled")
+    eq(integ.args.help_estimate.hidden(), false, "the action help shows when enabled")
+    eq(plain(name(integ.args.help_estimate)), "Select Estimate leveling cost to see the total on the profession page. Hold Shift over a leveling material to see the cost of the quantity still needed.", "the help says both places")
+    ns.AuctionatorExport = nil
+    eq(est.disabled(), true, "no export module: disabled")
+    before = ns.invalidated
+    est.set(nil, true)
+    eq(ns.addon.db.profile.estimateLevelingCost, true, "the toggle writes the profile")
+    eq(ns.invalidated, before + 1, "the toggle refreshes the presentation")
+    est.set(nil, false)
+    eq(ns.addon.db.profile.estimateLevelingCost, false, "and turns off again")
+    -- The estimate line on a profession page: hidden until there is something to show.
+    local page = ns.Options.Materials(2).args.tailoring
+    ns.AuctionatorExport = { Available = function() return true end, EstimateLines = function() return nil end }
+    eq(page.args.exportEstimate.hidden(), true, "no estimate: the line is hidden")
+    ns.AuctionatorExport.EstimateLines = function() return { "At least 10g from Auctionator's last scan.", "One material could not be priced." } end
+    eq(page.args.exportEstimate.hidden(), false, "an estimate shows the line")
+    eq(plain(name(page.args.exportEstimate)), "At least 10g from Auctionator's last scan. One material could not be priced.", "the sentences read together")
+    ns.AuctionatorExport = nil
+end
+
 -- Integrations on Classic Era.
 local era = fresh({ client = "era" })
 local ip = era.Options.Integrations(3)

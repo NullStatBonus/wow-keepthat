@@ -159,6 +159,24 @@ local function addonGlobalLines(env, out)
     for _, kv in ipairs(found) do out[#out + 1] = "  " .. kv[1] .. ": " .. shape(kv[2]) end
 end
 
+-- Auctionator's price functions (spec auctionator-export): which exist, and what they return for one
+-- material (Runecloth), so the estimate can be checked against the installed build (docs/contracts.md).
+Probe.PriceSample = 14047
+local function auctionatorPriceLines(env, out)
+    out[#out + 1] = "== Auctionator prices =="
+    local v1 = resolve(env, "Auctionator.API.v1")
+    if type(v1) ~= "table" then out[#out + 1] = "  Auctionator.API.v1 missing"; return end
+    for _, name in ipairs({ "GetAuctionPriceByItemID", "GetAuctionAgeByItemID", "IsAuctionDataExactByItemID" }) do
+        local fn = v1[name]
+        if type(fn) ~= "function" then
+            out[#out + 1] = "  missing  " .. name
+        else
+            local ok, value = pcall(fn, "KeepThat", Probe.PriceSample)
+            out[#out + 1] = ("  present  %s(%d) = %s"):format(name, Probe.PriceSample, ok and tostring(value) or ("error: " .. tostring(value)))
+        end
+    end
+end
+
 -- A frame, texture or font string with almost nothing of its own (the [0] handle and up to two
 -- fields). Such globals are UI pieces, not data, and would flood the pattern scan.
 function Probe.IsBareRegion(v)
@@ -205,6 +223,7 @@ function Probe.Run(env)
     lootLines(env, out)
     addonListLines(env, out)
     addonGlobalLines(env, out)
+    auctionatorPriceLines(env, out)
     return table.concat(out, "\n")
 end
 

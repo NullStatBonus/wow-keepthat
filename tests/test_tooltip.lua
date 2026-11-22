@@ -212,6 +212,23 @@ for _, kind in ipairs({ "postcall", "settitem" }) do
     eq(lines[3].text, "    40-55 needed, 12 in bags", kind .. ": the count and bags")
     s.env.shift = false
 
+    -- The Auctionator shortfall cost joins the leveling block in Shift only; an error in it never disables the tooltip.
+    s.env.shift = true
+    s.ns.Auctionator = { ItemCost = function() return { quantity = 28, cost = "14g" } end }
+    lines = s.show(tip, LINEN)
+    eq(#lines, 5, kind .. ": cost line is added with Shift (" .. lineTexts(lines) .. ")")
+    eq(lines[3].text, "    40-55 needed, 12 in bags", kind .. ": the count first")
+    eq(lines[4].text, "    Estimated cost for 28: 14g, from Auctionator's last scan.", kind .. ": the cost line right under the count")
+    s.env.shift = false
+    eq(#s.show(tip, LINEN), 1, kind .. ": no cost line without Shift")
+    s.env.shift = true
+    s.ns.Auctionator = { ItemCost = function() error("boom") end }
+    lines = s.show(tip, LINEN)
+    eq(lines[3].text, "    40-55 needed, 12 in bags", kind .. ": an error in the cost keeps the details")
+    eq(#lines, 4, kind .. ": and adds no cost line")
+    s.ns.Auctionator = nil
+    s.env.shift = false
+
     -- Stock across characters: the total joins the line, the rows join the Shift details; the recorder may be absent.
     local recorderCalls = 0
     local rows = { { name = "Me", self = true, count = 20 }, { name = "Bankmule", count = 30 }, { name = "Hunter", count = 5 } }

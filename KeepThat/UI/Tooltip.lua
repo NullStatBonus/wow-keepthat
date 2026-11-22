@@ -57,6 +57,14 @@ local function liveRecipes(skills)
     }
 end
 
+-- The Auctionator cost of the leveling shortfall (live tooltips only; a preview carries sample counts).
+local function liveCost(itemID, profession)
+    local A = ns.Auctionator
+    if not (A and A.ItemCost) then return nil end
+    local ok, cost = pcall(A.ItemCost, itemID, profession)
+    return ok and cost or nil
+end
+
 local function details(result, itemID, carried, stock, recipes)
     local A = ns.Adapter
     local ctx = ns.Context.Get() or {}
@@ -74,6 +82,7 @@ local function details(result, itemID, carried, stock, recipes)
         recipeStatus = recipes.status,
         needsHint = recipes.hint,
         recipeOrder = profile() and profile().recipeOrder,
+        cost = not carried and liveCost or nil,
     })
 end
 

@@ -173,7 +173,8 @@ end
 --         carried = function(id) -> number or nil,
 --         stock = { { name, self, count }, ... } (holders, already ordered; nil or empty adds no block),
 --         recipeStatus = function(profession, spellID) -> { learned, difficulty } or nil,
---         needsHint = function(profession) -> true to ask the player to open it, recipeOrder = "learned"|... }
+--         needsHint = function(profession) -> true to ask the player to open it, recipeOrder = "learned"|...,
+--         cost = function(itemID, profession) -> { quantity, cost = amount text or nil } or nil (the leveling shortfall's price) }
 -- After the category blocks, a grey "Stock" heading and up to Wording.MAX_STOCK holder rows.
 function Wording.Details(result, ctx)
     local out = {}
@@ -220,6 +221,12 @@ function Wording.Details(result, ctx)
         local count = Wording.Count(need)
         if count and carried then row(L["    %s needed, %d in bags"]:format(count, carried), "body")
         elseif count then row(L["    %s needed"]:format(count), "body") end
+        -- Directly below the count: the cost of the quantity still to buy (ctx.cost, only while the Auctionator estimate is on).
+        local cost = ctx.cost and ctx.cost(ctx.itemID, e.profession)
+        if cost and cost.quantity and cost.quantity > 0 then
+            if cost.cost then row(L["    Estimated cost for %d: %s, from Auctionator's last scan."]:format(cost.quantity, cost.cost), "body")
+            else row(L["    No recent Auctionator price for this item."], "body") end
+        end
         -- The share that goes into an intermediate the route also needs (Runecloth into Bolt of Runecloth).
         local mats = ctx.routes and ctx.routes.materials and ctx.routes.materials[e.profession] or {}
         local vias = {}

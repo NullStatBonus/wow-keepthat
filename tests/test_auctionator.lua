@@ -179,6 +179,149 @@ eq(find(tl, names[SILK]) and find(tl, names[SILK]).quantity, 5, "a material only
 ns.Adapter.env.DFLProfessionJournalNS = nil
 ns.Context.Invalidate()
 
+-- Cost estimate (specs auctionator-export, material-tooltip): prices come from Auctionator's last scan.
+do
+    local prices, ages = {}, {}
+    local v1 = ns.Adapter.env.Auctionator.API.v1
+    v1.GetAuctionPriceByItemID = function(caller, id) calls[#calls + 1] = caller; return prices[id] end
+    v1.GetAuctionAgeByItemID = function(caller, id) calls[#calls + 1] = caller; return ages[id] end
+    local realMaterials = ns.Auctionator.Materials
+    local rows
+    ns.Auctionator.Materials = function() return rows end
+    local function lines() return ns.AuctionatorExport.EstimateLines("tailoring") end
+
+    -- The setting is off by default: nothing is estimated and no price is read.
+    rows = { { itemID = 1, quantity = 20 } }
+    prices[1], ages[1] = 5000, 1
+    local before = #calls
+    eq(ns.defaults.profile.estimateLevelingCost, false, "the estimate setting is off by default")
+    eq(ns.AuctionatorExport.EstimateAvailable(), false, "setting off: the estimate is unavailable")
+    eq(lines(), nil, "setting off: no estimate lines")
+    eq(ns.Auctionator.ItemCost(1, "tailoring"), nil, "setting off: no item cost")
+    eq(#calls, before, "setting off: no price is read")
+
+    eq(ns.AuctionatorExport.EstimateReason(), nil, "setting off: nothing else is against the estimate")
+    ns.defaults.profile.estimateLevelingCost = true
+    eq(ns.AuctionatorExport.EstimateAvailable(), true, "setting on: the estimate is available")
+
+    -- All prices known: 20 x 50s + 10 x 1g = 20g.
+    rows = { { itemID = 1, quantity = 20 }, { itemID = 2, quantity = 10 } }
+    prices[2], ages[2] = 10000, 3
+    local l = lines()
+    eq(#l, 1, "all known: one sentence")
+    eq(l[1], "Estimated cost: 20g, from Auctionator's last scan.", "all known: the total")
+    for _, c in ipairs(calls) do eq(c, "KeepThat", "price calls use the KeepThat callerID") end
+
+    -- One price unknown: the rest is "at least", never counted as 0.
+    prices[2] = nil
+    l = lines()
+    eq(l[1], "At least 10g from Auctionator's last scan.", "one unknown: at least the known part")
+    eq(l[2], "One material could not be priced.", "one unknown: says so")
+    -- A stale price (no age) is unknown even with a price.
+    prices[2], ages[2], ages[1] = 10000, 3, nil
+    l = lines()
+    eq(l[1], "At least 10g from Auctionator's last scan.", "stale price left out (item 1 is unknown, item 2 is 10 x 1g)")
+    ages[1] = 1
+    -- A material with no quantity is unknown; two unknown use the plural.
+    rows = { { itemID = 1, quantity = 20 }, { itemID = 2 }, { itemID = 3, quantity = 5 } }
+    l = lines()
+    eq(l[2], "2 materials could not be priced.", "two unknown: plural")
+    -- Nothing priced: no amount at all.
+    prices[1], prices[2] = nil, nil
+    l = lines()
+    eq(#l, 1, "none known: one sentence")
+    eq(l[1], "No cost estimate is available for these materials.", "none known: no amount")
+    -- The result is recorded once in the debug log, again only when it changes.
+    ns.addon = { db = { profile = ns.defaults.profile, global = { log = {} } } }
+    ns.defaults.profile.debug = true
+    prices[1], prices[2], rows = 5000, 10000, { { itemID = 1, quantity = 20 }, { itemID = 2, quantity = 10 } }
+    lines(); lines()
+    local logged = ns.addon.db.global.log
+    eq(#logged, 1, "the estimate is logged once for an unchanged result")
+    eq(logged[1], "[auctionator] estimate tailoring: 200000 copper, 2 priced, 0 unknown", "the log line gives the total and the counts")
+    prices[2] = nil
+    lines()
+    eq(#logged, 2, "a changed result is logged again")
+    ns.defaults.profile.debug = false
+    ns.addon = nil
+    prices[1], prices[2] = nil, nil
+    -- Empty list: nothing to show.
+    rows = {}
+    eq(lines(), nil, "empty list: no lines")
+    -- Rounded up to the next silver.
+    prices[1], rows = 150, { { itemID = 1, quantity = 1 } }
+    eq(lines()[1], "Estimated cost: 2s, from Auctionator's last scan.", "150 copper shows 2s")
+    prices[1] = 10150
+    eq(lines()[1], "Estimated cost: 1g 2s, from Auctionator's last scan.", "10150 copper shows 1g 2s")
+    -- A lower bound rounds down: 1s 1c known plus an unknown is "at least 1s", never 2s.
+    prices[1], rows = 101, { { itemID = 1, quantity = 1 }, { itemID = 2, quantity = 1 } }
+    prices[2] = nil
+    eq(lines()[1], "At least 1s from Auctionator's last scan.", "a partial total rounds down")
+    prices[2] = nil
+    ns.Auctionator.Materials = realMaterials
+
+    -- The item cost on the Shift tooltip: the quantity is the export quantity.
+    ns.StockRecorder = nil
+    carry = need.high - 28
+    prices[BOLT], ages[BOLT] = 5000, 2
+    local c = ns.Auctionator.ItemCost(BOLT, "tailoring")
+    eq(c and c.quantity, 28, "item cost: the export quantity")
+    eq(c and c.cost, "14g", "item cost: 28 x 50s")
+    ages[BOLT] = nil
+    c = ns.Auctionator.ItemCost(BOLT, "tailoring")
+    eq(c and c.quantity, 28, "item cost, stale price: the quantity")
+    eq(c and c.cost, nil, "item cost, stale price: no amount")
+    ages[BOLT] = 2
+    carry = need.high
+    eq(ns.Auctionator.ItemCost(BOLT, "tailoring"), nil, "item cost: nothing when the need is covered")
+    carry = 0
+    ns.defaults.profile.disabled.leveling[BOLT] = true
+    eq(ns.Auctionator.ItemCost(BOLT, "tailoring"), nil, "item cost: nothing for a disabled material")
+    ns.defaults.profile.disabled.leveling[BOLT] = nil
+    do
+        local saved = ns.Data.Routes.materials.tailoring[BOLT]
+        ns.Data.Routes.materials.tailoring[BOLT] = { 1, 1, 50, 40, 40, 0, 1, SKILL, 300, 0, 0, 0 }
+        ns.Context.Invalidate()
+        eq(ns.Auctionator.ItemCost(BOLT, "tailoring"), nil, "item cost: nothing when the count is unknown")
+        ns.Data.Routes.materials.tailoring[BOLT] = saved
+        ns.Context.Invalidate()
+    end
+    ns.defaults.profile.estimateLevelingCost = false
+    eq(ns.Auctionator.ItemCost(BOLT, "tailoring"), nil, "item cost: nothing with the setting off")
+    ns.defaults.profile.estimateLevelingCost = true
+
+    -- Unavailable on Classic Era and with the integration off.
+    ns.client = "era"
+    eq(ns.AuctionatorExport.EstimateAvailable(), false, "Classic Era: no estimate")
+    eq(ns.AuctionatorExport.EstimateReason(), "Integrations are not yet available on Classic Era.", "Classic Era: the reason names the client")
+    ns.client = "forever"
+    ns.defaults.profile.integrations.auctionator = false
+    eq(ns.AuctionatorExport.EstimateAvailable(), false, "integration off: no estimate")
+    eq(ns.AuctionatorExport.EstimateReason(), "The Auctionator integration is turned off.", "integration off: the reason")
+    ns.defaults.profile.integrations.auctionator = true
+
+    -- A price function missing: no estimate, and the export still works.
+    local savedAge = v1.GetAuctionAgeByItemID
+    v1.GetAuctionAgeByItemID = nil
+    eq(ns.AuctionatorExport.EstimateAvailable(), false, "no age function: no estimate")
+    eq(ns.AuctionatorExport.EstimateReason(), "This version of Auctionator gives no prices.", "no age function: the reason")
+    eq((AH.Export("tailoring", "leveling")), true, "no age function: the export still works")
+    v1.GetAuctionAgeByItemID = savedAge
+
+    -- A price call that raises stops only the estimate: logged, export unaffected.
+    v1.GetAuctionPriceByItemID = function() error("changed API") end
+    eq(ns.Auctionator.ItemCost(BOLT, "tailoring"), nil, "price error: no item cost")
+    eq(ns.Auctionator.estimateFailed, true, "price error: the estimate stops for the session")
+    eq(ns.Log.failures[#ns.Log.failures].area, "auctionator-estimate", "price error: logged")
+    eq(ns.AuctionatorExport.EstimateAvailable(), false, "price error: estimate unavailable")
+    eq(ns.AuctionatorExport.EstimateReason(), "The cost estimate stopped after an error. See /kt log.", "price error: the reason")
+    eq((AH.Available()), true, "price error: the export stays available")
+    eq((AH.Export("tailoring", "leveling")), true, "price error: the export still works")
+    ns.Auctionator.estimateFailed = nil
+    ns.defaults.profile.estimateLevelingCost = false
+    carry = need.high
+end
+
 -- Turned off in the Integrations settings, or not on Forever: unavailable.
 ns.defaults.profile.integrations.auctionator = false
 eq((AH.Available()), false, "integration off: unavailable")

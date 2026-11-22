@@ -44,7 +44,7 @@ KeepThat adds one short line to an item's tooltip when it is a material worth ke
 
 **Where the lists come from.** Classic Era uses wow-professions.com and Wowhead. WoW Forever uses Metabot and RankedBoost. If you have DFL Profession Journal, its route counts as one more guide.
 
-**Works with your other addons (WoW Forever only in this version).** Baganator, Bagnon and EllesmereUI Bags show the icon tint. Auctionator can get a shopping list of the materials you still need for one profession. DFL Profession Journal adds its counts. If one is missing or changes, KeepThat turns that part off and keeps working. On Classic Era, these are not available yet.
+**Works with your other addons (WoW Forever only in this version).** Baganator, Bagnon and EllesmereUI Bags show the icon tint. Auctionator can get a shopping list of the materials you still need for one profession. You can turn on a cost estimate for the leveling list, from Auctionator's last scan, on the profession page and in the Shift tooltip. DFL Profession Journal adds its counts. If one is missing or changes, KeepThat turns that part off and keeps working. On Classic Era, these are not available yet.
 
 Search the materials pages by item name, or use `/kt find <name>` to jump to a single match or list matching paths.
 

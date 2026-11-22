@@ -674,6 +674,14 @@ local function professionNode(profession, items, catalog, order)
     end
     g.args.exportEndgame = exportButton("endgame", 0.6)
     g.args.exportLeveling = exportButton("leveling", 0.61)
+    -- The leveling cost estimate (spec auctionator-export), only with its setting on and something to price.
+    local function estimateLines()
+        local A = ns.AuctionatorExport
+        return A and A.EstimateLines and A.EstimateLines(profession) or nil
+    end
+    g.args.exportEstimate = { type = "description", fontSize = "small", width = "full", order = 0.62,
+        hidden = function() return count.leveling == 0 or estimateLines() == nil end,
+        name = function() return neutral(table.concat(estimateLines() or {}, " ")) end }
     g.args.exportHelp = { type = "description", fontSize = "small", width = "full", order = 0.7,
         name = function()
             local ok, why = exportState()
@@ -900,6 +908,29 @@ function Options.Integrations(order)
         if ns.client ~= "era" then
             add(g, "status_" .. key, { type = "description", fontSize = "small", width = "full",
                 name = function() return Options.StatusLine(key) end })
+        end
+        if key == "auctionator" then
+            -- Spec settings, "Estimate leveling cost setting": off by default; one setting for the page and the tooltip.
+            local function reason()
+                local A = ns.AuctionatorExport
+                if not (A and A.EstimateReason) then return L["Auctionator is needed."] end
+                return A.EstimateReason()
+            end
+            add(g, "estimateLevelingCost", {
+                type = "toggle", width = "full", name = L["Estimate leveling cost"],
+                disabled = function() return reason() ~= nil end,
+                get = function() return profile().estimateLevelingCost == true end,
+                set = function(_, value) profile().estimateLevelingCost = value and true or false; changed() end,
+            })
+            add(g, "help_estimate", { type = "description", fontSize = "small", width = "full",
+                hidden = function() return reason() ~= nil end,
+                name = function()
+                    return grey(L["Select Estimate leveling cost to see the total on the profession page."] .. " "
+                        .. L["Hold Shift over a leveling material to see the cost of the quantity still needed."])
+                end })
+            add(g, "why_estimate", { type = "description", fontSize = "small", width = "full",
+                hidden = function() return reason() == nil end,
+                name = function() return grey(reason() or "") end })
         end
         if i < #Options.INTEGRATIONS then gap(g, "g" .. i) end
     end

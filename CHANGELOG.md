@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.6.0
+
+- New: **Cost estimate for leveling materials.** Turn on "Estimate leveling cost" under Auctionator on the Integrations page.
+- New: The estimate shows below "Export leveling list" on each profession page.
+- New: Hold Shift over a leveling material to see the cost of the quantity you still need.
+- New: The estimate uses the prices from the last Auctionator scan. A missing or old price counts as unknown, not zero.
+
 ## 0.5.0
 
 - New: **Hold Shift to see if you know each endgame recipe.** Each recipe line shows "Learned" or "Not learned" and its skill color, such as Yellow.
