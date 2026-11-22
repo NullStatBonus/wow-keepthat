@@ -189,6 +189,14 @@ eq(read.known[18560], true, "Forever: learned from recipe info")
 eq(read.known[18401], nil, "Forever: unlearned is not known")
 eq(#read.rows, 2, "Forever: only the open profession's recipes the client lists")
 eq(forever.RecipeRecordable("enchanting"), true, "Forever: every profession is recordable")
+local loading = adapter({ IsPlayerSpell = function(s) return s == 18401 end, C_TradeSkillUI = {
+    GetBaseProfessionInfo = function() return { professionID = 197 } end,
+    GetRecipeInfo = function(spell) return info[spell] end,
+} })
+read = loading.RecipeWindow("trade", { recipes = { [18560] = { p = "tailoring" }, [18401] = { p = "tailoring" } } })
+eq(read.complete, false, "Forever: a known spell the info calls unlearned makes the read incomplete")
+eq(read.stale, 1, "Forever: the stale rows are counted")
+eq(read.known[18560], true, "Forever: a stale read still adds what it saw as learned")
 eq(adapter({}).RecipeWindow("trade", {}), nil, "no window API: nothing")
 eq(adapter({}).RecipeRecordable("tailoring"), false, "no window API: not recordable")
 eq(adapter({ IsPlayerSpell = function(s) return s == 1 end }).IsPlayerSpell(1), true, "IsPlayerSpell true")
@@ -297,6 +305,9 @@ local n = #logged
 Rc.Probe({ profession = "tailoring", complete = true, known = { [18560] = true }, source = "trade skill window",
     rows = { { spell = 18560, client = "orange", learned = true }, { spell = 12092, client = "green", learned = true } } })
 eq(#logged, n, "the same probe result is not logged twice")
+Rc.Probe({ profession = "tailoring", complete = true, known = {}, source = "recipe info",
+    rows = { { spell = 18560, client = "orange", learned = false } } })
+eq(logged[n + 1]:find("mismatches=0", 1, true) ~= nil, true, "not learned below yellow is no mismatch")
 
 -- Events go to a module of its own; a failing handler is recorded, never raised.
 local registered = {}

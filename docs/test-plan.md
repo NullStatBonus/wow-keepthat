@@ -114,4 +114,4 @@ WoW Forever only: Classic Era does not record recipe knowledge in this version.
 
 1. **Tailoring recipes.** Use a character with Tailoring, with debug recording on and `/reload` done (see the top of this page). Open the Tailoring window.
    Check: KeepThat remembers your Tailoring recipes.
-   Log: `[recipes] tailoring complete=true known=<n>`, and `[recipes] recipe probe: tailoring ... mismatches=0`.
+   Log: `[recipes] tailoring complete=true known=<n>`, and a `[recipes] recipe probe: tailoring ... stale=0 ... mismatches=0` line. The first probe line after the window opens can show `stale=<n>` and mismatches; that read is not recorded.

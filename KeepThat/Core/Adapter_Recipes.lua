@@ -35,6 +35,8 @@ end
 
 -- Forever: the open profession's catalog recipes, each asked by spell ID, so window filters do not matter.
 -- A recipe the client gives no info for is not in this character's list, so it is not learned.
+-- Right after the window opens the client still says "not learned" for every recipe (Forever probe,
+-- 2026-11-21); a recipe IsPlayerSpell knows but the info calls unlearned marks the read stale, not complete.
 local function foreverRead(catalog)
     local okB, info = call(A.Resolve("C_TradeSkillUI.GetBaseProfessionInfo"))
     if not okB or type(info) ~= "table" then return nil end
@@ -47,12 +49,13 @@ local function foreverRead(catalog)
         if rec.p == profession then
             local ok, r = call(get, spell)
             if ok and type(r) == "table" then
-                if r.learned then read.known[spell] = true end
+                if r.learned then read.known[spell] = true
+                elseif A.IsPlayerSpell(spell) == true then read.stale = (read.stale or 0) + 1 end
                 read.rows[#read.rows + 1] = { spell = spell, client = A.FOREVER_DIFFICULTY[r.relativeDifficulty], learned = r.learned and true or false }
             end
         end
     end
-    read.complete = #read.rows > 0
+    read.complete = #read.rows > 0 and not read.stale
     return read
 end
 

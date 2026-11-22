@@ -28,6 +28,10 @@ When the player opens or updates a profession window, the addon SHALL record whi
 - **WHEN** the player opens Tailoring with "Have materials" checked
 - **THEN** the recipes shown are recorded as learned, and no Tailoring recipe becomes "not learned"
 
+#### Scenario: Recipe list still loading
+- **WHEN** the player opens Tailoring and the client has not loaded the recipe list yet
+- **THEN** no Tailoring recipe becomes "not learned" from that read
+
 ### Requirement: Knowledge is kept per character across sessions
 The record SHALL be saved per character, so it survives /reload and logout. It SHALL NOT be shared with other characters.
 

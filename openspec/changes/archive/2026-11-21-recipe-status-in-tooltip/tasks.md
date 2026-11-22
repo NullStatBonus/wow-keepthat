@@ -13,7 +13,7 @@
   - the completeness signals
 
   It writes one summary line per profession: rows, formula mismatches, API agreement. It also logs every learn event (`NEW_RECIPE_LEARNED`, `LEARNED_SPELL_IN_*`) with its arguments. Verify with a unit test on a fake window in `tests/test_recipeknowledge.lua`.
-- [ ] 1.3 In-game on WoW Forever (the only client with test characters; Classic Era recording stays off, D4b), with Tailoring and Enchanting:
+- [x] 1.3 In-game on WoW Forever (the only client with test characters; Classic Era recording stays off, D4b), with Tailoring and Enchanting:
   - turn on debug logging and `/reload`
   - open Tailoring and Enchanting once each
   - learn one Tailoring or Enchanting recipe with the window closed
@@ -57,14 +57,14 @@
   - Log one line per record change: `recipes: <profession> complete=<bool> known=<n>`.
 
   Verify with fake events in `tests/test_recipeknowledge.lua` and `tests/test_context.lua`.
-- [ ] 4.4 Add a debug report section that shows the source, complete flag and known count for each profession. Verify with `tests/test_log.lua`, then read the `/kt log` output from the in-game run of 1.3.
+- [x] 4.4 Add a debug report section that shows the source, complete flag and known count for each profession. Verify with `tests/test_log.lua`, then read the `/kt log` output from the in-game run of 1.3.
 
 ## 5. Tooltip wording and docs
 
 - [x] 5.1 The Codex planning review is already folded into D6 and the spec. Get a Codex review of the implemented tooltip, including wrapping of a long recipe name at a large tooltip font, and of the "Recipe order" control on Home. If the strings change, update the material-tooltip spec delta in the same step.
 - [x] 5.2 In `Model/Wording.lua` `Details`, give endgame recipe lines their status, sort them per D8, and add the hint to the block (D6), with the new `L[...]` keys in `Locales/enUS.lua`. Verify with `tests/test_wording.lua` (every scenario of the ADDED tooltip requirements, including the learned-first order) and `tests/test_locale.lua`.
 - [x] 5.3 Make `UI/Tooltip.lua` pass `recipeStatus` and `knowledgeKnown` from Context and the record. The sample preview (`Tooltip.Sample`) shows a learned-yellow line. Verify with `tests/test_tooltip.lua` and `tests/test_tooltip_preview.lua`.
-- [ ] 5.4 Update the docs:
+- [x] 5.4 Update the docs:
   - **README:** Shift recipe status, plus "Good to know" lines: open each profession once per character; filters make the record partial; no required skill is shown; Era Enchanting if 1.3 found it can't be recorded.
   - **`docs/listing.md`:** the same feature text.
   - **`docs/test-plan.md`:** a new section 10, "Recipe status", with one check:
@@ -87,7 +87,7 @@
 
 ## In-game verification (after merge request, before release)
 
-- Tasks 1.3, 4.4 and 5.4 wait for the WoW Forever probe. They are listed as checkboxes in the PR. Archived with these 3 open by the user's request (2026-11-21).
+- Tasks 1.3, 4.4 and 5.4 waited for the WoW Forever probe and were archived open at the user's request. The probe (2026-11-21) confirmed D1 and D5. It found that the first read after the window opens is stale, so a read is now incomplete when `IsPlayerSpell` disagrees. Findings are in `docs/contracts.md`.
 
 ## Workflow follow-up
 

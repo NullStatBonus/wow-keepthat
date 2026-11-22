@@ -56,7 +56,8 @@ function R.Probe(read)
     for _, row in ipairs(read.rows or {}) do
         local rec = cat.recipes and cat.recipes[row.spell]
         local mine = K().Difficulty(rec, rank, row.learned)
-        if row.client and mine ~= row.client then
+        -- Not learned below yellow: the client says orange, KeepThat shows no color by design (D1).
+        if row.client and mine ~= row.client and not (mine == nil and not row.learned) then
             mismatches = mismatches + 1
             if #out < 10 then
                 out[#out + 1] = ("recipe probe: %s %d client=%s computed=%s y=%s gy=%s rank=%s"):format(read.profession,
@@ -76,9 +77,9 @@ function R.Probe(read)
             end
         end
     end
-    local line = ("recipe probe: %s source=%s rows=%d complete=%s filtered=%s collapsed=%s unkeyed=%s rank=%s mismatches=%d api agrees=%d disagrees=%d unknown=%d; unlisted=%d api true=%d"):format(
+    local line = ("recipe probe: %s source=%s rows=%d complete=%s filtered=%s collapsed=%s unkeyed=%s stale=%s rank=%s mismatches=%d api agrees=%d disagrees=%d unknown=%d; unlisted=%d api true=%d"):format(
         read.profession, tostring(read.source), #(read.rows or {}), tostring(read.complete), tostring(read.filtered or false),
-        tostring(read.collapsed or false), tostring(read.unkeyed or 0), tostring(rank), mismatches, apiYes, apiNo, apiNil, unlisted, unlistedTrue)
+        tostring(read.collapsed or false), tostring(read.unkeyed or 0), tostring(read.stale or 0), tostring(rank), mismatches, apiYes, apiNo, apiNil, unlisted, unlistedTrue)
     if lastProbe[read.profession] == line then return end
     lastProbe[read.profession] = line
     Log.Record("recipes", line)

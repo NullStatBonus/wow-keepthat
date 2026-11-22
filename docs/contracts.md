@@ -253,7 +253,7 @@ KeepThat ships AceDB-3.0 minor 40 from 0.4.3 (Ace3 commit `ac3d122`; earlier rel
 - **What KeepThat stores per character in AceDB:** only the profile choice (`profileKeys`). Settings live in `profile`, the log and stock in `global`; stock is keyed by `Adapter.PlayerIdentity()`, not by AceDB keys. `db.char`, `db.realm` and the other keyed sections are unused, so the new `realmKey` has no effect.
 - **Migration** (`Model/ProfileKey.lua`): at load, a choice saved under the minor-33 key (`Adapter.LegacyCharacterKey()`) is applied once when the character is on Default under the new key and the profile still exists, then the old entry is cleared. From 0.4.4, `ProfileKey.Rename` then moves a profile named after the old key to the new key (switch, `CopyProfile`, `DeleteProfile` when active; a plain table move when not), only when no profile exists under the new key and no other character's choice still names the old profile (from 0.4.5: two Forever characters with one first name on one realm share the old key).
 
-## Recipe knowledge and difficulty (wow-api source review, 2026-11-21; unverified until the task 1.3 probe)
+## Recipe knowledge and difficulty (wow-api source review and WoW Forever probe, 2026-11-21)
 
 Classic Era recording is off in 0.5.0 (`Adapter.WINDOW_ROWS_VERIFIED = false`) because no Era test character has Tailoring or Enchanting. The Era entries below come from source review only.
 
@@ -290,3 +290,12 @@ From the generated API docs and Blizzard UI source on wow-api: classic_era 1.15.
   - `MinSkillLineRank` is 1 for many trainer recipes (Silk Bandage, Mooncloth), so the required skill is not in the data.
   - 59 of 1631 profession rows have zero or inverted thresholds.
   - The green start (`floor((yellow + gray) / 2)`) is checked by the `recipe probe` log line: `mismatches=` counts recipes whose computed color differs from the client's.
+
+### WoW Forever probe (1.60.1, 2026-11-21; Tailoring 90, Enchanting 22, First Aid 1)
+
+- **Colors match.** Every recipe at or above yellow had the client's color (Tailoring: 67 of 67, the exact count with yellow at or below 90). First Aid's one learned recipe, below yellow at rank 1, is orange on both sides. The only differences are recipes that are not learned and below yellow: the client says orange (`relativeDifficulty` 0), and KeepThat shows no color there by design. The probe no longer counts these as mismatches.
+- **`GetRecipeInfo(spellID)` answers for every catalog recipe of the open profession** (Tailoring 470, Enchanting 262, First Aid 32 rows), so the read is never filtered.
+- **The first read after the window opens is stale.** At `TRADE_SKILL_SHOW`, `learned` is false for every recipe and `relativeDifficulty` is 0. The next `TRADE_SKILL_LIST_UPDATE` gives the right values. KeepThat now marks a read incomplete (`stale=` in the probe line) when `IsPlayerSpell` knows a recipe that `GetRecipeInfo` calls unlearned.
+- **`IsPlayerSpell(spellID)` is reliable for recipes.** It agreed with the loaded `learned` flag for every row (Tailoring 470 of 470, Enchanting 262, First Aid 32), and was right even during the stale first read.
+- **`NEW_RECIPE_LEARNED` carries the recipe's spell ID** when the recipe is learned from a trainer with the window closed (2385). The record updates at once, so the `K.Unsure` fallback stays unwired. `LEARNED_SPELL_IN_TAB` and `LEARNED_SPELL_IN_SKILL_LINE` did not fire.
+- Still open: does `GetRecipeInfo` answer with the window closed? This probe read it only with the window open.

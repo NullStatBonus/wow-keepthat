@@ -47,7 +47,7 @@ Without the required skill, "orange" and "too low to learn" look the same. So a 
 - **Window record (both clients):** `Core/Adapter_Recipes.lua` reads the open window.
   - Era trade skills: `GetNumTradeSkills`, `GetTradeSkillInfo`, `GetTradeSkillRecipeLink` → spell ID from the `enchant:` link.
   - Era Enchanting: the Craft equivalents.
-  - Forever: `C_TradeSkillUI`.
+  - Forever: `C_TradeSkillUI`. The first read after the window opens says "not learned" for every recipe (probe, 2026-11-21). So a Forever read is incomplete when `IsPlayerSpell` knows a recipe that `GetRecipeInfo` calls unlearned. The next `TRADE_SKILL_LIST_UPDATE` gives the complete read.
   - Recipes are keyed by **spell ID**, never by name, because client names are localized.
   - The adapter also reports whether the read was complete: no search text, no "have materials" or subclass/slot filter, no collapsed header.
 - **Complete read** replaces the profession's record and sets `complete = true`. **Incomplete read** only adds learned spells.
