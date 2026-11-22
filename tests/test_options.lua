@@ -443,8 +443,11 @@ do
     local page = ns.Options.Materials(2).args.tailoring
     ns.AuctionatorExport = { Available = function() return true end, EstimateLines = function() return nil end }
     eq(page.args.exportEstimate.hidden(), true, "no estimate: the line is hidden")
+    eq(page.args.exportEstimateGap.hidden(), true, "no estimate: no blank line either")
+    eq(page.args.exportEstimateGap.order > page.args.exportLeveling.order and page.args.exportEstimateGap.order < page.args.exportEstimate.order, true, "the blank line sits between the buttons and the estimate")
     ns.AuctionatorExport.EstimateLines = function() return { "At least 10g from Auctionator's last scan.", "One material could not be priced." } end
     eq(page.args.exportEstimate.hidden(), false, "an estimate shows the line")
+    eq(page.args.exportEstimateGap.hidden(), false, "and the blank line above it")
     eq(plain(name(page.args.exportEstimate)), "At least 10g from Auctionator's last scan. One material could not be priced.", "the sentences read together")
     ns.AuctionatorExport = nil
 end

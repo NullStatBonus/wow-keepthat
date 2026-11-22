@@ -679,8 +679,12 @@ local function professionNode(profession, items, catalog, order)
         local A = ns.AuctionatorExport
         return A and A.EstimateLines and A.EstimateLines(profession) or nil
     end
+    local function noEstimate() return count.leveling == 0 or estimateLines() == nil end
+    -- A blank line between the export buttons and the estimate, shown only with it.
+    g.args.exportEstimateGap = { type = "description", fontSize = "small", width = "full", order = 0.615,
+        name = " ", hidden = noEstimate }
     g.args.exportEstimate = { type = "description", fontSize = "small", width = "full", order = 0.62,
-        hidden = function() return count.leveling == 0 or estimateLines() == nil end,
+        hidden = noEstimate,
         name = function() return neutral(table.concat(estimateLines() or {}, " ")) end }
     g.args.exportHelp = { type = "description", fontSize = "small", width = "full", order = 0.7,
         name = function()
