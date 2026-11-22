@@ -444,7 +444,8 @@ do
     ns.AuctionatorExport = { Available = function() return true end, EstimateLines = function() return nil end }
     eq(page.args.exportEstimate.hidden(), true, "no estimate: the line is hidden")
     eq(page.args.exportEstimateGap.hidden(), true, "no estimate: no blank line either")
-    eq(page.args.exportEstimateGap.order > page.args.exportLeveling.order and page.args.exportEstimateGap.order < page.args.exportEstimate.order, true, "the blank line sits between the buttons and the estimate")
+    eq(page.args.exportEstimate.order < page.args.h_shop.order, true, "the estimate is above the Shopping list section")
+    eq(page.args.exportEstimateGap.order > page.args.exportEstimate.order and page.args.exportEstimateGap.order < page.args.h_shop.order, true, "a blank line separates the estimate from the Shopping list header")
     ns.AuctionatorExport.EstimateLines = function() return { "At least 10g from Auctionator's last scan.", "One material could not be priced." } end
     eq(page.args.exportEstimate.hidden(), false, "an estimate shows the line")
     eq(page.args.exportEstimateGap.hidden(), false, "and the blank line above it")

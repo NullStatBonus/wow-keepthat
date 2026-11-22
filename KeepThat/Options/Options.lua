@@ -652,6 +652,18 @@ local function professionNode(profession, items, catalog, order)
     g.args.clearSearch = { type = "execute", width = 1.5, order = 0.26, name = L["Clear search"],
         hidden = function() return not searching() end, func = clearSearch }
     g.args.gap = { type = "description", fontSize = "small", width = "full", order = 0.4, name = " " }
+    -- The leveling cost estimate (spec auctionator-export), above the Shopping list section, only with its
+    -- setting on and something to price. A blank line after it keeps it apart from the section header.
+    local function estimateLines()
+        local A = ns.AuctionatorExport
+        return A and A.EstimateLines and A.EstimateLines(profession) or nil
+    end
+    local function noEstimate() return count.leveling == 0 or estimateLines() == nil end
+    g.args.exportEstimate = { type = "description", fontSize = "small", width = "full", order = 0.42,
+        hidden = noEstimate,
+        name = function() return neutral(table.concat(estimateLines() or {}, " ")) end }
+    g.args.exportEstimateGap = { type = "description", fontSize = "small", width = "full", order = 0.45,
+        name = " ", hidden = noEstimate }
     -- Auctionator shopping lists for this profession, one per category (spec auctionator-export).
     local function exportState()
         local A = ns.AuctionatorExport
@@ -674,18 +686,6 @@ local function professionNode(profession, items, catalog, order)
     end
     g.args.exportEndgame = exportButton("endgame", 0.6)
     g.args.exportLeveling = exportButton("leveling", 0.61)
-    -- The leveling cost estimate (spec auctionator-export), only with its setting on and something to price.
-    local function estimateLines()
-        local A = ns.AuctionatorExport
-        return A and A.EstimateLines and A.EstimateLines(profession) or nil
-    end
-    local function noEstimate() return count.leveling == 0 or estimateLines() == nil end
-    -- A blank line between the export buttons and the estimate, shown only with it.
-    g.args.exportEstimateGap = { type = "description", fontSize = "small", width = "full", order = 0.615,
-        name = " ", hidden = noEstimate }
-    g.args.exportEstimate = { type = "description", fontSize = "small", width = "full", order = 0.62,
-        hidden = noEstimate,
-        name = function() return neutral(table.concat(estimateLines() or {}, " ")) end }
     g.args.exportHelp = { type = "description", fontSize = "small", width = "full", order = 0.7,
         name = function()
             local ok, why = exportState()
