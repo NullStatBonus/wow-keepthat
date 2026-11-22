@@ -118,25 +118,44 @@ function Wording.Purpose(entry, catalog, itemName)
     return entry.reason or ""
 end
 
--- Recipes of a profession that use itemID, the highest skill first: { { name, quantity }, ... }.
-local function recipesUsing(catalog, profession, itemID, spellName)
+-- Difficulty words and their colors: Blizzard's TradeSkillTypeColor (design D6).
+Wording.DIFFICULTY = {
+    orange = { word = L["Orange"], color = "ff8040" },
+    yellow = { word = L["Yellow"], color = "ffff00" },
+    green = { word = L["Green"], color = "40bf40" },
+    gray = { word = L["Gray"], color = "808080" },
+}
+
+-- The status after a recipe line: "Learned · Yellow", "Not learned", "Yellow", or nil when nothing is
+-- known (spec "Recipe status on endgame recipe lines"). status = { learned = true|false|nil, difficulty }.
+function Wording.RecipeStatus(status)
+    if type(status) ~= "table" then return nil end
+    local d = Wording.DIFFICULTY[status.difficulty]
+    local word = d and paint(d.color, d.word)
+    if status.learned == true then return word and L["Learned · %s"]:format(word) or L["Learned"] end
+    if status.learned == false then return word and L["Not learned · %s"]:format(word) or L["Not learned"] end
+    return word
+end
+
+-- Recipes of a profession that use itemID, in the "Recipe order" (design D8):
+-- { { name, qty, status }, ... } and the total. ctx.recipeStatus(profession, spell) gives each status.
+local function recipesUsing(catalog, profession, itemID, spellName, ctx)
     local found = {}
     for spell, rec in pairs(catalog and catalog.recipes or {}) do
         if rec.p == profession then
             for i = 1, #rec.r, 2 do
                 if rec.r[i] == itemID then
-                    found[#found + 1] = { spell = spell, learn = rec.learn, qty = rec.r[i + 1] }
+                    local status = ctx.recipeStatus and ctx.recipeStatus(profession, spell) or nil
+                    found[#found + 1] = { spell = spell, y = rec.y, qty = rec.r[i + 1], status = status,
+                        state = status and status.learned }
                 end
             end
         end
     end
-    table.sort(found, function(a, b)
-        if a.learn ~= b.learn then return a.learn > b.learn end
-        return a.spell < b.spell
-    end)
+    ns.RecipeKnowledge.Sort(found, ctx.recipeOrder)
     local out = {}
     for i = 1, math.min(#found, Wording.MAX_RECIPES) do
-        out[i] = { name = spellName(found[i].spell), qty = found[i].qty }
+        out[i] = { name = spellName(found[i].spell), qty = found[i].qty, status = found[i].status }
     end
     return out, #found
 end
@@ -152,7 +171,9 @@ end
 -- Returns a list of { text = ..., kind = ... }.
 -- ctx = { catalog, routes, itemID, itemName = function(id), spellName = function(id),
 --         carried = function(id) -> number or nil,
---         stock = { { name, self, count }, ... } (holders, already ordered; nil or empty adds no block) }
+--         stock = { { name, self, count }, ... } (holders, already ordered; nil or empty adds no block),
+--         recipeStatus = function(profession, spellID) -> { learned, difficulty } or nil,
+--         needsHint = function(profession) -> true to ask the player to open it, recipeOrder = "learned"|... }
 -- After the category blocks, a grey "Stock" heading and up to Wording.MAX_STOCK holder rows.
 function Wording.Details(result, ctx)
     local out = {}
@@ -179,9 +200,17 @@ function Wording.Details(result, ctx)
         heading("endgame", display(e.profession))
         local purpose = Wording.Purpose(e, catalog, itemName)
         if purpose ~= "" then row(L["    %s"]:format(purpose), "body") end
-        local recipes, total = recipesUsing(catalog, e.profession, ctx.itemID, spellName)
-        for _, r in ipairs(recipes) do row(L["    %s - %d per craft"]:format(r.name, r.qty), "note") end
+        local recipes, total = recipesUsing(catalog, e.profession, ctx.itemID, spellName, ctx)
+        for _, r in ipairs(recipes) do
+            local textValue = L["    %s - %d per craft"]:format(r.name, r.qty)
+            local status = Wording.RecipeStatus(r.status)
+            if status then textValue = L["%s (%s)"]:format(textValue, status) end
+            row(textValue, "note")
+        end
         if total > #recipes then row(L["    and %d more recipes"]:format(total - #recipes), "note") end
+        if total > 0 and ctx.needsHint and ctx.needsHint(e.profession) then
+            row(L["    Open %s to see which recipes you know"]:format(display(e.profession)), "note")
+        end
     end
 
     local carried = ctx.carried and ctx.carried(ctx.itemID)

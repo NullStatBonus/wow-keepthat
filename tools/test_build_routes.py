@@ -12,7 +12,7 @@ spec.loader.exec_module(br)
 CATALOG = '''ns.Data.Catalog_Era = {
   recipes = {
     [3275] = { p = "firstaid", learn = 1, make = 1251, n = 1, r = { 2589, 1 } },
-    [3276] = { p = "firstaid", learn = 40, make = 2581, n = 1, r = { 2589, 2 } },
+    [3276] = { p = "firstaid", learn = 40, make = 2581, n = 1, r = { 2589, 2 }, y = 50, gy = 100 },
     [7928] = { p = "firstaid", learn = 150, make = 6450, n = 1, r = { 4306, 1 } },
     [18629] = { p = "firstaid", learn = 260, make = 14530, n = 1, r = { 14047, 2 } },
     [918629] = { p = "firstaid", learn = 1, make = 914530, n = 1, r = { 14047, 2 } },

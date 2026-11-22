@@ -96,6 +96,17 @@ function Log.Report()
         out[#out + 1] = "  unavailable = " .. (#unList > 0 and table.concat(unList, ", ") or "(none)")
         out[#out + 1] = "  reminder = " .. (st.reminder and "on" or "off")
     end
+    -- Recipe knowledge per profession (spec recipe-knowledge, "Knowledge sources in the debug report").
+    out[#out + 1] = "Recipes:"
+    local okR, rlines = pcall(function()
+        local ctx = ns.Context and ns.Context.Get and ns.Context.Get()
+        return ns.Recipes and ns.Recipes.ReportLines(ctx and ctx.skills or {})
+    end)
+    if okR and type(rlines) == "table" then
+        for _, l in ipairs(rlines) do out[#out + 1] = l end
+    else
+        out[#out + 1] = "  recipes: unknown"
+    end
     out[#out + 1] = "Integrations:"
     local status = ns.Integrations and ns.Integrations.Status
     if type(status) ~= "function" then

@@ -71,6 +71,8 @@ eq(db.profile.stockReminder, true, "reminder defaults on for an existing save")
 db = loadAceDB(nil)
 eq(db.global.stock, nil, "new install: no stock from defaults")
 eq(db.profile.stockReminder, true, "new install reminder on")
+eq(db.profile.recipeOrder, "learned", "new install: Recipe order is Learned first")
+eq(db.global.recipes, nil, "new install: no recipe records from defaults (Core/Recipes.lua creates them)")
 
 -- A version written by a newer KeepThat is not touched.
 local future = { version = 2, payload = { R = { Bob = { seen = 1 } } }, extra = "kept" }

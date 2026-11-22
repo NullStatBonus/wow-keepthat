@@ -42,7 +42,7 @@ def read_catalog(path):
     with open(path, encoding="utf-8") as f:
         text = f.read()
     recipes = {}
-    for m in re.finditer(r'\[(\d+)\] = \{ p = "(\w+)", learn = (\d+), make = (\d+), n = (\d+), r = \{ ([\d, ]+) \} \}', text):
+    for m in re.finditer(r'\[(\d+)\] = \{ p = "(\w+)", learn = (\d+), make = (\d+), n = (\d+), r = \{ ([\d, ]+) \}(?:, y = \d+, gy = \d+)? \}', text):
         nums = [int(x) for x in m.group(6).split(",")]
         recipes[int(m.group(1))] = {"p": m.group(2), "make": int(m.group(4)), "n": int(m.group(5)),
                                     "r": list(zip(nums[0::2], nums[1::2]))}

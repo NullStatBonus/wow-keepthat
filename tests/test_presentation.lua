@@ -5,6 +5,7 @@ local ns = H.locale({ Start = function() end })
 H.load("Core/Defaults.lua", ns)
 H.load("Core/Presentation.lua", ns)
 H.load("Core/Slash.lua", ns)
+H.load("Model/RecipeKnowledge.lua", ns)
 H.load("Model/Wording.lua", ns)
 ns.Adapter = { Resolve = function() end }
 local invalidations = 0

@@ -10,8 +10,9 @@ bc = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(bc)
 
 
-def sla(spell, line, rank):
-    return {"SkillLine": str(line), "Spell": str(spell), "MinSkillLineRank": str(rank)}
+def sla(spell, line, rank, low=0, high=0):
+    return {"SkillLine": str(line), "Spell": str(spell), "MinSkillLineRank": str(rank),
+            "TrivialSkillLineRankLow": str(low), "TrivialSkillLineRankHigh": str(high)}
 
 
 def reag(spell, *pairs):
@@ -24,8 +25,8 @@ def reag(spell, *pairs):
 
 TABLES = {
     "SkillLineAbility": [
-        sla(17187, 171, 275),   # Transmute: Arcanite (alchemy)
-        sla(3931, 202, 125),    # Coarse Dynamite (engineering)
+        sla(17187, 171, 275, 275, 290),   # Transmute: Arcanite (alchemy)
+        sla(3931, 202, 125, 150, 130),    # Coarse Dynamite (engineering): inverted thresholds
         sla(999, 171, 325),     # above 300: dropped
         sla(55, 6, 1),          # not a profession: dropped
         sla(777, 197, 1),       # no reagents: dropped
@@ -49,11 +50,19 @@ class BuildCatalogTest(unittest.TestCase):
     def test_recipes_filtered_and_shaped(self):
         recipes, items, spells = bc.build_recipes(TABLES)
         self.assertEqual(sorted(recipes), [3931, 17187])
-        self.assertEqual(recipes[17187], {"p": "alchemy", "learn": 275, "make": 12360, "n": 1, "r": [(12363, 1), (12359, 1)]})
+        self.assertEqual(recipes[17187], {"p": "alchemy", "learn": 275, "make": 12360, "n": 1, "r": [(12363, 1), (12359, 1)],
+                                          "y": 275, "gy": 290})
+        self.assertNotIn("y", recipes[3931], "inverted thresholds are dropped")
         self.assertEqual(recipes[3931]["n"], 3, "Era count is BasePoints + DieSides")
         self.assertNotIn(1, items, "items only from kept recipes")
         self.assertEqual(items[12363], "Arcane Crystal")
         self.assertEqual(spells[3931], "Coarse Dynamite")
+
+    def test_thresholds(self):
+        self.assertEqual(bc.thresholds({"TrivialSkillLineRankLow": "30", "TrivialSkillLineRankHigh": "60"}), (30, 60))
+        self.assertIsNone(bc.thresholds({"TrivialSkillLineRankLow": "0", "TrivialSkillLineRankHigh": "0"}), "zero")
+        self.assertIsNone(bc.thresholds({"TrivialSkillLineRankLow": "50", "TrivialSkillLineRankHigh": "40"}), "inverted")
+        self.assertIsNone(bc.thresholds({"TrivialSkillLineRankLow": "50", "TrivialSkillLineRankHigh": "0"}), "no gray rank")
 
     def test_forever_count_from_float_points(self):
         self.assertEqual(bc.create_count({"EffectBasePointsF": "2.0"}), 2)
@@ -106,7 +115,7 @@ class BuildCatalogTest(unittest.TestCase):
         recipes, items, spells = bc.build_recipes(TABLES)
         text = bc.render("era", "1.15.9.1", recipes, items, spells, {12363: {"alchemy": ('Says "keep"', "src", 0)}})
         self.assertIn("ns.Data.Catalog_Era = {", text)
-        self.assertIn('[17187] = { p = "alchemy", learn = 275, make = 12360, n = 1, r = { 12363, 1, 12359, 1 } },', text)
+        self.assertIn('[17187] = { p = "alchemy", learn = 275, make = 12360, n = 1, r = { 12363, 1, 12359, 1 }, y = 275, gy = 290 },', text)
         self.assertIn('[12363] = { alchemy = { "Says \\"keep\\"", "src", 0 } },', text)
 
 

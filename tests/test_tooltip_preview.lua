@@ -6,6 +6,7 @@ H.load("Core/Adapter.lua", ns)
 H.load("Core/Adapter_Tooltip.lua", ns)
 H.load("Model/Leveling.lua", ns)
 H.load("Model/Classify.lua", ns)
+H.load("Model/RecipeKnowledge.lua", ns)
 H.load("Model/Wording.lua", ns)
 local catalog = { itemNames = { [100] = "Real Bar", [200] = "Real Cloth" },
     spellNames = { [10] = "Real Recipe" },
@@ -68,13 +69,16 @@ for i = 3, #tip.lines - 1 do previewRows[#previewRows + 1] = tip.lines[i] end
 local text = {}; for _, row in ipairs(previewRows) do text[#text + 1] = row.text end
 local all = table.concat(text, "\n")
 eq(all:find("Real Recipe - 5 per craft", 1, true) ~= nil, true, "real recipe rendered")
+eq(all:find("Real Recipe - 5 per craft (Learned · |cffffff00Yellow|r)", 1, true) ~= nil, true, "sample recipe status: learned, yellow")
+eq(all:find("Open ", 1, true), nil, "the sample shows no hint")
+eq(sample.recipes.status("blacksmithing", 11).learned, false, "the sample mixes in not-learned recipes so the order setting shows")
 eq(all:find("40-45 needed, 12 in bags", 1, true) ~= nil, true, "dummy bag count and real route need rendered")
 eq(all:find("Real guide", 1, true) ~= nil, true, "real guide rendered")
 eq(all:find("  Stock|r\n    This character: 20\n    Bankmule: 30\n    Hunter: 5", 1, true) ~= nil, true, "sample stock rows rendered")
 -- Exact live/preview row and color parity, apart from native item content and explicit sample label.
 local live = { lines = {} }; live.AddLine = tip.AddLine
 ns.Adapter.env.GetItemCount = function() return 12 end
-ns.Tooltip.Draw(live, sample.itemID, sample.result, true, nil, sample.stock)
+ns.Tooltip.Draw(live, sample.itemID, sample.result, true, nil, sample.stock, sample.recipes)
 eq(#live.lines, #previewRows, "same live and preview row count")
 for i, row in ipairs(live.lines) do
     for _, k in ipairs({ "text", "r", "g", "b" }) do eq(previewRows[i][k], row[k], "live/preview parity " .. i .. " " .. k) end

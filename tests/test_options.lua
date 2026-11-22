@@ -25,6 +25,7 @@ local function fresh(opts)
     H.load("Core/Presentation.lua", ns)
     H.load("Model/Leveling.lua", ns)
     H.load("Model/Classify.lua", ns)
+    H.load("Model/RecipeKnowledge.lua", ns)
     H.load("Model/Wording.lua", ns)
     H.load("Model/Stock.lua", ns)
     H.load("Model/Sounds.lua", ns)
@@ -99,6 +100,34 @@ do
     -- "All displays are off" ignores the reminder
     for _, k in ipairs({ "tooltip", "toast", "mask" }) do ns.addon.db.profile[k] = false end
     eq(h.args.noSurfaces.hidden(), false, "displays-off note shown with only the reminder on")
+end
+
+-- Home: Recipe order sits under Tooltip line, is disabled with it, and applies without a reload.
+do
+    local ns = fresh()
+    local h = ns.Options.Home(1)
+    local w = h.args.recipeOrder
+    eq(w.type, "select", "recipe order is a dropdown")
+    eq(w.name, "Recipe order", "recipe order label")
+    eq(h.args.tooltip.order < w.order and w.order < h.args.toast.order, true, "right under Tooltip line")
+    eq(table.concat(w.sorting, ","), "learned,unlearned,skill", "the three orders, Learned first on top")
+    eq(w.values.learned, "Learned first", "Learned first label")
+    eq(w.values.unlearned, "Not learned first", "Not learned first label")
+    eq(w.values.skill, "Highest skill first", "Highest skill first label")
+    eq(ns.defaults.profile.recipeOrder, "learned", "defaults to Learned first")
+    eq(w.get(), "learned", "shows the default")
+    local before = ns.invalidated
+    w.set(nil, "unlearned")
+    eq(ns.addon.db.profile.recipeOrder, "unlearned", "saved in the profile")
+    eq(ns.invalidated > before, true, "a change applies without a reload")
+    eq(w.get(), "unlearned", "shows the saved value")
+    ns.addon.db.profile.recipeOrder = "bogus"
+    eq(w.get(), "learned", "an unknown saved value shows Learned first")
+    ns.addon.db.profile.tooltip = false
+    eq(w.disabled(), true, "disabled while the tooltip line is off")
+    eq(ns.addon.db.profile.recipeOrder, "bogus", "and the saved value stays the same")
+    ns.addon.db.profile.tooltip = true
+    eq(w.disabled(), false, "enabled with the tooltip line")
 end
 
 -- Home: every setter invalidates the context; the pages read the profile.

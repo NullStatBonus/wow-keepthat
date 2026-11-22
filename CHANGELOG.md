@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.5.0
+
+- New: **Hold Shift to see if you know each endgame recipe.** Each recipe line shows "Learned" or "Not learned" and its skill color, such as Yellow.
+- New: Open a profession window one time. KeepThat then remembers the recipes of that character.
+- New: Learned recipes show first. Use "Recipe order" on Home to change the order.
+- New: On Classic Era, recipe lines show the skill color only.
+
 ## 0.4.8
 
 - Changed: **Nothing changes in game.** This release updates the developer files and the test plan only.
