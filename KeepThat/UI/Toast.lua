@@ -16,6 +16,8 @@ local Toast = {
     sampleFree = {},
     free = {},        -- idle frames
     SOUND_COOLDOWN = 2, -- seconds after a real-loot sound during which new toasts stay silent
+    seq = 0, -- toasts accepted this session
+    skipLogged = {}, -- itemID -> true once its skip line is written
     lastSound = nil,  -- time of the last real-loot sound
 }
 ns.Toast = Toast
@@ -32,6 +34,10 @@ function Toast.Parse(message, patterns)
             end
         end
     end
+end
+
+local function record(message)
+    if ns.Log and ns.Log.Record then ns.Log.Record("toast", message) end
 end
 
 local function profile()
@@ -165,6 +171,7 @@ function Toast.BeginMove()
     if Toast.move then return true end
     local point, x, y = Toast.Position(1, {})
     Toast.move = { profile = profile(), point = point, x = x, y = y }
+    record("move started")
     notifyMove()
     return true
 end
@@ -173,11 +180,15 @@ function Toast.TentativePosition(point, x, y)
     Toast.move.point, Toast.move.x, Toast.move.y = point, x, y
     return true
 end
-function Toast.CancelMove()
+local function endMove()
     local wasMoving = Toast.move ~= nil
     Toast.move = nil
     if mover then mover:StopMovingOrSizing(); mover:Hide() end
     if wasMoving then notifyMove() end
+    return wasMoving
+end
+function Toast.CancelMove()
+    if endMove() then record("move cancelled") end
 end
 function Toast.DoneMove()
     local m = Toast.move
@@ -189,7 +200,9 @@ function Toast.DoneMove()
         m.point, m.x, m.y = point, x, y
     end
     Toast.SavePosition(m.point, m.x, m.y)
-    Toast.CancelMove()
+    local saved = profile().toastPosition
+    if saved then record(("move done at %s %d %d"):format(tostring(saved.point), saved.x, saved.y)) end
+    endMove()
     return true
 end
 local function showMover()
@@ -293,7 +306,17 @@ Toast.DEMO = {
 local function playSound()
     if not (ns.Sounds and ns.Sounds.Play) then return false end
     local p = profile()
-    return ns.Sounds.Play(p.toastSound, p.toastSoundChannel, ns.Adapter)
+    local played = ns.Sounds.Play(p.toastSound, p.toastSoundChannel, ns.Adapter)
+    if played and p.toastSound ~= "none" then
+        local packs = ns.Adapter.SoundPacks and ns.Adapter.SoundPacks()
+        local effective = ns.Sounds.Effective and ns.Sounds.Effective(p.toastSound, packs)
+        if effective and effective ~= p.toastSound then
+            record(("sound %s unavailable; played the default"):format(tostring(p.toastSound)))
+        else
+            record(("sound %s on %s"):format(tostring(p.toastSound), tostring(p.toastSoundChannel)))
+        end
+    end
+    return played
 end
 
 -- Real loot: one sound per burst. A toast accepted within SOUND_COOLDOWN seconds of the last sound is
@@ -375,9 +398,18 @@ function Toast.Handle(itemID, count, name)
     end
     entry = find(Toast.queue, itemID)
     if entry then entry.count = entry.count + count; return true end
-    if Toast.seen[itemID] then return false end
+    if Toast.seen[itemID] then
+        if not Toast.skipLogged[itemID] then
+            Toast.skipLogged[itemID] = true
+            record(("skipped %d: shown this session"):format(itemID))
+        end
+        return false
+    end
     if not ns.Wording.Line(ns.Context.Classify(itemID)) then return false end
     Toast.seen[itemID] = true
+    Toast.seq = Toast.seq + 1
+    record(("shown %d"):format(itemID))
+    if ns.CheckThat then ns.CheckThat.Report("toast.seq", Toast.seq) end
     Toast.queue[#Toast.queue + 1] = { itemID = itemID, count = count, name = name }
     Toast.Chime()
     startNext()

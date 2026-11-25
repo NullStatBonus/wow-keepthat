@@ -94,4 +94,21 @@ has(Log.Report(), "sound packs = 2", "packs counted")
 ns.Adapter = { SoundPacks = function() error("boom") end }
 has(Log.Report(), "sound packs = none", "an error is contained")
 
+-- The real Gate with the CheckThat integration: the "Integrations:" block lists checkthat and its state.
+do
+    local n2 = H.locale({ client = "era", version = "0.7.0", Start = function() end })
+    H.load("Core/Defaults.lua", n2)
+    H.load("Debug/Log.lua", n2)
+    H.load("Core/Adapter.lua", n2)
+    n2.Adapter.env = { IsLoggedIn = function() return true end,
+        CheckThat = { Report = function() return false end, Entry = function() return true end } }
+    n2.addon = { db = { profile = copy(n2.defaults.profile), global = { log = {} } } }
+    H.load("Integrations/Gate.lua", n2)
+    H.load("Integrations/CheckThat.lua", n2)
+    n2.Integrations.Start()
+    has(n2.Log.Report(), "Integrations:\n  checkthat: detected=true, working=true", "checkthat is listed as working")
+    n2.Adapter.env.CheckThat = nil
+    has(n2.Log.Report(), "checkthat: detected=false", "checkthat without CheckThat")
+end
+
 H.done()

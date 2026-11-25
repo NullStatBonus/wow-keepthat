@@ -88,11 +88,15 @@ The Integrations page SHALL list Baganator, Bagnon, EllesmereUI Bags, Auctionato
 - **THEN** its row says it is not detected and its toggle has no effect
 
 ### Requirement: Integrations on WoW Forever only in this version
-On Classic Era, the addon SHALL not run any integration with another addon. The Integrations page SHALL say that integrations are not yet available on Classic Era. All other features SHALL work on Classic Era.
+On Classic Era, the addon SHALL not run any integration with another addon, except the CheckThat integration, which carries test evidence only and runs on both clients. The Integrations page SHALL say that integrations are not yet available on Classic Era. All other features SHALL work on Classic Era.
 
 #### Scenario: Bag addon on Classic Era
 - **WHEN** Baganator is installed on Classic Era and the icon mask is on
 - **THEN** Baganator shows no overlay, Blizzard's own bags do, and the Integrations page says integrations are not yet available on Classic Era
+
+#### Scenario: CheckThat on Classic Era
+- **WHEN** CheckThat is installed on Classic Era
+- **THEN** the CheckThat integration runs, and the Integrations page still says integrations are not yet available on Classic Era
 
 ### Requirement: Material stock on its page
 Each material page SHALL keep its "Your stock" section. It SHALL give the realm-and-faction total split between this character and the player's other characters, then one line per character holding any: this character first, then the others by count, each other character with the grey age of its oldest counted source. Every holder SHALL be listed, and the page SHALL NOT ask the player to open a bank or mailbox. When nobody holds the material, the section SHALL say the player has none only when the total is complete, and otherwise that none is counted yet.
@@ -141,6 +145,10 @@ A leveling page SHALL show how many are still to get: the count still needed min
 #### Scenario: Report after an integration failure
 - **WHEN** an integration was disabled after a failure and the player types `/kt log`
 - **THEN** the report names that integration and the reason it was disabled
+
+#### Scenario: Report with CheckThat loaded
+- **WHEN** CheckThat is loaded and the player types `/kt log`
+- **THEN** the report lists the CheckThat integration and its state with the other integrations
 
 ### Requirement: Settings saved per account with profiles
 Settings SHALL be saved for the whole account by default, with the option to use a per-character profile. A character's profile choice SHALL survive a change in how the settings library names characters (WoW Forever drops the realm and adds the surname): the choice saved under the earlier name SHALL apply once, and SHALL NOT replace a choice already made under the new name.

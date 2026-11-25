@@ -22,6 +22,22 @@ local tracked, trackedCtx
 local dirty = { bank = {}, mail = false }
 local closedAt = {}
 local LATE = 10
+-- The last "counted" debug line's n for the bank and mailbox, so a visit writes one line and a later
+-- reading writes again only when n changed. Cleared when the window opens or closes.
+local lastCounted = {}
+
+local function recordCounted(kind, label, n)
+    if lastCounted[kind] == n then return end
+    lastCounted[kind] = n
+    if ns.Log and ns.Log.Record then pcall(ns.Log.Record, "stock", ("%s counted: %d %s"):format(kind, n, label)) end
+end
+
+-- How many tracked items a record holds (the adapter returns only tracked item counts, not slots).
+local function distinct(items)
+    local n = 0
+    for _ in pairs(items) do n = n + 1 end
+    return n
+end
 
 local function A() return ns.Adapter end
 
@@ -129,6 +145,7 @@ local function process()
     if character and now then
         local items = R.Tracked()
         local changed = false
+        local bankRead, mailRead = false, false
         local function read(src, kind, set)
             if type(src) ~= "table" or type(src.c) ~= "table" then return end
             for id in pairs(set) do
@@ -139,6 +156,7 @@ local function process()
                 else
                     src.c[id] = { t = now, items = got }
                     changed = true
+                    if kind == "bank" then bankRead = true end
                 end
             end
         end
@@ -155,8 +173,15 @@ local function process()
             else
                 character.mail = { t = now, items = got }
                 changed = true
+                mailRead = true
             end
         end
+        if bankRead and type(character.bank) == "table" then
+            local seen = {}
+            for _, rec in pairs(character.bank.c) do for id in pairs(rec.items) do seen[id] = true end end
+            recordCounted("bank", "materials", distinct(seen))
+        end
+        if mailRead then recordCounted("mailbox", "materials", distinct(character.mail.items)) end
         if changed then notify() end
     end
     if remind then pcall(R.Reminder) end
@@ -297,6 +322,7 @@ end
 
 function on.BANKFRAME_CLOSED()
     bankOpen = false
+    lastCounted.bank = nil
     pending.bank = {}
     for id in pairs(dirty.bank) do forget("bank", id) end
     dirty.bank = {}
@@ -326,6 +352,7 @@ end
 
 function on.MAIL_CLOSED()
     mailOpen = false
+    lastCounted.mailbox = nil
     pending.mail = false
     if dirty.mail then forget("mail") end
     dirty.mail = false
@@ -407,6 +434,7 @@ function R.Reset()
     scheduled, loginRead, logged, tracked, trackedCtx = false, false, {}, nil, nil
     dirty, closedAt = { bank = {}, mail = false }, {}
     mailShowKnown = true
+    lastCounted = {}
 end
 
 local EVENTS = { "PLAYER_LOGIN", "BAG_UPDATE", "PLAYERBANKSLOTS_CHANGED", "BAG_CONTAINER_UPDATE",

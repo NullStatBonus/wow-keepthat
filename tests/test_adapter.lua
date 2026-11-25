@@ -247,4 +247,44 @@ eq(packs.None, nil, "the library's None entry is left out")
 eq(packs.Bad, nil, "a non-path value is left out")
 lsm.HashTable = function() error("broken") end
 eq(A.SoundPacks(), nil, "a library error gives nil")
+
+-- LoggedIn: IsLoggedIn as a boolean, nil when the client has no IsLoggedIn or it raises.
+A.env = { IsLoggedIn = function() return 1 end }
+eq(A.LoggedIn(), true, "logged in")
+A.env = { IsLoggedIn = function() return false end }
+eq(A.LoggedIn(), false, "not logged in yet")
+A.env = {}
+eq(A.LoggedIn(), nil, "no IsLoggedIn: unknown")
+A.env = { IsLoggedIn = function() error("x") end }
+eq(A.LoggedIn(), nil, "a raising IsLoggedIn: unknown")
+
+-- ShowTintSample: the onEnd callback runs once when the sample hides after 4 seconds (the [demo] ended line).
+do
+    ns.L = ns.L or setmetatable({}, { __index = function(_, k) return k end })
+    local function fake()
+        local o = { scripts = {} }
+        return setmetatable(o, { __index = function(t, k)
+            if k == "SetScript" then return function(self, name, fn) self.scripts[name] = fn end end
+            if k == "CreateTexture" or k == "CreateFontString" then return function() return fake() end end
+            if k == "Hide" then return function(self) self.hidden = true end end
+            if k == "Show" then return function(self) self.hidden = false end end
+            return function() end
+        end })
+    end
+    local frame
+    A.env = { CreateFrame = function() frame = fake(); return frame end, UIParent = {} }
+    local ended = 0
+    local p = { colors = { endgame = { r = 1, g = 0, b = 1 } }, maskOpacity = 0.4 }
+    eq(A.ShowTintSample(p, function() ended = ended + 1 end), true, "the tint sample shows")
+    frame.scripts.OnUpdate(frame, 2)
+    eq(ended, 0, "not ended before 4 seconds")
+    frame.scripts.OnUpdate(frame, 2.5)
+    eq(ended, 1, "onEnd runs when the sample hides")
+    eq(frame.hidden, true, "the sample hid")
+    frame.scripts.OnUpdate(frame, 1)
+    eq(ended, 1, "onEnd runs only once")
+    eq(A.ShowTintSample(p), true, "shown again without a callback")
+    frame.scripts.OnUpdate(frame, 5)
+    eq(ended, 1, "no callback: nothing runs")
+end
 H.done()

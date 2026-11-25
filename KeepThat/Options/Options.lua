@@ -929,7 +929,12 @@ function Options.Integrations(order)
                 type = "toggle", width = "full", name = L["Estimate leveling cost"],
                 disabled = function() return reason() ~= nil end,
                 get = function() return profile().estimateLevelingCost == true end,
-                set = function(_, value) profile().estimateLevelingCost = value and true or false; changed() end,
+                set = function(_, value)
+                    profile().estimateLevelingCost = value and true or false
+                    if ns.Log then ns.Log.Record("auctionator", profile().estimateLevelingCost and "estimate on" or "estimate off") end
+                    if ns.AuctionatorExport and ns.AuctionatorExport.ResetEstimate then ns.AuctionatorExport.ResetEstimate() end
+                    changed()
+                end,
             })
             add(box, "help_estimate", { type = "description", fontSize = "small", width = "full",
                 hidden = function() return reason() ~= nil end,
@@ -1057,12 +1062,14 @@ function Options.MaterialsLauncher()
     add(g, "open", { type = "execute", width = 1.5, name = L["Open KeepThat"],
         func = function()
             if ns.Adapter and ns.Adapter.CloseGameSettings then ns.Adapter.CloseGameSettings() end
+            if ns.Log then ns.Log.Record("options", "launcher closed the game's Options and opened materials") end
             Options.Open("materials")
         end })
     return g
 end
 
 function Options.Open(pageName)
+    if ns.Log then ns.Log.Record("options", "opened " .. (pageName or "home")) end
     local dialog = LibStub("AceConfigDialog-3.0")
     Options.CollapseMaterials(dialog)
     dialog:Open(APP)

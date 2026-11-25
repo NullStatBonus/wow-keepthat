@@ -42,6 +42,13 @@ function A.LegacyCharacterKey()
     return name .. " - " .. realm
 end
 
+-- Whether PLAYER_LOGIN has fired (IsLoggedIn); nil when the client cannot say.
+function A.LoggedIn()
+    local v = A.Call("IsLoggedIn")
+    if v == nil then return nil end
+    return v and true or false
+end
+
 -- Profession name keys by skill line ID (the same on both clients).
 A.SKILL_LINES = {
     [171] = "alchemy", [164] = "blacksmithing", [333] = "enchanting", [202] = "engineering",
@@ -324,7 +331,7 @@ end
 
 -- A private tint sample. Never attaches to an inventory button or changes its classification.
 local tintSample
-function A.ShowTintSample(p)
+function A.ShowTintSample(p, onEnd)
     local ok = pcall(function()
         if not tintSample then
             tintSample = A.Call("CreateFrame", "Frame", nil, A.Resolve("UIParent"))
@@ -338,7 +345,11 @@ function A.ShowTintSample(p)
             text:SetPoint("LEFT", 44, 0); text:SetWidth(128); text:SetTextColor(0.667, 0.667, 0.667); text:SetText(ns.L["Sample — Endgame tint"])
             tintSample:SetScript("OnUpdate", function(self, dt)
                 self.age = self.age + dt
-                if self.age >= 4 then self:Hide()
+                if self.age >= 4 then
+                    self:Hide()
+                    local done = self.onEnd
+                    self.onEnd = nil
+                    if done then pcall(done) end
                 else
                     local current = ns.Presentation and ns.Presentation.Profile() or p
                     local c = current.colors.endgame
@@ -348,7 +359,7 @@ function A.ShowTintSample(p)
         end
         local c = p.colors.endgame
         tintSample.tint:SetColorTexture(c.r, c.g, c.b, p.maskOpacity or 0.4)
-        tintSample.age = 0; tintSample:Show()
+        tintSample.age = 0; tintSample.onEnd = onEnd; tintSample:Show()
     end)
     return ok and tintSample ~= nil
 end

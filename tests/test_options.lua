@@ -444,6 +444,16 @@ do
     eq(ns.invalidated, before + 1, "the toggle refreshes the presentation")
     est.set(nil, false)
     eq(ns.addon.db.profile.estimateLevelingCost, false, "and turns off again")
+    -- Each change is logged and makes the next page draw log the estimate again.
+    local recorded, reset = {}, 0
+    ns.Log = { Record = function(a, m) recorded[#recorded + 1] = "[" .. a .. "] " .. m end }
+    ns.AuctionatorExport = { ResetEstimate = function() reset = reset + 1 end }
+    est.set(nil, true)
+    eq(recorded[#recorded], "[auctionator] estimate on", "turning the estimate on is logged")
+    est.set(nil, false)
+    eq(recorded[#recorded], "[auctionator] estimate off", "turning the estimate off is logged")
+    eq(reset, 2, "each change resets the last estimate line")
+    ns.Log, ns.AuctionatorExport = nil, nil
     -- The estimate line on a profession page: hidden until there is something to show.
     local page = ns.Options.Materials(2).args.tailoring
     ns.AuctionatorExport = { Available = function() return true end, EstimateLines = function() return nil end }
@@ -529,13 +539,19 @@ eq(launcher.args.open.name, "Open KeepThat", "launcher offers Open KeepThat")
 for _, w in pairs(launcher.args) do eq(w.type ~= "group", true, "launcher holds no material tree") end
 local closedSettings = 0
 ns.Adapter.CloseGameSettings = function() closedSettings = closedSettings + 1 end
+local optionsLog = {}
+ns.Log = { Record = function(a, m) optionsLog[#optionsLog + 1] = "[" .. a .. "] " .. m end }
 launcher.args.open.func()
+eq(optionsLog[1], "[options] launcher closed the game's Options and opened materials", "the launcher logs that it closed the game's Options")
+eq(optionsLog[2], "[options] opened materials", "and that the window opened on Materials")
 eq(closedSettings, 1, "Open KeepThat closes the game's Settings window")
 eq(selected[#selected], "materials", "and opens KeepThat on Materials")
 eq(opened, 1, "the KeepThat window opened")
 opened, selected = 0, {}
 eq(#callbacks, 3, "profile callbacks registered")
 ns.Options.Open()
+eq(optionsLog[3], "[options] opened home", "Open logs the page, Home by default")
+ns.Log = nil
 eq(opened, 1, "Open opens the dialog")
 eq(selected[1], "home", "on the Home page")
 ns.realNotify()

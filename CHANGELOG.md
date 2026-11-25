@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.7.0
+
+- New: **KeepThat works with CheckThat, the in-game test runner.** Nothing changes in game for players.
+- New: CheckThat can read the KeepThat version and check many test plan steps by itself.
+- Changed: The test plan has a new first step that checks the version. The "No Lua errors" step is now step 1.2.
+
 ## 0.6.1
 
 - Changed: **Nothing changes in game.** This release updates the developer files and the test plan only.

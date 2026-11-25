@@ -13,6 +13,14 @@ local WHITE = { r = 1, g = 1, b = 1 }
 local added = {}     -- [tooltip] = true once our line is on it; cleared on OnTooltipCleared
 local watched = {}   -- [tooltip] = true once its OnTooltipCleared is hooked
 local disabled = false
+local logged = {}    -- ["added" .. itemID .. path or "skipped" .. itemID] = true: debug lines written once per session
+
+-- One debug line per key per session; a tooltip refills often and must not fill the log.
+local function logOnce(key, message)
+    if logged[key] or not (ns.Log and ns.Log.Record) then return end
+    logged[key] = true
+    ns.Log.Record("tooltip", message)
+end
 
 local function profile()
     return ns.addon and ns.addon.db and ns.addon.db.profile
@@ -103,13 +111,18 @@ local function fill(tooltip, itemID)
         watched[tooltip] = true
         ns.Adapter.OnTooltipCleared(tooltip, function(self) added[self] = nil end)
     end
-    if added[tooltip] then return end
+    if added[tooltip] then
+        logOnce("skipped" .. itemID, ("line skipped %d: already on this tooltip"):format(itemID))
+        return
+    end
     local result = ns.Context.Classify(itemID)
     if not ns.Wording.Line(result) then return end
     added[tooltip] = true
     local shift = ns.Adapter.IsShiftDown()
     Tooltip.Draw(tooltip, itemID, result, shift)
     ns.Adapter.TooltipShow(tooltip)
+    local path = Tooltip.path or "unknown"
+    logOnce("added" .. itemID .. path, ("line added %d via %s"):format(itemID, path))
 end
 
 -- Called by the hook for every item tooltip.

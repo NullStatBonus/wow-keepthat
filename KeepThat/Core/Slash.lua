@@ -150,6 +150,19 @@ function Slash.Run(args, deps)
     return { L["Commands: /kt, /kt find <name>, /kt demo, /kt test <toast|tooltip|copy>, /kt debug on|off, /kt log, /kt probe, /kt probe hover, /kt probe path <name>"] }
 end
 
+-- /kt demo: sample toasts, a sample tooltip and the tint sample. Logs what was shown, then "ended" once
+-- when the tint sample hides (the last sample to end; the toasts and tooltip fade on their own).
+function Slash.Demo(deps)
+    local toasts = tonumber(deps.testToastAll()) or 0
+    local tooltip = deps.testTooltip() and true or false
+    local tint = deps.showTint(function()
+        if ns.Log and ns.Log.Record then ns.Log.Record("demo", "ended") end
+    end) and true or false
+    if ns.Log and ns.Log.Record then
+        ns.Log.Record("demo", ("started: toasts=%d tooltip=%s tint=%s"):format(toasts, tostring(tooltip), tostring(tint)))
+    end
+end
+
 function Slash.Register(addon)
     local deps
     deps = {
@@ -160,8 +173,12 @@ function Slash.Register(addon)
         show = function(...) return ns.Export.Show(...) end,
         open = function(page) return ns.Options.Open(page) end,
         testToast = function() if ns.Toast and ns.Toast.Demo then pcall(ns.Toast.Demo, 1) end end,
-        testToastAll = function() if ns.Toast and ns.Toast.Demo then pcall(ns.Toast.Demo) end end,
-        testTooltip = function() if ns.Tooltip.Preview then ns.Tooltip.Preview() end end,
+        testToastAll = function()
+            if ns.Toast and ns.Toast.Demo and pcall(ns.Toast.Demo) then return #ns.Toast.samples end
+            return 0
+        end,
+        testTooltip = function() if ns.Tooltip.Preview then return ns.Tooltip.Preview() end end,
+        showTint = function(onEnd) return ns.Adapter.ShowTintSample(addon.db.profile, onEnd) end,
         preview = function(kind)
             if kind == "toast" then deps.testToast()
             elseif kind == "tooltip" then deps.testTooltip()
@@ -176,7 +193,7 @@ function Slash.Register(addon)
         testCopy = function()
             ns.Adapter.ShowCopyBox(L["KeepThat - Wowhead link"], "https://www.wowhead.com/classic/item=12360")
         end,
-        demo = function() deps.testToastAll(); deps.testTooltip(); deps.preview("tint") end,
+        demo = function() Slash.Demo(deps) end,
         report = function() return ns.Log.Report() end,
         setDebug = function(on) addon.db.profile.debug = on end,
     }

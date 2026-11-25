@@ -313,4 +313,52 @@ do
     eq(#plays, 1, "no clock: plays"); eq(Toast.lastSound, nil, "no clock: nothing recorded")
 end
 
+-- Debug lines and the CheckThat toast.seq fact.
+do
+    local lines, facts = {}, {}
+    ns.Log.Record = function(area, m) lines[#lines + 1] = "[" .. area .. "] " .. m end
+    local p = ns.defaults.profile
+    p.toast, p.toastSound, p.toastSoundChannel, p.toastLocked = true, "auction", "Master", nil
+    ns.Adapter.Now = function() return nil end
+    local unavailable = false
+    ns.Sounds = { Play = function() return true end, Effective = function(k) return unavailable and "default" or k end }
+    Toast.Tick(10); Toast.Reset()
+    marked[91], marked[92] = true, true
+    local function has(s) for _, l in ipairs(lines) do if l == s then return true end end return false end
+    local function count(s) local n = 0 for _, l in ipairs(lines) do if l == s then n = n + 1 end end return n end
+
+    ns.CheckThat = nil
+    local before = Toast.seq
+    loot(msg(91, 1))
+    eq(has("[toast] shown 91"), true, "shown line")
+    eq(has("[toast] sound auction on Master"), true, "sound line")
+    eq(Toast.seq, before + 1, "counter counts without CheckThat")
+    ns.CheckThat = { Report = function(k, v) facts[#facts + 1] = { k, v } end }
+    loot(msg(92, 1))
+    eq(facts[1][1], "toast.seq", "fact key"); eq(facts[1][2], before + 2, "fact is the running count")
+    Toast.Tick(10)
+    loot(msg(92, 1)); loot(msg(92, 1))
+    eq(#facts, 1, "a skipped toast reports nothing")
+    eq(count("[toast] skipped 92: shown this session"), 1, "skip line once per item")
+    Toast.Tick(10)
+
+    unavailable = true; Toast.Reset(); marked[93] = true; loot(msg(93, 1))
+    eq(has("[toast] sound auction unavailable; played the default"), true, "fallback line")
+    unavailable = false
+    ns.CheckThat = nil
+    Toast.Tick(10)
+
+    lines = {}
+    eq(Toast.BeginMove(), true, "move begins")
+    eq(lines[1], "[toast] move started", "move started line")
+    Toast.BeginMove(); eq(#lines, 1, "no second start line")
+    Toast.TentativePosition("BOTTOM", 12.4, -33.6)
+    eq(Toast.DoneMove(), true, "move done")
+    eq(lines[2], "[toast] move done at BOTTOM 12 -34", "move done line")
+    eq(#lines, 2, "done writes no cancelled line")
+    Toast.BeginMove(); Toast.CancelMove()
+    eq(lines[4], "[toast] move cancelled", "move cancelled line")
+    Toast.CancelMove(); eq(#lines, 4, "cancel with no move writes nothing")
+end
+
 H.done()

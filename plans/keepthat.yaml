@@ -17,6 +17,17 @@ logs:
     path: global.log
     format: strings
     cap: 300
+  facts:
+    global: CheckThatDB
+    path: global.facts
+    format: strings
+    cap: 300
+  errors:
+    global: CheckThatDB
+    path: global.errors
+    format: strings
+    quiet: true
+    cap: 100
 requirements:
   addon-loaded:
     text: KeepThat is loaded
@@ -26,11 +37,88 @@ requirements:
     text: DFL Profession Journal is installed
     probe: addon-loaded
     name: DFLProfessionJournal
+offline:
+  toc: wow-keepthat/KeepThat/KeepThat_Vanilla.toc
+  steps:
+  - event:
+      name: ADDON_LOADED
+      args:
+      - KeepThat
+  - event:
+      name: PLAYER_LOGIN
+  - label: The fake client gives no version, so the version entry returns nothing
+    call:
+      addon: KeepThat
+      entry: version
+    returns: []
+  - label: Arcanite Bar is an endgame Blacksmithing and Engineering material
+    call:
+      addon: KeepThat
+      entry: classify
+      args:
+      - 12360
+    returns:
+    - endgame:blacksmithing;endgame:engineering
+  - label: The tooltip setting is on by default
+    call:
+      addon: KeepThat
+      entry: setting
+      args:
+      - tooltip
+    returns:
+    - 'on'
+  - label: The CheckThat integration is working
+    call:
+      addon: KeepThat
+      entry: integration
+      args:
+      - checkthat
+    returns:
+    - working
+  - label: An unmarked item has no classification
+    call:
+      addon: KeepThat
+      entry: classify
+      args:
+      - 6948
+    returns: []
 sections:
 - id: s1
   title: Setup
   steps:
   - id: kt.s1.1
+    title: KeepThat version
+    auto: true
+    covers:
+    - Plan checks the version first
+    - Version entry
+    - Entries registered at login
+    action:
+      kind: manual
+      text: CheckThat reads the KeepThat version.
+    expect: The KeepThat version is 0.7.0 or newer. If the step fails, copy KeepThat 0.7.0 into the game
+      again.
+    verify:
+    - assertions
+    call:
+      addon: KeepThat
+      entry: version
+    timeout: 30
+    assertions:
+    - kind: fact
+      source: facts
+      addon: KeepThat
+      key: entry.version
+      op: ge
+      value: 700
+      label: KeepThat is 0.7.0 or newer
+    - kind: log
+      source: debug
+      contains: '[checkthat] entries registered:'
+      scope: session
+      diagnostic: true
+    notes: The entry returns major*10000 + minor*100 + patch, so 0.7.0 is 700.
+  - id: kt.s1.2
     title: No Lua errors
     action:
       kind: manual
@@ -38,11 +126,23 @@ sections:
         scriptErrors 1|r), and log in.
       commands:
       - /console scriptErrors 1
+      - /kt debug on
     expect: no error window appears.
     verify:
     - player
+    - assertions
+    assertions:
+    - kind: log
+      source: errors
+      pattern: '%[KeepThat%]'
+      absent: true
+      diagnostic: true
+      label: CheckThat recorded no Lua error from KeepThat
 - id: s2
   title: Tooltip line
+  covers:
+  - One short line per marked item
+  - Works wherever item tooltips appear
   steps:
   - id: kt.s2.1
     title: Endgame item
@@ -53,6 +153,13 @@ sections:
       Blacksmithing, and "Endgame" is purple. It can end with how many you own.'
     verify:
     - player
+    - assertions
+    assertions:
+    - kind: log
+      source: debug
+      pattern: '^%[tooltip%] line added 12360 via %a+$'
+      scope: session
+      diagnostic: true
   - id: kt.s2.2
     title: Shift details
     action:
@@ -62,6 +169,13 @@ sections:
       never shows twice.
     verify:
     - player
+    - assertions
+    assertions:
+    - kind: log
+      source: debug
+      pattern: '^%[tooltip%] line skipped 12360: already on this tooltip$'
+      scope: session
+      diagnostic: true
   - id: kt.s2.3
     title: Chat link
     action:
@@ -70,6 +184,13 @@ sections:
     expect: the link tooltip has exactly one KeepThat line.
     verify:
     - player
+    - assertions
+    assertions:
+    - kind: log
+      source: debug
+      pattern: '^%[tooltip%] line added 12360 via %a+$'
+      scope: session
+      diagnostic: true
   - id: kt.s2.4
     title: Profession window
     action:
@@ -79,11 +200,22 @@ sections:
     expect: the reagent tooltip has exactly one KeepThat line.
     verify:
     - player
+    - assertions
+    assertions:
+    - kind: log
+      source: debug
+      pattern: '^%[tooltip%] line added %d+ via %a+$'
+      scope: session
+      diagnostic: true
   intro: 'Run every check on |cffffd100both clients|r: Classic Era (the |cff99ccffOnTooltipSetItem|r path)
     and WoW Forever (the |cff99ccffTooltipDataProcessor|r path). Use the default settings. Have Blacksmithing
     on the character and Arcanite Bar in your bags.'
 - id: s3
   title: Loot toast
+  covers:
+  - Toast on looting a marked item
+  - One toast per item per session
+  - Toast sound
   steps:
   - id: kt.s3.1
     title: Toast and sound
@@ -91,11 +223,26 @@ sections:
       kind: manual
       text: Loot a marked material for the first time since the last |cff99ccff/reload|r.
       commands:
+      - /kt set toast on
       - /reload
     expect: a toast with the item icon and name appears at the saved position, the auction house sound
       plays once, and the toast fades without a click.
     verify:
     - player
+    - assertions
+    assertions:
+    - kind: log
+      source: debug
+      pattern: '^%[toast%] shown %d+$'
+      scope: attempt
+      label: KeepThat showed a toast
+    - kind: fact
+      source: facts
+      addon: KeepThat
+      key: toast.seq
+      op: ge
+      value: 1
+      diagnostic: true
     reload: after_action
   - id: kt.s3.2
     title: Click-through
@@ -114,10 +261,20 @@ sections:
     expect: you hear the chosen sound.
     verify:
     - player
+    - assertions
+    assertions:
+    - kind: log
+      source: debug
+      pattern: '^%[toast%] sound .+ on %a+$'
+      scope: attempt
+      label: KeepThat played the chosen sound
   intro: Turn on "Loot toast" on Appearance first. Use a marked material you can loot or gather, such
     as Thorium Ore.
 - id: s4
   title: Icon mask
+  covers:
+  - Tint marked item icons
+  - Supported bag interfaces
   steps:
   - id: kt.s4.1
     title: Blizzard bags and bank
@@ -148,12 +305,17 @@ sections:
     - player
     - reviewer
     - assertions
-    reviewer: '[merchant] hooked ....'
+    reviewer: '[merchant] hooked ...., then [merchant] tinted <n> of <m> on page <p> for each page.'
     assertions:
     - kind: log
       source: debug
       pattern: '^%[merchant%] hooked '
       scope: session
+    - kind: log
+      source: debug
+      pattern: '^%[merchant%] tinted [1-9]%d* of %d+ on page %d+$'
+      scope: attempt
+      label: KeepThat tinted marked materials on a vendor page
   - id: kt.s4.3
     title: Buyback
     action:
@@ -162,6 +324,13 @@ sections:
     expect: its icon is tinted.
     verify:
     - player
+    - assertions
+    assertions:
+    - kind: log
+      source: debug
+      pattern: '^%[merchant%] tinted [1-9]%d* of %d+ on buyback$'
+      scope: attempt
+      label: KeepThat tinted a marked material on the Buyback tab
   - id: kt.s4.4
     title: Bag addon
     action:
@@ -199,15 +368,32 @@ sections:
   steps:
   - id: kt.s5.1
     title: Auctionator export
+    auto: true
+    covers:
+    - Export a shopping list for a profession
+    - Only what is still needed
     action:
       kind: manual
       text: With Auctionator loaded and at least one Tailoring leveling material still needed (its tooltip
         shows "needed" and you carry fewer), export the Tailoring leveling materials from the Materials
         page.
     expect: 'Auctionator''s Shopping tab has a list "KeepThat: Tailoring Leveling" that includes that
-      material.'
+      material. The card records the result by itself.'
     verify:
-    - player
+    - assertions
+    assertions:
+    - kind: log
+      source: debug
+      pattern: '^%[auctionator%] export tailoring leveling: [1-9]%d* items$'
+      scope: attempt
+      label: KeepThat wrote the Tailoring Leveling list
+    - kind: fact
+      source: facts
+      addon: KeepThat
+      key: export.items
+      op: ge
+      value: 1
+      label: The list has at least one material
   - id: kt.s5.2
     title: Profession Journal sources
     action:
@@ -219,23 +405,36 @@ sections:
     - player
   - id: kt.s5.3
     title: Leveling cost estimate
+    auto: true
+    covers:
+    - Estimated cost of the leveling materials
+    - Estimate leveling cost setting
     action:
       kind: manual
-      text: With Auctionator loaded and a recent scan, turn on "Estimate leveling cost" on the Integrations
-        page. Open Materials, then Tailoring.
+      text: With Auctionator loaded and a recent scan, turn "Estimate leveling cost" on the Integrations
+        page off, then on. Open Materials, then Tailoring.
     expect: above the "Shopping list" section, a gold amount from Auctionator's last scan shows, or "At
-      least" an amount if some prices are missing.
+      least" an amount if some prices are missing. The card records the result by itself.
     verify:
-    - player
-    - reviewer
     - assertions
-    reviewer: '[auctionator] estimate tailoring: <copper> copper, <n> priced, <n> unknown, and /kt probe
-      shows "present  GetAuctionPriceByItemID(14047) = <a number>" under "Auctionator prices".'
+    reviewer: '[auctionator] estimate on, then [auctionator] estimate tailoring: <copper> copper, <n> priced,
+      <n> unknown. If it fails, /kt probe shows "present  GetAuctionPriceByItemID(14047) = <a number>" under
+      "Auctionator prices".'
     assertions:
-    - kind: log
+    - kind: log-sequence
       source: debug
-      contains: /kt probe
-      diagnostic: true
+      scope: attempt
+      sequence:
+      - pattern: '^%[auctionator%] estimate on$'
+      - pattern: '^%[auctionator%] estimate tailoring: %d+ copper, %d+ priced, %d+ unknown$'
+      label: Turning the estimate on writes a new Tailoring estimate
+    - kind: fact
+      source: facts
+      addon: KeepThat
+      key: estimate.copper
+      op: type
+      value: number
+      label: The estimate is a number of copper
   - id: kt.s5.4
     title: Cost in the tooltip
     action:
@@ -250,17 +449,26 @@ sections:
   intro: On WoW Forever only, with Tailoring known and leveling marks on.
 - id: s6
   title: Settings window
+  covers:
+  - Settings pages
   steps:
   - id: kt.s6.1
     title: Open settings
+    auto: true
     action:
       kind: manual
       text: Type |cff99ccff/kt|r.
       commands:
       - /kt
-    expect: the KeepThat window opens on Home.
+    expect: the KeepThat window opens on Home. The card records the result by itself.
     verify:
-    - player
+    - assertions
+    assertions:
+    - kind: log
+      source: debug
+      pattern: '^%[options%] opened home$'
+      scope: attempt
+      label: KeepThat opened its window on Home
   - id: kt.s6.2
     title: Options launcher
     action:
@@ -268,8 +476,17 @@ sections:
       text: Open Esc > Options > AddOns > KeepThat > Materials and click |cffffd100Open KeepThat|r.
     expect: the page shows the Open KeepThat button and no material list. The button closes the game's
       Options window and opens KeepThat on Materials.
+    covers:
+    - Materials launcher in the game's Settings window
     verify:
     - player
+    - assertions
+    assertions:
+    - kind: log
+      source: debug
+      pattern: "^%[options%] launcher closed the game's Options and opened materials$"
+      scope: attempt
+      label: The launcher closed the game's Options and opened Materials
   - id: kt.s6.3
     title: Copy Wowhead link
     action:
@@ -284,9 +501,21 @@ sections:
       kind: manual
       text: Turn on "Loot toast". On Appearance, click Move, drag the placeholder to a new place, and
         click Done. Then loot a marked material.
+      commands:
+      - /kt set toast on
     expect: the toast appears where you dropped the placeholder.
+    covers:
+    - Loot toast position
+    - Transactional Move mode
     verify:
     - player
+    - assertions
+    assertions:
+    - kind: log
+      source: debug
+      pattern: '^%[toast%] move done at %u+ %-?%d+ %-?%d+$'
+      scope: attempt
+      label: KeepThat saved the new toast position
   - id: kt.s6.5
     title: Move in combat
     action:
@@ -295,6 +524,14 @@ sections:
     expect: no error appears, and your character moves.
     verify:
     - player
+    - assertions
+    assertions:
+    - kind: log
+      source: errors
+      pattern: '%[KeepThat%]'
+      absent: true
+      diagnostic: true
+      label: CheckThat recorded no Lua error from KeepThat
   - id: kt.s6.6
     title: AddOns list badge
     action:
@@ -325,11 +562,24 @@ sections:
       kind: manual
       text: Turn off real toasts, the tooltip and the tint. Type |cff99ccff/kt demo|r.
       commands:
+      - /kt set toast off
+      - /kt set tooltip off
       - /kt demo
     expect: three labeled sample toasts, a sample item tooltip and a sample tint appear. The toasts and
       the tint go away after about four seconds.
+    covers:
+    - Broad synthetic demo
     verify:
     - player
+    - assertions
+    assertions:
+    - kind: log-sequence
+      source: debug
+      scope: attempt
+      sequence:
+      - pattern: '^%[demo%] started: toasts=3 tooltip=true tint=true$'
+      - pattern: '^%[demo%] ended$'
+      label: The demo showed three toasts, the tooltip and the tint, then ended
   - id: kt.s7.2
     title: Settings layout
     action:
@@ -345,29 +595,36 @@ sections:
     reload: after_action
 - id: s8
   title: Cross-character stock
+  covers:
+  - Stock recorded per character
   steps:
   - id: kt.s8.1
     title: Bank and mailbox are counted
+    auto: true
+    covers:
+    - Sources read while open
+    - Readings replace whole containers
     action:
       kind: manual
       text: Open the bank, then the mailbox, then close both and type |cff99ccff/kt status stock|r.
       commands:
+      - /kt set tooltip on
       - /kt status stock
-    expect: chat does not list this character as not counted.
+    expect: chat does not list this character as not counted. The card records the result by itself.
     verify:
-    - player
-    - reviewer
     - assertions
     reviewer: 'under Stock: in the report, the missing = line does not name this character.'
     assertions:
     - kind: log
       source: debug
-      contains: 'Stock:'
-      diagnostic: true
+      pattern: '^%[stock%] bank counted: %d+ materials$'
+      scope: attempt
+      label: KeepThat counted the bank
     - kind: log
       source: debug
-      contains: missing =
-      diagnostic: true
+      pattern: '^%[stock%] mailbox counted: %d+ materials$'
+      scope: attempt
+      label: KeepThat counted the mailbox
   - id: kt.s8.2
     title: Take from the bank and close at once
     action:
@@ -419,10 +676,12 @@ sections:
         for Cooking and First Aid), then type |cff99ccff/reload|r.
       commands:
       - /reload
-    expect: KeepThat reads the real skill rank while the header is collapsed.
+    expect: KeepThat reads the real skill rank while the header is collapsed. The card records the result
+      by itself.
+    auto: true
+    covers:
+    - Count to keep
     verify:
-    - player
-    - reviewer
     - assertions
     reload: after_action
     reviewer: '[skills] cooking=54; collapsed headers: Secondary Skills (your profession and rank).'
@@ -439,10 +698,11 @@ sections:
       kind: manual
       text: On the Integrations page, turn |cffffd100DFL Profession Journal|r off, then on again.
     expect: Profession Journal's materials leave KeepThat's lists when it is off and come back when it
-      is on, with no reload.
+      is on, with no reload. The card records the result by itself.
+    auto: true
+    covers:
+    - Profession Journal adds to the sources when installed
     verify:
-    - player
-    - reviewer
     - assertions
     reviewer: '[professionjournal] off: 0 materials listed, then [professionjournal] on: N materials listed
       (...) with N above 0.'
@@ -453,6 +713,14 @@ sections:
       sequence:
       - pattern: '^%[professionjournal%] off: 0 materials listed'
       - pattern: '^%[professionjournal%] on: [1-9]%d* materials listed'
+      label: The Profession Journal materials leave and come back
+    - kind: fact
+      source: facts
+      addon: KeepThat
+      key: pj.listed
+      op: gt
+      value: 0
+      label: Profession Journal lists materials again
     clients:
     - forever-camelot
     requires:
@@ -469,10 +737,23 @@ sections:
         the top of this page). Open the Tailoring window.
       commands:
       - /reload
-    expect: KeepThat remembers your Tailoring recipes.
+    expect: KeepThat remembers your Tailoring recipes. The card records the result by itself.
+    auto: true
+    covers:
+    - Knowledge is recorded when the profession window opens
     verify:
-    - player
-    - reviewer
+    - assertions
+    assertions:
+    - kind: log
+      source: debug
+      pattern: '^%[recipes%] tailoring complete=true known=%d+'
+      scope: attempt
+      label: KeepThat recorded the Tailoring recipes
+    - kind: log
+      source: debug
+      pattern: '^%[recipes%] recipe probe: tailoring source=.* stale=0 .*mismatches=0 '
+      scope: attempt
+      label: A recipe read matched the game with nothing stale
     reload: after_action
     reviewer: '[recipes] tailoring complete=true known=<n>, and a [recipes] recipe probe: tailoring ...
       stale=0 ... mismatches=0 line. The first probe line after the window opens can show stale=<n> and
