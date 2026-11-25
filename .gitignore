@@ -2,8 +2,9 @@
 .release/
 *.zip
 
-# Compiled CheckThat plans (make plan)
+# Compiled CheckThat plans (make plan) and collected runs (ct collect)
 build/
+evidence/
 
 # Downloaded build inputs (tools/fetch_data.py recreates them)
 tools/data/

@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.7.1
+
+- Changed: **Nothing changes in game.** This release updates the developer files only.
+
 ## 0.7.0
 
 - New: **KeepThat works with CheckThat, the in-game test runner.** Nothing changes in game for players.

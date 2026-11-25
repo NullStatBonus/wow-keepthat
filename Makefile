@@ -16,14 +16,19 @@ catalog:
 	@python3 tools/build-routes.py --client era
 	@python3 tools/build-routes.py --client forever
 
-# Validate the in-game test plan and compile it to build/keepthat.ct with the sibling CheckThat
-# checkout (CT=../wow-checkthat by default; it needs its .venv, see its docs/setup.md). Not part of check.
-CT ?= ../wow-checkthat
+# The checks before a tester runs the in-game test plan, with the installed CheckThat tools: validate, compile to
+# build/keepthat.ct, replay-flow, lines and offline. Install them once with `make install-skill BIN_DIR=$$HOME/bin`
+# in CheckThat (its docs/skills.md), or set CT=<path to ct>. Not part of test or check: CI has no CheckThat.
+CT ?= ct
+PLAN := plans/keepthat.yaml
 plan:
-	@test -f "$(CT)/tools/ct.py" || { echo "plan: no CheckThat checkout at $(CT) (set CT=<path>)" >&2; exit 1; }
+	@command -v "$(CT)" >/dev/null 2>&1 || { echo "plan: no CheckThat tools ($(CT) not found); install them with make install-skill BIN_DIR=\$$HOME/bin in CheckThat, or set CT=<path to ct>" >&2; exit 1; }
 	@mkdir -p build
-	@"$(CT)/.venv/bin/python" "$(CT)/tools/ct.py" validate plans/keepthat.yaml
-	@"$(CT)/.venv/bin/python" "$(CT)/tools/ct.py" compile plans/keepthat.yaml -o build/keepthat.ct
+	@"$(CT)" validate $(PLAN)
+	@"$(CT)" compile $(PLAN) -o build/keepthat.ct
+	@"$(CT)" replay-flow $(PLAN)
+	@"$(CT)" lines $(PLAN) --addon-src KeepThat
+	@"$(CT)" offline $(PLAN)
 
 # The same checks the release workflow runs.
 check:

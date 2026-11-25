@@ -16,7 +16,7 @@ Thanks for helping. KeepThat is a WoW Classic addon (Lua) that adds a short tool
    ```
    make test     # LuaJIT tests plus Python tests
    make check    # TOC, embeds and version checks; CI and the release workflow run the same
-   make plan     # validate and compile the in-game test plan (needs ../wow-checkthat, see docs/test-plan.md)
+   make plan     # check the in-game test plan with the installed CheckThat tools (ct; see docs/test-plan.md)
    ```
 
 3. In game, `/reload` after a change, and `/console scriptErrors 1` so errors show as popups.

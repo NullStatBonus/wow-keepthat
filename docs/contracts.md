@@ -307,7 +307,7 @@ From the generated API docs and Blizzard UI source on wow-api: classic_era 1.15.
 - **`NEW_RECIPE_LEARNED` carries the recipe's spell ID** when the recipe is learned from a trainer with the window closed (2385). The record updates at once, so the `K.Unsure` fallback stays unwired. `LEARNED_SPELL_IN_TAB` and `LEARNED_SPELL_IN_SKILL_LINE` did not fire.
 - Still open: does `GetRecipeInfo` answer with the window closed? This probe read it only with the window open.
 
-## CheckThat (API_VERSION 2; read from `../wow-checkthat/docs/features.md` and `tools/entry_runner.lua`, 2026-11-25)
+## CheckThat (API_VERSION 2; read from CheckThat's `docs/features.md` and `tools/entry_runner.lua`, 2026-11-25)
 
 KeepThat makes every CheckThat call in `KeepThat/Integrations/CheckThat.lua` (Gate key `checkthat`, `anyClient`, no toggle, no Integrations page row). CheckThat is not in `OptionalDeps`: CheckThat lists KeepThat, so KeepThat loads first.
 
@@ -348,7 +348,7 @@ KeepThat makes every CheckThat call in `KeepThat/Integrations/CheckThat.lua` (Ga
 
 ### Debug lines the plan checks
 
-Wording is fixed: a reword is a plan change (`plans/keepthat.yaml`, `plans/keepthat.replay.lua`).
+Wording is fixed: a reword is a plan change (`plans/keepthat.yaml`). `ct lines plans/keepthat.yaml --addon-src KeepThat` fails when the source no longer writes a line or fact key the plan asserts.
 
 | Line | Written | Plan step |
 | --- | --- | --- |
@@ -368,9 +368,9 @@ Wording is fixed: a reword is a plan change (`plans/keepthat.yaml`, `plans/keept
 | `[stock] bank counted: <n> materials`, `[stock] mailbox counted: <n> materials` | a bank or inbox reading replaced the record; n is the number of tracked materials in it; once per visit unless n changes | kt.s8.1 |
 | `[checkthat] entries registered: <n>` | the entries were registered | kt.s1.1 (diagnostic) |
 
-### Fake client limits (CheckThat 0.20.1)
+### Fake client limits (installed CheckThat skills 0.20.1, 2026-11-25)
 
-- `ct.py offline` loads only the `.lua` lines of the TOC (`tools/entry_runner.lua` `loadToc`) and does not follow `embeds.xml`, so `Core/Addon.lua` fails at `LibStub` and nothing of KeepThat starts. With the libraries listed in a TOC (a local copy whose TOC expands `embeds.xml`), AceAddon, AceDB and the Gate start and all offline steps pass.
-- `ct.py offline` validates the plan without the specs folder, so a plan with `covers:` fails with "covers needs the addon's openspec/specs folder". Without `covers:` the block runs.
+- `ct offline` follows `embeds.xml` and accepts `covers:`: AceAddon, AceDB and the Gate start, and the plan's 7 offline steps pass as written.
+- `ct offline` reads `offline.toc` inside `--addons`, by default the folder above this repository, so the plan names `wow-keepthat/KeepThat/KeepThat_Vanilla.toc`. A clone in another folder needs `--addons` or a matching folder name.
 - The fake client has no TOC metadata, so the `version` entry returns nothing there.
-- `tests/replay_plan.lua` writes only CheckThat's own debug log, so KeepThat's steps need the hooks file `plans/keepthat.replay.lua`.
+- `ct replay-flow` needs no hooks file: it writes the lines and facts each step expects itself ("evidence assumed": 21 checks on Forever, 14 on Classic Era). It proves the plan flow, not that KeepThat writes them; `ct lines --addon-src KeepThat` proves that (25 found, 0 missing).
