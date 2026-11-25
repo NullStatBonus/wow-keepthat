@@ -21,10 +21,10 @@ Phases follow design D9. Phase 1 is groups 1 and 2 and can ship alone. Groups 3 
 
 ## 3. Phase 2: Entries and the offline block
 
-- [ ] 3.1 Add an `offline:` block to `plans/keepthat.yaml` (toc `wow-keepthat/KeepThat/KeepThat_Vanilla.toc`) that fires `ADDON_LOADED` (`KeepThat`) and `PLAYER_LOGIN` and then calls `version`; verify with `../wow-checkthat/.venv/bin/python ../wow-checkthat/tools/ct.py offline plans/keepthat.yaml`. If AceAddon does not start in the fake client, record why in design.md and open a CheckThat issue before going on
+- [x] 3.1 Add an `offline:` block to `plans/keepthat.yaml` (toc `wow-keepthat/KeepThat/KeepThat_Vanilla.toc`) that fires `ADDON_LOADED` (`KeepThat`) and `PLAYER_LOGIN` and then calls `version`; verify with `../wow-checkthat/.venv/bin/python ../wow-checkthat/tools/ct.py offline plans/keepthat.yaml`. If AceAddon does not start in the fake client, record why in design.md and open a CheckThat issue before going on
   - Blocked: the fake client does not follow `embeds.xml`, so AceAddon never loads (design "Implementation notes"). Recorded in design.md; the CheckThat issue is drafted for the maintainer to file.
 - [x] 3.2 Add the entries `classify`, `needed`, `exportCount`, `setting`, `integration` and `stockCounted` (design D4 table), each side-effect free, scalar, at most 120 characters, no character names, and each body in `pcall` that records `ns.Log.Failure("checkthat", "entry <name>: ...")` and returns `error: ...` on an error. Add `Materials` and `ListName` to `ns.AuctionatorExport`. Add unit tests in `tests/test_checkthat.lua` against fake context and settings, including a check that a call changes no saved variable; verify each fails when its source is stubbed wrong, then passes
-- [ ] 3.3 Cover the entries in the `offline:` block (`classify` Arcanite Bar 12360, `setting` for one public key, `integration checkthat`); verify `ct.py offline` passes
+- [x] 3.3 Cover the entries in the `offline:` block (`classify` Arcanite Bar 12360, `setting` for one public key, `integration checkthat`); verify `ct.py offline` passes
   - Blocked by 3.1: the block is written and passes only with a local TOC that expands `embeds.xml` and a copy without `covers:`.
 - [x] 3.4 Document each entry (name, args, returns, unknown result) in `docs/contracts.md`; verify the names match `tests/test_checkthat.lua`
 
@@ -70,7 +70,7 @@ Phases follow design D9. Phase 1 is groups 1 and 2 and can ship alone. Groups 3 
 ## 10. Integration checks
 
 - [x] 10.1 Run `make test` and `make check`; both pass
-- [ ] 10.2 Run `make plan`, `ct.py offline plans/keepthat.yaml` and `luajit ../wow-checkthat/tests/replay_plan.lua build/keepthat.ct`; no warning and no problem
+- [x] 10.2 Run `make plan`, `ct.py offline plans/keepthat.yaml` and `luajit ../wow-checkthat/tests/replay_plan.lua build/keepthat.ct`; no warning and no problem
   - `make plan` and the replay (with `plans/keepthat.replay.lua`) pass with no warning; `ct.py offline` is blocked by 3.1.
 - [x] 10.3 Where a step turns on a setting that `/kt set` or `/kt debug` accepts, put that command in the step's `commands:`; verify `make plan`
 - [x] 10.4 Run `ct.py coverage plans/keepthat.yaml --addon-src KeepThat` and confirm that requirement, command and setting coverage rose from 0 of 106, 3 of 12 and 0 of 9; note the remaining gaps in the PR body
