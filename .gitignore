@@ -2,6 +2,9 @@
 .release/
 *.zip
 
+# Compiled CheckThat plans (make plan)
+build/
+
 # Downloaded build inputs (tools/fetch_data.py recreates them)
 tools/data/
 tools/.cache/

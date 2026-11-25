@@ -17,7 +17,7 @@ function Context.Skills()
 end
 
 -- While debugging, record the profession ranks each time they change, with the Skills headers collapsed
--- now, so an in-game check reads them from the saved variables (test plan section 13).
+-- now, so an in-game check reads them from the saved variables (test plan check 9.1).
 local lastSkillsLine
 function Context.LogSkills(skills)
     local Log = ns.Log

@@ -205,7 +205,7 @@ do
     eq(P2.StockReadable(), true, "and stock can read it")
 end
 
--- While debugging, each turn on or off is recorded with the materials it lists (test plan 13.2).
+-- While debugging, each turn on or off is recorded with the materials it lists (test plan 9.2).
 do
     ns.Adapter.env = fakePJ(40)
     PJ.ClearFailures()

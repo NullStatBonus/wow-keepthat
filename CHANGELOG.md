@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.6.1
+
+- Changed: **Nothing changes in game.** This release updates the developer files and the test plan only.
+
 ## 0.6.0
 
 - New: **Cost estimate for leveling materials.** Turn on "Estimate leveling cost" under Auctionator on the Integrations page.

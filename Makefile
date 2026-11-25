@@ -1,4 +1,4 @@
-.PHONY: test test-lua test-py check catalog
+.PHONY: test test-lua test-py check catalog plan
 
 test: test-lua test-py
 
@@ -15,6 +15,15 @@ catalog:
 	@python3 tools/build-catalog.py --client forever
 	@python3 tools/build-routes.py --client era
 	@python3 tools/build-routes.py --client forever
+
+# Validate the in-game test plan and compile it to build/keepthat.ct with the sibling CheckThat
+# checkout (CT=../wow-checkthat by default; it needs its .venv, see its docs/setup.md). Not part of check.
+CT ?= ../wow-checkthat
+plan:
+	@test -f "$(CT)/tools/ct.py" || { echo "plan: no CheckThat checkout at $(CT) (set CT=<path>)" >&2; exit 1; }
+	@mkdir -p build
+	@"$(CT)/.venv/bin/python" "$(CT)/tools/ct.py" validate plans/keepthat.yaml
+	@"$(CT)/.venv/bin/python" "$(CT)/tools/ct.py" compile plans/keepthat.yaml -o build/keepthat.ct
 
 # The same checks the release workflow runs.
 check:

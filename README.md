@@ -189,9 +189,9 @@ Public keys use the active profile. `toast` (off), `tooltip` (on), `stock.remind
 
 ## For developers
 
-- `make test` runs the Lua and Python tests; `make check` runs the TOC, embeds and version checks.
+- `make test` runs the Lua and Python tests; `make check` runs the TOC, embeds and version checks; `make plan` validates and compiles the in-game test plan with a CheckThat checkout.
 - `make catalog` regenerates `KeepThat/Data/` from the DB2 tables and `tools/routes/`, `tools/endgame/`.
-- See `CLAUDE.md` for conventions and `docs/` for publishing, localization, the test plan and the client contracts.
+- See `CLAUDE.md` for conventions and `docs/` for publishing, localization and the client contracts. The in-game test plan is `plans/keepthat.yaml`, run with [CheckThat](https://github.com/NullStatBonus/wow-checkthat).
 
 ## License
 

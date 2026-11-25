@@ -18,6 +18,8 @@ ignore:
   - README.md
   - docs
   - openspec
+  - plans
+  - build
   - tests
   - test-commands.txt
   - tools

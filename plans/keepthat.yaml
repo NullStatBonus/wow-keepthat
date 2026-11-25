@@ -1,0 +1,482 @@
+ct: 1
+kind: plan
+addon: KeepThat
+title: KeepThat in-game test plan
+preamble: 'Manual in-game checks, only for what the unit tests cannot prove: real client hooks, drawing,
+  sound, and other addons. Run each section on WoW Forever and on Classic Era unless it says otherwise.
+  Section numbers are unique and in order; add new checks at the end of their section.
+
+
+  Before the checks, type |cff99ccff/kt debug on|r, then |cff99ccff/reload|r. After them, type |cff99ccff/kt
+  log|r, press Ctrl+A and Ctrl+C, and give the reviewer the copied report. Or copy |cff99ccffKeepThat.lua|r
+  from |cff99ccffWTF/Account/<account>/SavedVariables|r and say where it is. The |cff99ccffLog:|r line
+  is for the reviewer. Where a check has no |cff99ccffLog:|r line, the result shows only on screen.'
+logs:
+  debug:
+    global: KeepThatDB
+    path: global.log
+    format: strings
+    cap: 300
+requirements:
+  addon-loaded:
+    text: KeepThat is loaded
+    probe: addon-loaded
+    name: KeepThat
+  dfl:
+    text: DFL Profession Journal is installed
+    probe: addon-loaded
+    name: DFLProfessionJournal
+sections:
+- id: s1
+  title: Setup
+  steps:
+  - id: kt.s1.1
+    title: No Lua errors
+    action:
+      kind: manual
+      text: Copy |cff99ccffKeepThat/|r into |cff99ccffInterface/AddOns/|r, turn on Lua errors (|cff99ccff/console
+        scriptErrors 1|r), and log in.
+      commands:
+      - /console scriptErrors 1
+    expect: no error window appears.
+    verify:
+    - player
+- id: s2
+  title: Tooltip line
+  steps:
+  - id: kt.s2.1
+    title: Endgame item
+    action:
+      kind: manual
+      text: Hover Arcanite Bar in your bags.
+    expect: 'the tooltip has exactly one KeepThat line. It starts |cff99ccffKeepThat: Endgame:|r, names
+      Blacksmithing, and "Endgame" is purple. It can end with how many you own.'
+    verify:
+    - player
+  - id: kt.s2.2
+    title: Shift details
+    action:
+      kind: manual
+      text: Hover Arcanite Bar, then press and release Shift without moving the mouse.
+    expect: the recipe details appear while Shift is down and go away when it is up. The KeepThat line
+      never shows twice.
+    verify:
+    - player
+  - id: kt.s2.3
+    title: Chat link
+    action:
+      kind: manual
+      text: Send Arcanite Bar as a chat link (Shift-click it into the chat box), then click the link.
+    expect: the link tooltip has exactly one KeepThat line.
+    verify:
+    - player
+  - id: kt.s2.4
+    title: Profession window
+    action:
+      kind: manual
+      text: Open the Blacksmithing window and hover a reagent that is a marked material, such as Thorium
+        Bar.
+    expect: the reagent tooltip has exactly one KeepThat line.
+    verify:
+    - player
+  intro: 'Run every check on |cffffd100both clients|r: Classic Era (the |cff99ccffOnTooltipSetItem|r path)
+    and WoW Forever (the |cff99ccffTooltipDataProcessor|r path). Use the default settings. Have Blacksmithing
+    on the character and Arcanite Bar in your bags.'
+- id: s3
+  title: Loot toast
+  steps:
+  - id: kt.s3.1
+    title: Toast and sound
+    action:
+      kind: manual
+      text: Loot a marked material for the first time since the last |cff99ccff/reload|r.
+      commands:
+      - /reload
+    expect: a toast with the item icon and name appears at the saved position, the auction house sound
+      plays once, and the toast fades without a click.
+    verify:
+    - player
+    reload: after_action
+  - id: kt.s3.2
+    title: Click-through
+    action:
+      kind: manual
+      text: While a toast shows, click a unit behind it.
+    expect: the click targets the unit.
+    verify:
+    - player
+  - id: kt.s3.3
+    title: Sound pack
+    action:
+      kind: manual
+      text: Install an addon that adds LibSharedMedia sounds (for example SharedMedia) and choose one
+        of its sounds on Appearance. Loot a new marked material.
+    expect: you hear the chosen sound.
+    verify:
+    - player
+  intro: Turn on "Loot toast" on Appearance first. Use a marked material you can loot or gather, such
+    as Thorium Ore.
+- id: s4
+  title: Icon mask
+  steps:
+  - id: kt.s4.1
+    title: Blizzard bags and bank
+    action:
+      kind: manual
+      text: With Arcanite Bar in your bags and in the bank, and no bag addon installed, open the bank.
+    expect: both Arcanite Bar icons are purple, and the stack count and quality border stay readable.
+    verify:
+    - player
+    - reviewer
+    - assertions
+    reviewer: '[blizzard] hooked ... with the hooked bag and bank paths (ContainerFrame_Update on Classic
+      Era, ContainerFrame:UpdateItems on WoW Forever). Record the paths in docs/contracts.md for each
+      client.'
+    assertions:
+    - kind: log
+      source: debug
+      pattern: '^%[blizzard%] hooked '
+      scope: session
+  - id: kt.s4.2
+    title: Merchant
+    action:
+      kind: manual
+      text: Turn on leveling marks. Open a trade supplies vendor that sells a marked material, such as
+        Crystal Vial, and turn to the vendor's next page.
+    expect: on each page, only the marked materials are tinted.
+    verify:
+    - player
+    - reviewer
+    - assertions
+    reviewer: '[merchant] hooked ....'
+    assertions:
+    - kind: log
+      source: debug
+      pattern: '^%[merchant%] hooked '
+      scope: session
+  - id: kt.s4.3
+    title: Buyback
+    action:
+      kind: manual
+      text: Sell a marked material to a vendor, then open the Buyback tab.
+    expect: its icon is tinted.
+    verify:
+    - player
+  - id: kt.s4.4
+    title: Bag addon
+    action:
+      kind: manual
+      text: On WoW Forever, with Baganator, Bagnon or EllesmereUI Bags as your bag addon, open its bags.
+    expect: marked items are tinted, and empty slots are not.
+    verify:
+    - player
+    - reviewer
+    - assertions
+    reviewer: '[baganator] started, [bagnon] started or [ellesmereui] started, and no FAILED line for
+      it.'
+    assertions:
+    - kind: log
+      source: debug
+      contains: '[baganator] started'
+      diagnostic: true
+    - kind: log
+      source: debug
+      contains: '[bagnon] started'
+      diagnostic: true
+    - kind: log
+      source: debug
+      contains: '[ellesmereui] started'
+      diagnostic: true
+    - kind: log
+      source: debug
+      contains: FAILED
+      diagnostic: true
+    clients:
+    - forever-camelot
+  intro: 'Turn on the icon mask: |cff99ccff/kt|r > Icon mask. Keep "Show marks in" at its defaults.'
+- id: s5
+  title: Auctionator and Profession Journal
+  steps:
+  - id: kt.s5.1
+    title: Auctionator export
+    action:
+      kind: manual
+      text: With Auctionator loaded and at least one Tailoring leveling material still needed (its tooltip
+        shows "needed" and you carry fewer), export the Tailoring leveling materials from the Materials
+        page.
+    expect: 'Auctionator''s Shopping tab has a list "KeepThat: Tailoring Leveling" that includes that
+      material.'
+    verify:
+    - player
+  - id: kt.s5.2
+    title: Profession Journal sources
+    action:
+      kind: manual
+      text: With DFL Profession Journal loaded, pick a material from a step of its Tailoring route still
+        ahead of your skill (shown in its own window). Hover that material and hold Shift.
+    expect: the details list "DFL Profession Journal" among the sources.
+    verify:
+    - player
+  - id: kt.s5.3
+    title: Leveling cost estimate
+    action:
+      kind: manual
+      text: With Auctionator loaded and a recent scan, turn on "Estimate leveling cost" on the Integrations
+        page. Open Materials, then Tailoring.
+    expect: above the "Shopping list" section, a gold amount from Auctionator's last scan shows, or "At
+      least" an amount if some prices are missing.
+    verify:
+    - player
+    - reviewer
+    - assertions
+    reviewer: '[auctionator] estimate tailoring: <copper> copper, <n> priced, <n> unknown, and /kt probe
+      shows "present  GetAuctionPriceByItemID(14047) = <a number>" under "Auctionator prices".'
+    assertions:
+    - kind: log
+      source: debug
+      contains: /kt probe
+      diagnostic: true
+  - id: kt.s5.4
+    title: Cost in the tooltip
+    action:
+      kind: manual
+      text: With the estimate on, hold Shift over a Tailoring leveling material that you still need.
+    expect: the leveling details show "Estimated cost for" a number and an amount below the count, or
+      say no recent price is known.
+    verify:
+    - player
+  clients:
+  - forever-camelot
+  intro: On WoW Forever only, with Tailoring known and leveling marks on.
+- id: s6
+  title: Settings window
+  steps:
+  - id: kt.s6.1
+    title: Open settings
+    action:
+      kind: manual
+      text: Type |cff99ccff/kt|r.
+      commands:
+      - /kt
+    expect: the KeepThat window opens on Home.
+    verify:
+    - player
+  - id: kt.s6.2
+    title: Options launcher
+    action:
+      kind: manual
+      text: Open Esc > Options > AddOns > KeepThat > Materials and click |cffffd100Open KeepThat|r.
+    expect: the page shows the Open KeepThat button and no material list. The button closes the game's
+      Options window and opens KeepThat on Materials.
+    verify:
+    - player
+  - id: kt.s6.3
+    title: Copy Wowhead link
+    action:
+      kind: manual
+      text: Open Materials > Blacksmithing > Arcanite Bar and click "Copy Wowhead link".
+    expect: a box opens with the link selected, and Ctrl+C copies it.
+    verify:
+    - player
+  - id: kt.s6.4
+    title: Moved toast
+    action:
+      kind: manual
+      text: Turn on "Loot toast". On Appearance, click Move, drag the placeholder to a new place, and
+        click Done. Then loot a marked material.
+    expect: the toast appears where you dropped the placeholder.
+    verify:
+    - player
+  - id: kt.s6.5
+    title: Move in combat
+    action:
+      kind: manual
+      text: Start a fight, then click Move on Appearance and drag the placeholder. Press a movement key.
+    expect: no error appears, and your character moves.
+    verify:
+    - player
+  - id: kt.s6.6
+    title: AddOns list badge
+    action:
+      kind: manual
+      text: Open the game's AddOns list (Menu > AddOns).
+    expect: KeepThat shows its round "KEEP THAT!" badge next to its name.
+    verify:
+    - player
+  - id: kt.s6.7
+    title: Debug report window
+    action:
+      kind: manual
+      text: Type |cff99ccff/kt log|r, press Ctrl+A, then Ctrl+C.
+      commands:
+      - /kt log
+    expect: a window opens with the report, and Ctrl+C copies it.
+    verify:
+    - player
+    - reviewer
+    reviewer: the copied report starts with KeepThat <version>, client <client> and lists the settings,
+      the integration states and the failures.
+- id: s7
+  title: Cohesive presentation
+  steps:
+  - id: kt.s7.1
+    title: Demo
+    action:
+      kind: manual
+      text: Turn off real toasts, the tooltip and the tint. Type |cff99ccff/kt demo|r.
+      commands:
+      - /kt demo
+    expect: three labeled sample toasts, a sample item tooltip and a sample tint appear. The toasts and
+      the tint go away after about four seconds.
+    verify:
+    - player
+  - id: kt.s7.2
+    title: Settings layout
+    action:
+      kind: manual
+      text: Type |cff99ccff/kt|r after a |cff99ccff/reload|r and open each page.
+      commands:
+      - /kt
+      - /reload
+    expect: the window opens at its compact size, text wraps without covering a control, and every control
+      is reachable by scrolling.
+    verify:
+    - player
+    reload: after_action
+- id: s8
+  title: Cross-character stock
+  steps:
+  - id: kt.s8.1
+    title: Bank and mailbox are counted
+    action:
+      kind: manual
+      text: Open the bank, then the mailbox, then close both and type |cff99ccff/kt status stock|r.
+      commands:
+      - /kt status stock
+    expect: chat does not list this character as not counted.
+    verify:
+    - player
+    - reviewer
+    - assertions
+    reviewer: 'under Stock: in the report, the missing = line does not name this character.'
+    assertions:
+    - kind: log
+      source: debug
+      contains: 'Stock:'
+      diagnostic: true
+    - kind: log
+      source: debug
+      contains: missing =
+      diagnostic: true
+  - id: kt.s8.2
+    title: Take from the bank and close at once
+    action:
+      kind: manual
+      text: Open the bank, right-click a stack of Runecloth in it, and press Escape in the same moment.
+        Hover Runecloth.
+    expect: the |cff99ccffowned|r total is the same as before, or lower. It is never higher.
+    verify:
+    - player
+    - reviewer
+    - assertions
+    reviewer: '[stock] bank changed as it closed; not counted until it is opened again, when the game
+      reported the move after the close.'
+    assertions:
+    - kind: log
+      source: debug
+      contains: '[stock] bank changed as it closed; not counted until it is opened again'
+      diagnostic: true
+  - id: kt.s8.3
+    title: Take from the mailbox and close at once
+    action:
+      kind: manual
+      text: Open the letter with the Runecloth, click the attachment, and press Escape in the same moment.
+        Hover Runecloth.
+    expect: the |cff99ccffowned|r total is the same as before, or lower. It is never higher.
+    verify:
+    - player
+    - reviewer
+    - assertions
+    reviewer: '[stock] mail changed as it closed; not counted until it is opened again, when the game
+      reported the change after the close.'
+    assertions:
+    - kind: log
+      source: debug
+      contains: '[stock] mail changed as it closed; not counted until it is opened again'
+      diagnostic: true
+  intro: Use WoW Forever and Classic Era. Use a character with Tailoring, leveling marks and the tooltip
+    line on, and Runecloth in its bags, its bank and an unopened letter. Before each check, hover Runecloth
+    and note the |cff99ccffowned|r total.
+- id: s9
+  title: Leveling numbers
+  steps:
+  - id: kt.s9.1
+    title: Classic Era, collapsed Skills header
+    action:
+      kind: manual
+      text: Use a character with any profession; Cooking or First Aid count. On the Skills tab, collapse
+        the header the profession sits under (|cffffd100Professions|r, or |cffffd100Secondary Skills|r
+        for Cooking and First Aid), then type |cff99ccff/reload|r.
+      commands:
+      - /reload
+    expect: KeepThat reads the real skill rank while the header is collapsed.
+    verify:
+    - player
+    - reviewer
+    - assertions
+    reload: after_action
+    reviewer: '[skills] cooking=54; collapsed headers: Secondary Skills (your profession and rank).'
+    assertions:
+    - kind: log
+      source: debug
+      pattern: '^%[skills%] .*collapsed headers: [^(]'
+      scope: attempt
+    clients:
+    - classic-era
+  - id: kt.s9.2
+    title: WoW Forever with DFL Profession Journal
+    action:
+      kind: manual
+      text: On the Integrations page, turn |cffffd100DFL Profession Journal|r off, then on again.
+    expect: Profession Journal's materials leave KeepThat's lists when it is off and come back when it
+      is on, with no reload.
+    verify:
+    - player
+    - reviewer
+    - assertions
+    reviewer: '[professionjournal] off: 0 materials listed, then [professionjournal] on: N materials listed
+      (...) with N above 0.'
+    assertions:
+    - kind: log-sequence
+      source: debug
+      scope: attempt
+      sequence:
+      - pattern: '^%[professionjournal%] off: 0 materials listed'
+      - pattern: '^%[professionjournal%] on: [1-9]%d* materials listed'
+    clients:
+    - forever-camelot
+    requires:
+    - dfl
+  intro: The reviewer reads each result from its debug log, so there is nothing to look for on screen.
+- id: s10
+  title: Recipe status
+  steps:
+  - id: kt.s10.1
+    title: Tailoring recipes
+    action:
+      kind: manual
+      text: Use a character with Tailoring, with debug recording on and |cff99ccff/reload|r done (see
+        the top of this page). Open the Tailoring window.
+      commands:
+      - /reload
+    expect: KeepThat remembers your Tailoring recipes.
+    verify:
+    - player
+    - reviewer
+    reload: after_action
+    reviewer: '[recipes] tailoring complete=true known=<n>, and a [recipes] recipe probe: tailoring ...
+      stale=0 ... mismatches=0 line. The first probe line after the window opens can show stale=<n> and
+      mismatches; that read is not recorded.'
+  clients:
+  - forever-camelot
+  intro: 'WoW Forever only: Classic Era does not record recipe knowledge in this version.'
