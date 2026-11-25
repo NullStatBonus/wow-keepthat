@@ -205,7 +205,7 @@ do
     eq(P2.StockReadable(), true, "and stock can read it")
 end
 
--- While debugging, each turn on or off is recorded with the materials it lists (test plan 13.2).
+-- While debugging, each turn on or off is recorded with the materials it lists (test plan 9.2).
 do
     ns.Adapter.env = fakePJ(40)
     PJ.ClearFailures()
@@ -219,6 +219,16 @@ do
     local n = #recorded
     ns.Context.Invalidate()
     eq(#recorded, n, "unchanged: not recorded again")
+    local facts = {}
+    ns.CheckThat = { Report = function(k, v) facts[#facts + 1] = k .. "=" .. tostring(v) .. ":" .. type(v) end }
+    active = false
+    ns.Context.Invalidate()
+    active = true
+    ns.Context.Invalidate()
+    eq(facts[1], "pj.listed=0:number", "pj.listed: off reports 0 as a number")
+    eq(facts[2], "pj.listed=3:number", "pj.listed: on reports the materials listed as a number")
+    eq(#facts, 2, "pj.listed: once per change")
+    ns.CheckThat = nil
     active = false
     ns.Context.Invalidate()
     eq(recorded[#recorded], "professionjournal: off: 0 materials listed", "off recorded")

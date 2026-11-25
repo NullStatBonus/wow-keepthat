@@ -8,10 +8,38 @@ local A = ns.Adapter
 local Merchant = { KEY = "merchant" }
 ns.Merchant = Merchant
 
+local lastShown   -- the key of the last "tinted" line; cleared when the merchant closes
+
+-- One debug line each time a page is shown: not again while the page and its counts stay the same.
+local function logTinted(slots, buyback, page)
+    if not (ns.Log and ns.Log.Record) then return end
+    local n, m = 0, 0
+    for _, slot in ipairs(slots) do
+        if type(slot[2]) == "number" then
+            m = m + 1
+            if A.TextureShown(ns.Overlay.TextureFor(slot[1])) then n = n + 1 end
+        end
+    end
+    local where = buyback and "buyback" or ("page " .. (page or 1))
+    local key = ("%s:%d:%d"):format(where, n, m)
+    if key == lastShown then return end
+    lastShown = key
+    ns.Log.Record(Merchant.KEY, ("tinted %d of %d on %s"):format(n, m, where))
+end
+
 function Merchant.Paint()
-    for _, slot in ipairs((A.MerchantSlots())) do
+    local slots, buyback, page = A.MerchantSlots()
+    for _, slot in ipairs(slots) do
         ns.Overlay.Apply(slot[1], slot[2], "merchant", nil, Merchant.KEY)
     end
+    logTinted(slots, buyback, page)
+end
+
+-- Opening the merchant again shows its page again, so the next paint writes its line again.
+if ns.Start then
+    ns.Start(function(addon)
+        if ns.Listen then ns.Listen(addon, "MERCHANT_CLOSED", function() lastShown = nil end) end
+    end)
 end
 
 function Merchant.Detect()

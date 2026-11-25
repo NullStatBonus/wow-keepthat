@@ -306,3 +306,71 @@ From the generated API docs and Blizzard UI source on wow-api: classic_era 1.15.
 - **`IsPlayerSpell(spellID)` is reliable for recipes.** It agreed with the loaded `learned` flag for every row (Tailoring 470 of 470, Enchanting 262, First Aid 32), and was right even during the stale first read.
 - **`NEW_RECIPE_LEARNED` carries the recipe's spell ID** when the recipe is learned from a trainer with the window closed (2385). The record updates at once, so the `K.Unsure` fallback stays unwired. `LEARNED_SPELL_IN_TAB` and `LEARNED_SPELL_IN_SKILL_LINE` did not fire.
 - Still open: does `GetRecipeInfo` answer with the window closed? This probe read it only with the window open.
+
+## CheckThat (API_VERSION 2; read from CheckThat's `docs/features.md` and `tools/entry_runner.lua`, 2026-11-25)
+
+KeepThat makes every CheckThat call in `KeepThat/Integrations/CheckThat.lua` (Gate key `checkthat`, `anyClient`, no toggle, no Integrations page row). CheckThat is not in `OptionalDeps`: CheckThat lists KeepThat, so KeepThat loads first.
+
+### What CheckThat provides
+
+- `CheckThat.API_VERSION` is 2. Later versions only add.
+- `CheckThat.Report(addon, key, value)` records `[addon] key=value` and returns true. It returns false and records nothing when no run is open, an argument is refused or the rate limit drops the fact. It does not raise by design. `addon` is 1 to 32 of `[%w_-]`; `key` is 1 to 48 of `[%w_.-]`; `value` is text up to 120 characters with no control characters, a finite number or a boolean. 30 facts a second per addon; the list (`CheckThatDB.global.facts`) keeps the newest 300 lines.
+- `CheckThat.Entry(addon, name, fn)` stores an entry and returns true (name up to 42 of `[%w_-]`). Register at `PLAYER_LOGIN`: CheckThat loads after the addons it lists. A step's `call` runs the entry when the step opens; the outcome is the fact `[KeepThat] entry.<name>=<returns joined by commas>`, or `(none)` for no returns, `threw: <text>`, `not registered`, `refused: in combat`. A fact reported before a step opened does not count for that step.
+- Version encoding: `major*10000 + minor*100 + patch` (CheckThat 0.17.0 is 1700; KeepThat 0.7.0 is 700).
+- Lua errors while a run is open: `CheckThatDB.global.errors` (strings, quiet, 100 lines).
+
+### How KeepThat uses it
+
+- `ns.CheckThat.Report(key, value)` is a no-op unless the integration is active and `CheckThat.Report` exists. A false return is normal. An error raised inside the call turns the integration off for the session (`[checkthat] FAILED: Report: <error>` in `/kt log`) and no later call is made. An error from `CheckThat.Entry` does the same (`FAILED: Entry: ...`).
+- Entries register on an AceAddon module of their own (`CheckThat`), at `PLAYER_LOGIN`, or at once when the Gate starts the integration after login (`ns.Adapter.LoggedIn()`). Log: `[checkthat] started` (the Gate), then `[checkthat] entries registered: <n>`.
+- Each entry body runs in `pcall`. An error records `[checkthat] FAILED: entry <name>: <message>` and returns `error: <message>` cut to 100 characters; it does not turn the integration off. No entry writes saved variables, and no result holds a character name.
+
+### Entries
+
+| Entry | Args | Returns | Nothing when |
+| --- | --- | --- | --- |
+| `version` | none | the KeepThat version as one number (0.7.0 is 700) | the version is unknown or does not parse (`ns.version` from the TOC metadata) |
+| `classify` | itemID | `<category>:<profession>` joined with `;`, endgame first, such as `endgame:blacksmithing;endgame:engineering` (current settings and skills) | the item is unmarked |
+| `needed` | itemID, profession | the count still needed (the high end of the range) | no route gives a count |
+| `exportCount` | profession, category | the number of materials the export would list, then the list name (`KeepThat: Tailoring Leveling`); writes no list | Auctionator support is not loaded |
+| `setting` | public key (`/kt help appearance`) | the value `/kt get` prints (`on`, `off`, a number) | the key is unknown |
+| `integration` | Gate key | `working`, or the Gate reason (`not detected`, `off`, `not on Classic Era`, `not started`, `failed: ...`) | no Gate |
+| `stockCounted` | none | true when this character's bank and mailbox are both counted, false when one is not | stock is unknown |
+
+### Facts
+
+| Key | Value | Written |
+| --- | --- | --- |
+| `toast.seq` | number, 1, 2, 3, ... per toast shown this session | `Toast.Handle`, when a toast is shown |
+| `export.items` | number of searches written | `Auctionator.Export`, after the list is written |
+| `estimate.copper` | number, the estimate in copper | `Auctionator.EstimateLines`, only when the estimate summary changes |
+| `pj.listed` | number of Profession Journal materials listed (0 when off) | the Profession Journal toggle, next to its `on`/`off` line |
+
+### Debug lines the plan checks
+
+Wording is fixed: a reword is a plan change (`plans/keepthat.yaml`). `ct lines plans/keepthat.yaml --addon-src KeepThat` fails when the source no longer writes a line or fact key the plan asserts.
+
+| Line | Written | Plan step |
+| --- | --- | --- |
+| `[tooltip] line added <itemID> via <path>` (`postcall` or `settitem`) | once per item and path per session | kt.s2.1, s2.3, s2.4 (diagnostic) |
+| `[tooltip] line skipped <itemID>: already on this tooltip` | once per item per session | kt.s2.2 (diagnostic) |
+| `[toast] shown <itemID>` | a toast is shown | kt.s3.1 |
+| `[toast] skipped <itemID>: shown this session` | once per item per session | none |
+| `[toast] sound <name> on <channel>` | the saved sound played | kt.s3.3 |
+| `[toast] sound <name> unavailable; played the default` | the saved sound is gone, the default played | none |
+| `[toast] move started`, `[toast] move done at <point> <x> <y>`, `[toast] move cancelled` | Move mode on Appearance; a move in combat is allowed today and writes no other line | kt.s6.4 |
+| `[merchant] tinted <n> of <m> on page <p>`, `[merchant] tinted <n> of <m> on buyback` | once per page shown (a repaint with the same page and counts writes nothing; closing the vendor resets it) | kt.s4.2, s4.3 |
+| `[auctionator] export <profession> <category>: <n> items` | after the list is written | kt.s5.1 |
+| `[auctionator] estimate on`, `[auctionator] estimate off` | the "Estimate leveling cost" toggle; each resets the last estimate line so the next page draw writes it again | kt.s5.3 |
+| `[options] opened <page>` | `Options.Open` | kt.s6.1 |
+| `[options] launcher closed the game's Options and opened <page>` | the Open KeepThat button in the game's Options | kt.s6.2 |
+| `[demo] started: toasts=<n> tooltip=<bool> tint=<bool>`, `[demo] ended` | `/kt demo`; `ended` when the tint sample hides (only when the tint showed) | kt.s7.1 |
+| `[stock] bank counted: <n> materials`, `[stock] mailbox counted: <n> materials` | a bank or inbox reading replaced the record; n is the number of tracked materials in it; once per visit unless n changes | kt.s8.1 |
+| `[checkthat] entries registered: <n>` | the entries were registered | kt.s1.1 (diagnostic) |
+
+### Fake client limits (installed CheckThat skills 0.20.1, 2026-11-25)
+
+- `ct offline` follows `embeds.xml` and accepts `covers:`: AceAddon, AceDB and the Gate start, and the plan's 7 offline steps pass as written.
+- `ct offline` reads `offline.toc` inside `--addons`, by default the folder above this repository, so the plan names `wow-keepthat/KeepThat/KeepThat_Vanilla.toc`. A clone in another folder needs `--addons` or a matching folder name.
+- The fake client has no TOC metadata, so the `version` entry returns nothing there.
+- `ct replay-flow` needs no hooks file: it writes the lines and facts each step expects itself ("evidence assumed": 21 checks on Forever, 14 on Classic Era). It proves the plan flow, not that KeepThat writes them; `ct lines --addon-src KeepThat` proves that (25 found, 0 missing).

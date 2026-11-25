@@ -401,4 +401,4 @@ Before claiming visual acceptance, review on each supported client at matching U
 - Move edge clamping, Done/Cancel/Escape, lock, scope changes, keyboard propagation and combat.
 - Two-character persistence and diagnostic confirmation/copy behavior.
 
-Capture comparable Home, Appearance, tooltip, toast and relevant prompt screenshots. KT's detailed checklist is in [docs/test-plan.md](docs/test-plan.md). In-game captures and exact comparison against CVN remain pending; the values above describe code decisions, not measured screenshots.
+Capture comparable Home, Appearance, tooltip, toast and relevant prompt screenshots. KT's detailed checklist is the in-game test plan, [plans/keepthat.yaml](plans/keepthat.yaml). In-game captures and exact comparison against CVN remain pending; the values above describe code decisions, not measured screenshots.

@@ -100,6 +100,16 @@ for itemID in pairs(ns.Data.Routes.materials.tailoring) do
     if n and (not n.high or n.high > 0) and names[itemID] then count = count + 1 end
 end
 eq(#tl, count, "one search per Tailoring leveling material still needed from the skill")
+do
+    local facts, recorded, realLog = {}, {}, ns.Log
+    ns.CheckThat = { Report = function(k, v) facts[#facts + 1] = { k, v } end }
+    ns.Log = { Record = function(a, m) recorded[#recorded + 1] = "[" .. a .. "] " .. m end, Failure = realLog.Failure }
+    AH.Export("tailoring", "leveling")
+    eq(recorded[#recorded], "[auctionator] export tailoring leveling: " .. count .. " items", "export: the debug line names profession, category and count")
+    eq(#facts, 1, "export.items: reported once")
+    eq(facts[1][1] .. "=" .. tostring(facts[1][2]) .. ":" .. type(facts[1][2]), "export.items=" .. count .. ":number", "export.items: the number of searches")
+    ns.CheckThat, ns.Log = nil, realLog
+end
 
 carry = need.high - 1
 AH.Export("tailoring", "leveling")
@@ -242,6 +252,18 @@ do
     prices[2] = nil
     lines()
     eq(#logged, 2, "a changed result is logged again")
+    -- CheckThat gets the total once per changed summary; turning the setting off and on logs it again.
+    local facts = {}
+    ns.CheckThat = { Report = function(k, v) facts[#facts + 1] = { k, v } end }
+    prices[1], prices[2] = 5000, 10000
+    lines(); lines()
+    eq(#facts, 1, "estimate.copper: reported once for an unchanged result")
+    eq(facts[1][1] .. "=" .. tostring(facts[1][2]) .. ":" .. type(facts[1][2]), "estimate.copper=200000:number", "estimate.copper: the total as a number")
+    ns.AuctionatorExport.ResetEstimate()
+    lines()
+    eq(#facts, 2, "ResetEstimate: the next draw reports and logs the estimate again")
+    eq(logged[#logged], "[auctionator] estimate tailoring: 200000 copper, 2 priced, 0 unknown", "ResetEstimate: the line is logged again")
+    ns.CheckThat = nil
     ns.defaults.profile.debug = false
     ns.addon = nil
     prices[1], prices[2] = nil, nil

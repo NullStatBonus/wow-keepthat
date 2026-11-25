@@ -240,7 +240,7 @@ end
 -- Drop the cached reads on every context change from load, not only once started: stock reads them
 -- while the integration is off, and Profession Journal may load after the first read.
 -- While debugging, record each turn on or off with the materials it lists, so an in-game check reads it
--- from the saved variables (test plan section 13).
+-- from the saved variables (test plan check 9.2).
 local lastOn
 function PJ.LogToggle()
     local Log = ns.Log
@@ -255,6 +255,7 @@ function PJ.LogToggle()
     end
     Log.Record("professionjournal", ("%s: %d materials listed%s"):format(now and "on" or "off", total,
         #parts > 0 and (" (" .. table.concat(parts, " ") .. ")") or ""))
+    if ns.CheckThat then ns.CheckThat.Report("pj.listed", total) end
 end
 
 if ns.Context and ns.Context.OnChange then

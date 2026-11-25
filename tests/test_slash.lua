@@ -52,6 +52,22 @@ local out = ns.Slash.Run("demo", d2)
 eq(tested, 1, "/kt demo shows the sample visuals")
 eq(out[1]:find("sample toasts", 1, true) ~= nil, true, "and says what it shows")
 
+-- /kt demo logs what it showed, and "ended" once when the tint sample hides.
+local rec = {}
+ns.Log = { Record = function(area, m) rec[#rec + 1] = "[" .. area .. "] " .. m end }
+local endTint
+local dd = { testToastAll = function() return 3 end, testTooltip = function() return true end,
+    showTint = function(onEnd) endTint = onEnd; return true end }
+ns.Slash.Demo(dd)
+eq(rec[1], "[demo] started: toasts=3 tooltip=true tint=true", "demo start line")
+eq(#rec, 1, "no ended line before the tint hides")
+endTint()
+eq(rec[2], "[demo] ended", "demo ended line when the tint hides")
+dd.testToastAll = function() return 0 end; dd.testTooltip = function() return true end; dd.showTint = function() return false end
+ns.Slash.Demo(dd)
+eq(rec[3], "[demo] started: toasts=0 tooltip=true tint=false", "demo start line when only the tooltip showed")
+ns.Log = nil
+
 -- /kt test <type>: one explicit in-game test (like /cvn test <kind>).
 local ran = {}
 local d3 = { open = function() end, setDebug = function() end, report = function() return "" end, show = function() end,

@@ -99,8 +99,11 @@ local function setup(kind)
             return results[id]
         end,
     }
-    local failures = {}
-    ns.Log = { Failure = function(area, msg) failures[#failures + 1] = { area = area, msg = msg } end }
+    local failures, logs = {}, {}
+    ns.Log = {
+        Failure = function(area, msg) failures[#failures + 1] = { area = area, msg = msg } end,
+        Record = function(area, msg) logs[#logs + 1] = ("[%s] %s"):format(area, msg) end,
+    }
     local events = {}
     local addon = { db = { profile = copy(ns.defaults.profile) } }
     function addon:RegisterEvent(e, fn) events[e] = fn end
@@ -111,7 +114,7 @@ local function setup(kind)
     H.load("UI/Tooltip.lua", ns)
     eq(#starters, 1, kind .. ": the tooltip registers one starter")
     starters[1](addon)
-    return { ns = ns, env = env, tips = tips, show = show, failures = failures, events = events,
+    return { ns = ns, env = env, tips = tips, show = show, failures = failures, events = events, logs = logs,
         profile = addon.db.profile, postCalls = postCalls }
 end
 
@@ -275,6 +278,22 @@ do
     local ok = pcall(s.show, tip, ARCANITE)
     eq(ok, true, "an erroring AddLine does not raise")
     eq(s.failures[1] and s.failures[1].area, "tooltip", "an erroring AddLine is logged")
+end
+
+-- Debug lines (design D6): one per item and path, however often the tooltip refills.
+for _, kind in ipairs({ "postcall", "settitem" }) do
+    local s = setup(kind)
+    local tip = s.tips.GameTooltip
+    for _ = 1, 50 do s.show(tip, ARCANITE) end
+    eq(#s.logs, 1, kind .. ": 50 refreshes write one line")
+    eq(s.logs[1], "[tooltip] line added 12360 via " .. kind, kind .. ": the added line")
+    for _ = 1, 50 do tip:Fill() end
+    eq(#s.logs, 2, kind .. ": 50 duplicate fills write one more line")
+    eq(s.logs[2], "[tooltip] line skipped 12360: already on this tooltip", kind .. ": the skipped line")
+    s.show(tip, THORIUM)
+    eq(s.logs[3], "[tooltip] line added 12359 via " .. kind, kind .. ": another item logs again")
+    s.show(tip, 1)
+    eq(#s.logs, 3, kind .. ": an unmarked item writes nothing")
 end
 
 -- No hook on the client: logged, nothing raises, no event registered.

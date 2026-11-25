@@ -14,7 +14,7 @@ local function idFromLink(link)
 end
 
 -- The merchant's item buttons on screen and the item each shows: { { button, itemID }, ... }.
--- buyback: true when the frame shows the buyback tab.
+-- buyback: true when the frame shows the buyback tab. A third value is the page number (nil on buyback).
 function A.MerchantSlots()
     local out = {}
     local frame = A.Resolve("MerchantFrame")
@@ -41,7 +41,15 @@ function A.MerchantSlots()
             out[#out + 1] = { button, id }
         end
     end
-    return out, false
+    return out, false, page
+end
+
+-- True when a texture of ours is on screen; nil when it cannot say.
+function A.TextureShown(tex)
+    if type(tex) ~= "table" then return nil end
+    local ok, shown = pcall(function() return tex:IsShown() end)
+    if not ok then return nil end
+    return shown and true or false
 end
 
 -- Installs fn() after each merchant and buyback redraw; returns the names hooked.

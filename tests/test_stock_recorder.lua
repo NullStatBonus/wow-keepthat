@@ -72,7 +72,14 @@ ns.Context = { Get = function()
              settings = settings }
 end }
 local failures = {}
-ns.Log = { Failure = function(area, m) failures[#failures + 1] = area .. ": " .. tostring(m) end }
+local recorded = {}
+ns.Log = { Failure = function(area, m) failures[#failures + 1] = area .. ": " .. tostring(m) end,
+    Record = function(area, m) recorded[#recorded + 1] = "[" .. area .. "] " .. m end }
+local function recordedCount(line)
+    local n = 0
+    for _, r in ipairs(recorded) do if r == line then n = n + 1 end end
+    return n
+end
 local notified = 0
 ns.Options = { NotifyChange = function() notified = notified + 1 end }
 local starter
@@ -155,6 +162,7 @@ frame()
 me = meRec()
 eq(me.bank.c[-1].items[RUNE], 8, "bank read at open")
 eq(me.bank.expected[3], 7, "bank expected enumerated")
+eq(recordedCount("[stock] bank counted: 1 materials"), 1, "bank reading logs one counted line")
 local before = R.Total(RUNE)
 eq(before, 20, "bags + bank")
 W.now = W.now + 60
@@ -163,6 +171,7 @@ fire("BAG_UPDATE", 0)
 fire("PLAYERBANKSLOTS_CHANGED", 3) -- classic: the main bank container
 frame()
 me = meRec()
+eq(recordedCount("[stock] bank counted: 1 materials"), 1, "an unchanged count is not logged again")
 eq(me.bags.c[0].items[RUNE], 2, "bags 10 fewer")
 eq(me.bank.c[-1].items[RUNE], 18, "bank 10 more")
 eq(me.bank.c[-1].t, W.now, "bank container time updated")
@@ -201,6 +210,7 @@ eq(me.bank.c[7].items[RUNE], 2, "other containers keep their counts")
 W.c[6] = nil -- keep the earlier failed container empty for the totals below
 fire("BANKFRAME_OPENED"); frame()
 eq(meRec().bank.c[-1].items[RUNE], 99, "read again on the next visit")
+eq(recordedCount("[stock] bank counted: 1 materials"), 2, "a new visit logs the counted line again")
 W.c[-1] = { [RUNE] = 18 }; fire("BAG_UPDATE", -1); frame()
 -- Opened and closed before the first read, no change reported: processing rechecks, nothing forgotten.
 fire("BANKFRAME_OPENED")
@@ -217,12 +227,14 @@ fire("MAIL_INBOX_UPDATE")
 frame()
 me = meRec()
 eq(me.mail.items[RUNE], 5, "inbox read")
+eq(recordedCount("[stock] mailbox counted: 1 materials"), 1, "inbox reading logs one counted line")
 W.now = W.now + 60
 W.inbox = {}; W.c[0][RUNE] = 7
 fire("BAG_UPDATE", 0)
 fire("MAIL_INBOX_UPDATE")
 frame()
 me = meRec()
+eq(recordedCount("[stock] mailbox counted: 0 materials"), 1, "a changed count is logged again")
 eq(me.mail.items[RUNE], nil, "mailbox drops by 5")
 eq(me.bags.c[0].items[RUNE], 7, "bags rise by 5")
 eq(R.Total(RUNE), 7 + 18 + 2, "total unchanged after taking mail")
@@ -244,6 +256,7 @@ eq(notified > 0, true, "options told of changes")
 W.inbox = {}
 fire("MAIL_SHOW"); fire("MAIL_INBOX_UPDATE"); frame()
 eq(meRec().mail ~= nil, true, "read again on the next visit")
+eq(recordedCount("[stock] mailbox counted: 0 materials"), 2, "a new visit logs the counted line again")
 fire("MAIL_CLOSED")
 eq(meRec().mail ~= nil, true, "a normal close keeps the mailbox counted")
 W.now = W.now + 11

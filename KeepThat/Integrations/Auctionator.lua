@@ -187,6 +187,7 @@ function Auctionator.EstimateLines(profession)
     if summary ~= Auctionator.lastSummary then
         Auctionator.lastSummary = summary
         if ns.Log then ns.Log.Record("auctionator", summary) end
+        if ns.CheckThat then ns.CheckThat.Report("estimate.copper", est.copper) end
     end
     if est.priced == 0 then return { L["No cost estimate is available for these materials."] } end
     if est.unknown == 0 then return { L["Estimated cost: %s, from Auctionator's last scan."]:format(money(est.copper)) } end
@@ -249,13 +250,19 @@ function Auctionator.Export(profession, category)
     end
     local okCreate, err = pcall(v1.CreateShoppingList, Auctionator.CALLER, Auctionator.ListName(profession, category), searches)
     if not okCreate then return failure("CreateShoppingList: " .. tostring(err)) end
+    if ns.Log then ns.Log.Record("auctionator", ("export %s %s: %d items"):format(profession, category, #searches)) end
+    if ns.CheckThat then ns.CheckThat.Report("export.items", #searches) end
     return true, #searches
 end
 
+-- Turning the estimate setting on or off logs the next page draw's estimate line again.
+function Auctionator.ResetEstimate() Auctionator.lastSummary = nil end
+
 -- For the options page (Settings).
 ns.AuctionatorExport = { Export = Auctionator.Export, Available = Auctionator.Available,
+    Materials = Auctionator.Materials, ListName = Auctionator.ListName,
     EstimateLines = Auctionator.EstimateLines, EstimateAvailable = Auctionator.EstimateAvailable,
-    EstimateReason = Auctionator.EstimateReason }
+    EstimateReason = Auctionator.EstimateReason, ResetEstimate = Auctionator.ResetEstimate }
 
 if ns.Integrations and ns.Integrations.Register then
     ns.Integrations.Register("auctionator", { detect = Auctionator.Detect, start = Auctionator.Start })

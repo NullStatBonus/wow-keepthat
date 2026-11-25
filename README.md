@@ -114,6 +114,7 @@ When DFL Profession Journal is installed, its leveling route counts as one more 
 - Profession Journal's live plan (which changes with your bags and prices) is not used; KeepThat uses its fixed route for your faction, so the counts stay steady.
 - Turning Profession Journal off on the Integrations page removes the materials only its route uses from Materials, `/kt find`, the leveling counts and the Auctionator lists at once; turning it on brings them back. No reload needed. Stock keeps counting them either way.
 - Where Profession Journal gives no count for the steps still ahead, KeepThat shows no count rather than claiming you have enough.
+- KeepThat also works with [CheckThat](https://github.com/NullStatBonus/wow-checkthat), the in-game test runner, on both clients. This support has no setting and no row on the Integrations page, and it changes nothing you see. Without CheckThat, or with an older copy, KeepThat works the same. `/kt log` lists it as `checkthat` under "Integrations:" with the other integrations; if a CheckThat call fails, KeepThat stops calling it for the session and the report names the reason.
 
 ### Stock across characters
 
@@ -174,7 +175,7 @@ Search Materials by part of an item name and press Enter. Clear search works fro
 | `/kt demo` | Shows three synthetic loot toasts, a private mouse tooltip and an isolated tint sample even with features off. Repeating replaces samples; real loot state remains separate. |
 | `/kt debug on` | Starts recording diagnostics. |
 | `/kt debug off` | Stops recording. |
-| `/kt log` | Opens a window with the debug report (every setting, each integration's state, failures and recorded lines) that you can select and copy. |
+| `/kt log` | Opens a window with the debug report (every setting, each integration's state, including CheckThat, failures and recorded lines) that you can select and copy. |
 | `/kt probe` | Opens a window with a report on the game's API (for bug reports). |
 | `/kt probe hover` | The same for the item under the mouse. |
 | `/kt probe path <name>` | Describes one global table, e.g. `DFLProfessionJournalNS.API`. |
@@ -189,9 +190,9 @@ Public keys use the active profile. `toast` (off), `tooltip` (on), `stock.remind
 
 ## For developers
 
-- `make test` runs the Lua and Python tests; `make check` runs the TOC, embeds and version checks.
+- `make test` runs the Lua and Python tests; `make check` runs the TOC, embeds and version checks; `make plan` checks the in-game test plan with the installed CheckThat tools (`ct`; see `docs/test-plan.md`).
 - `make catalog` regenerates `KeepThat/Data/` from the DB2 tables and `tools/routes/`, `tools/endgame/`.
-- See `CLAUDE.md` for conventions and `docs/` for publishing, localization, the test plan and the client contracts.
+- See `CLAUDE.md` for conventions and `docs/` for publishing, localization and the client contracts. The in-game test plan is `plans/keepthat.yaml`, run with [CheckThat](https://github.com/NullStatBonus/wow-checkthat); `KeepThat/Integrations/CheckThat.lua` gives it facts and entry points (see `docs/contracts.md`).
 
 ## License
 
