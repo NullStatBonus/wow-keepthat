@@ -48,7 +48,16 @@ Measured 2026-11-15, with EllesmereUI 9.8.6 (Bags module), Auctionator 347 and D
   - A call with a bad `callerID` or a non-number itemID raises an error, so every call stays in `pcall`.
   - KeepThat counts a price only when the age is also a number.
 
-### DFL Profession Journal (3.16.76)
+### DFL Profession Journal (3.16.76, re-checked at 3.16.97)
+
+#### Re-check, 3.16.97 (2026-11-27; CurseForge release of 2026-11-17, read from a scratch copy, nothing copied)
+
+- Forever only: interface 16001, no Classic Era build.
+- Still present, unchanged in shape: `DFLPJ_OpenPage`, `DFLPJ_ToggleJournal`, `DFLPJ_ToggleTracker`, `Leveling.OrderedSteps(steps, faction)`, `API.Faction()`, `UI:OpenRecipeInJournal(profession, spellID, name)`, and the "Your route" tooltip row behind `tooltipUse`.
+- Route data: the changelog from 3.16.76 to 3.16.97 lists no route-data change and the pipeline id is still `dfl-professions-2026-09-27`, but `DataCore.lua` is about 0.2% larger (3,031,455 bytes against 3,025,871). Treat route values as unverified between the two builds.
+- New: a LibDataBroker launcher (`Broker.lua`) beside the minimap crest, Farming pages for Riverglades, Zephras Isle, Mount Hyjal and Shen'dralas, loot and vendor-price recording from the player's own play (`/pj loot`), and an auction-window Make, Materials and Post redesign.
+- `GuideComparisonData.lua` names other Forever guides it compared against: wow-professions.com/forever, classicwowforever.com and zockify.com, with dates from 2025-02 to 2026-09.
+
 
 - Folder `DFLProfessionJournal`, plus a load-on-demand data addon for each profession: `DFLProfessionJournal_Data_<Profession>`. On login only Alchemy, Cooking, Engineering, FirstAid, Fishing, Herbalism and Skinning were loaded; the others probably load when that profession is opened.
 - Namespace exposed as the global `DFLProfessionJournalNS` (102 keys), including `API`, `Integration`, `Leveling`, `GuideData`, `ActiveGuide`, `CurrentStep`, `FindRecipe` and `ItemFacts`.

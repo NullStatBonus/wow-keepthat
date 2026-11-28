@@ -1,10 +1,12 @@
 # guide: RankedBoost
 # url: https://rankedboost.com/world-of-warcraft/forever/professions/blacksmithing-leveling/
-# checked: 2026-11-15
+# checked: 2026-11-27
 # Facts only (skill range, recipe, crafts) from the guide's route steps; no text copied.
-1-44 | Rough Sharpening Stone | 65
-44-75 | Copper Chain Pants | 45
-75-95 | Bronze Mace | 20
+1-40 | Rough Sharpening Stone | 53
+40-50 | Coarse Weightstone | 16
+50-75 | Coarse Grinding Stone | 39
+75-79 | Coarse Grinding Stone | 12
+79-95 | Bronze Mace | 16
 95-140 | Rough Bronze Leggings | 57
 140-150 | Silvered Bronze Gauntlets | 12
 150-155 | Silvered Bronze Gauntlets | 9

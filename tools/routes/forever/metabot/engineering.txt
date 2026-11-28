@@ -1,29 +1,31 @@
 # guide: Metabot
 # url: https://metabot.gg/en/wow-forever/professions/engineering
-# checked: 2026-11-15
+# checked: 2026-11-27
 # Facts only (skill range, recipe, crafts) from the guide's route steps; no text copied.
 1-38 | Rough Blasting Powder | 61
-38-40 | Crafted Light Shot | 3
-40-57 | Handful of Copper Bolts | 28
-57-68 | Rough Copper Bomb | 13
-68-75 | Arclight Spanner | 8
-75-80 | Copper Tube | 5
-80-93 | Coarse Blasting Powder | 20
-93-94 | Coarse Dynamite | 2
-94-107 | Copper Modulator | 16
-107-111 | Silver Contact | 4
-111-120 | Practice Lock | 10
-120-139 | Heavy Blasting Powder | 28
-139-140 | Whirring Bronze Gizmo | 2
-140-145 | Bronze Framework | 5
-145-160 | Aquadynamic Fish Attractor | 19
-160-170 | Bronze Framework | 17
-170-181 | Solid Blasting Powder | 12
-181-200 | Gyromatic Micro-Adjustor | 32
-200-205 | Recipe: Goblin Rocket Fuel | 5
-205-240 | Hi-Impact Mithril Slugs | 59
-240-245 | Mithril Gyro-Shot | 5
-245-258 | Dense Blasting Powder | 20
+38-45 | Crafted Light Shot | 12
+45-60 | Handful of Copper Bolts | 50
+60-70 | Rough Copper Bomb | 12
+70-80 | Arclight Spanner | 14
+80-85 | Copper Tube | 6
+85-93 | Coarse Blasting Powder | 15
+93-95 | Coarse Dynamite | 3
+95-108 | Copper Modulator | 17
+108-110 | Large Copper Bomb | 3
+110-115 | Silver Contact | 6
+115-120 | Practice Lock | 6
+120-125 | Large Copper Bomb | 8
+125-139 | Heavy Blasting Powder | 23
+139-145 | Whirring Bronze Gizmo | 9
+145-150 | Bronze Framework | 6
+150-160 | Aquadynamic Fish Attractor | 14
+160-175 | Bronze Framework | 28
+175-181 | Solid Blasting Powder | 7
+181-206 | Gyromatic Micro-Adjustor | 52
+206-210 | Unstable Trigger | 5
+210-245 | Hi-Impact Mithril Slugs | 80
+245-250 | Mithril Gyro-Shot | 6
+250-258 | Dense Blasting Powder | 15
 258-275 | Mithril Gyro-Shot | 39
 275-282 | Large Blue Rocket Cluster | 11
 282-285 | Thorium Widget | 4

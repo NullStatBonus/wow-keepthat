@@ -117,8 +117,8 @@ H.load("Data/Routes_Forever.lua", fns)
 n = Need(fns.Data.Routes_Forever, "engineering", 2840, 106)
 local sum = 0
 for _, v in pairs(n.via) do sum = sum + v end
-eq(n.low .. "-" .. n.high, "59-62", "Copper Bar at 106")
-eq(sum <= n.high, true, "Copper Bar shares add up to at most 62 (were 59 + 13 + 2)")
+eq(n.low .. "-" .. n.high, "59-98", "Copper Bar at 106")
+eq(sum <= n.high, true, "Copper Bar shares add up to at most the high count (were 59 + 13 + 2 over 62)")
 
 -- Professions using an item.
 eq(table.concat(ns.Leveling.Professions(routes, RUNE), ","), "tailoring", "professions using Runecloth")

@@ -1,23 +1,25 @@
 # guide: Metabot
 # url: https://metabot.gg/en/wow-forever/professions/enchanting
-# checked: 2026-11-15
+# checked: 2026-11-27
 # Facts only (skill range, recipe, crafts) from the guide's route steps; no text copied.
 1-25 | Enchant Bracer - Inferior Stamina | 31
-25-50 | Enchant Bracer - Minor Deflect | 25
-50-71 | Enchant Chest - Inferior Stamina | 21
-71-110 | Enchant Chest - Minor Absorption | 47
+25-70 | Enchant Bracer - Minor Deflect | 45
+70-71 | Enchant Chest - Inferior Stamina | 1
+71-90 | Enchant Bracer - Minor Deflect | 21
+90-110 | Enchant Chest - Minor Absorption | 28
 110-120 | Enchant Cloak - Minor Agility | 10
-120-135 | Enchant Bracer - Lesser Spirit | 15
-135-156 | Enchant Bracer - Lesser Stamina | 21
-156-171 | Enchant Chest - Intellect | 15
-171-176 | Enchant Bracer - Lesser Intellect | 5
-176-181 | Enchant Boots - Lesser Agility | 5
-181-186 | Enchant Bracer - Spirit | 5
-186-201 | Enchant Bracer - Strength | 15
-201-206 | Enchant Chest - Greater Intellect | 5
-206-226 | Enchant Cloak - Greater Defense | 20
-226-231 | Enchant Gloves - Agility | 5
-231-251 | Enchant Chest - Superior Intellect | 20
-251-286 | Enchant Boots - Agility | 62
+120-146 | Enchant Bracer - Lesser Spirit | 26
+146-155 | Enchant Bracer - Lesser Strength | 9
+155-170 | Enchant Bracer - Lesser Stamina | 19
+170-175 | Enchant Chest - Intellect | 6
+175-180 | Enchant Bracer - Lesser Intellect | 6
+180-185 | Enchant Boots - Lesser Agility | 6
+185-200 | Enchant Bracer - Spirit | 19
+200-205 | Enchant Bracer - Strength | 6
+205-225 | Enchant Chest - Greater Intellect | 28
+225-230 | Enchant Cloak - Greater Defense | 6
+230-250 | Enchant Gloves - Agility | 28
+250-255 | Enchant Chest - Superior Intellect | 6
+255-286 | Enchant Boots - Agility | 58
 286-290 | Enchant Weapon - Greater Striking | 10
 290-300 | Enchanted Sigil: Flowing Waters | 10

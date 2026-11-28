@@ -24,7 +24,7 @@ import chain  # noqa: E402
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 # Pinned builds; bump these to regenerate from a newer client.
-BUILDS = {"era": "1.15.9.70576", "forever": "1.60.1.70938"}
+BUILDS = {"era": "1.15.9.70576", "forever": "1.60.1.71139"}
 CLIENT_NAMES = {"era": "Era", "forever": "Forever"}
 
 # Crafting skill lines (the IDs are the same on both clients). Mining is here for smelting.
@@ -42,7 +42,8 @@ def fetch(table, build, cache):
     if not os.path.exists(path):
         os.makedirs(os.path.dirname(path), exist_ok=True)
         url = "https://wago.tools/db2/%s/csv?build=%s" % (table, build)
-        with urllib.request.urlopen(url, timeout=300) as resp, open(path + ".part", "wb") as out:
+        req = urllib.request.Request(url, headers={"User-Agent": "KeepThat-build-tools"})  # wago.tools rejects Python's default agent
+        with urllib.request.urlopen(req, timeout=300) as resp, open(path + ".part", "wb") as out:
             out.write(resp.read())
         os.replace(path + ".part", path)
     return path

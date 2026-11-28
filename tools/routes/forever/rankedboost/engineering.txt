@@ -1,6 +1,6 @@
 # guide: RankedBoost
 # url: https://rankedboost.com/world-of-warcraft/forever/professions/engineering-leveling/
-# checked: 2026-11-15
+# checked: 2026-11-27
 # Facts only (skill range, recipe, crafts) from the guide's route steps; no text copied.
 1-45 | Crafted Light Shot | 33
 45-60 | Handful of Copper Bolts | 50
