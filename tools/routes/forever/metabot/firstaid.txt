@@ -1,15 +1,20 @@
 # guide: Metabot
 # url: https://metabot.gg/en/wow-forever/professions/first-aid
-# checked: 2026-11-15
+# checked: 2026-11-27
 # Facts only (skill range, recipe, crafts) from the guide's route steps; no text copied.
-1-40 | Linen Bandage | 41
-40-75 | Minor Healing Potion | 43
-75-135 | Simple Poultice | 87
+1-50 | Linen Bandage | 61
+50-55 | Heavy Linen Bandage | 6
+55-80 | Minor Healing Potion | 39
+80-85 | Wool Bandage | 6
+85-89 | Lesser Healing Potion | 5
+89-90 | Wool Bandage | 2
+90-135 | Simple Poultice | 72
 135-150 | Healing Potion | 19
 150-158 | Heavy Wool Bandage | 18
 158-195 | Silk Bandage | 74
 195-210 | Clever Poultice | 54
-210-225 | Mageweave Bandage | 18
-225-245 | Heavy Mageweave Bandage | 21
-245-291 | Runecloth Bandage | 59
+210-230 | Mageweave Bandage | 25
+230-240 | Potent Anti-Venom | 11
+240-260 | Heavy Mageweave Bandage | 25
+260-291 | Runecloth Bandage | 44
 291-300 | Heavy Runecloth Bandage | 10

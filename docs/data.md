@@ -47,7 +47,7 @@ Facts only, never a guide's text:
 - **Coverage:** a route must run from 1 to 300 with no gap. A step may start one point after the previous one ends (41-50 after 1-40).
 - **Guides recorded:**
   - Classic Era: wow-professions.com and Wowhead.
-  - WoW Forever: Metabot and RankedBoost.
+  - WoW Forever: Metabot and RankedBoost. Metabot's route is computed by its planner and is re-planned often, so re-read it whenever the pinned catalog build moves. A RankedBoost page shows an "Updated" date; compare it with the `# checked:` line.
 
   Icy Veins and Mobalytics refuse automated reads.
 

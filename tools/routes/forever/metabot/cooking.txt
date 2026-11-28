@@ -1,9 +1,9 @@
 # guide: Metabot
 # url: https://metabot.gg/en/wow-forever/professions/cooking
-# checked: 2026-11-15
+# checked: 2026-11-27
 # Facts only (skill range, recipe, crafts) from the guide's route steps; no text copied.
-1-71 | Roasted Boar Meat | 86
-71-90 | Coyote Steak | 19
+1-76 | Roasted Boar Meat | 102
+76-90 | Longjaw Mud Snapper | 14
 90-170 | Dig Rat Stew | 212
 170-184 | Goblin Deviled Clams | 21
 184-185 | Rockscale Cod | 1

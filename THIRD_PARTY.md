@@ -18,7 +18,7 @@ SpellEffect, SpellName, ItemSparse) as published by wago.tools (https://wago.too
 | Client | Build |
 |---|---|
 | Classic Era | 1.15.9.70576 |
-| WoW Forever | 1.60.1.70938 |
+| WoW Forever | 1.60.1.71139 |
 
 World of Warcraft game data is the property of Blizzard Entertainment.
 
@@ -28,8 +28,8 @@ World of Warcraft game data is the property of Blizzard Entertainment.
 |---|---|---|---|
 | Classic Era | wow-professions.com (https://wow-professions.com/classic) | Alchemy, Blacksmithing, Cooking, Enchanting, Engineering, First Aid, Leatherworking, Tailoring | 2026-11-15 |
 | Classic Era | Wowhead (https://www.wowhead.com/classic/guides/professions) | Alchemy, Blacksmithing, Cooking, Enchanting, Engineering, First Aid, Leatherworking, Tailoring | 2026-11-15 |
-| WoW Forever | RankedBoost (https://rankedboost.com/world-of-warcraft/forever/professions/) | Alchemy, Blacksmithing, Cooking, Enchanting, Engineering, First Aid, Leatherworking, Tailoring | 2026-11-15 |
-| WoW Forever | Metabot (https://metabot.gg/en/wow-forever/professions) | Alchemy, Blacksmithing, Cooking, Enchanting, Engineering, First Aid, Leatherworking, Tailoring | 2026-11-15 |
+| WoW Forever | RankedBoost (https://rankedboost.com/world-of-warcraft/forever/professions/) | Alchemy, Blacksmithing, Cooking, Enchanting, Engineering, First Aid, Leatherworking, Tailoring | 2026-11-27 |
+| WoW Forever | Metabot (https://metabot.gg/en/wow-forever/professions) | Alchemy, Blacksmithing, Cooking, Enchanting, Engineering, First Aid, Leatherworking, Tailoring | 2026-11-27 |
 
 ## Endgame material lists (`tools/endgame/`)
 

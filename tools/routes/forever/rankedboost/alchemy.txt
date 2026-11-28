@@ -1,6 +1,6 @@
 # guide: RankedBoost
 # url: https://rankedboost.com/world-of-warcraft/forever/professions/alchemy-leveling/
-# checked: 2026-11-15
+# checked: 2026-11-27
 # Facts only (skill range, recipe, crafts) from the guide's route steps; no text copied.
 1-65 | Elixir of Minor Defense | 66
 65-75 | Minor Mana Potion | 12

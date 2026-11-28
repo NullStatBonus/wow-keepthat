@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.7.2
+
+- Changed: **WoW Forever leveling counts now follow the current guides.** Before, some counts were too low.
+- Changed: The WoW Forever data now matches game build 1.60.1.71139. One new Leatherworking recipe is included.
+
 ## 0.7.1
 
 - Changed: **Nothing changes in game.** This release updates the developer files only.

@@ -1,6 +1,6 @@
 # guide: RankedBoost
 # url: https://rankedboost.com/world-of-warcraft/forever/professions/first-aid-leveling/
-# checked: 2026-11-15
+# checked: 2026-11-27
 # Facts only (skill range, recipe, crafts) from the guide's route steps; no text copied.
 1-50 | Linen Bandage | 61
 50-55 | Heavy Linen Bandage | 6

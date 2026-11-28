@@ -1,6 +1,6 @@
 # guide: RankedBoost
 # url: https://rankedboost.com/world-of-warcraft/forever/professions/enchanting-leveling/
-# checked: 2026-11-15
+# checked: 2026-11-27
 # Facts only (skill range, recipe, crafts) from the guide's route steps; no text copied.
 1-25 | Enchant Bracer - Inferior Stamina | 31
 25-70 | Enchant Bracer - Minor Deflect | 45
